@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: thoogudeepa-kds
+    runtime: node
+    plan: free
+    buildCommand: npm install && npx prisma generate && npx prisma db push && node prisma/seed-if-empty.js && npm run build
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    disk:
+      name: sqlite-data
+      mountPath: /app/prisma
+      sizeGB: 1

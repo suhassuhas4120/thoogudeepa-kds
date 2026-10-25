@@ -1,0 +1,258 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// -------------------------------------------------------------
+// 1. STAFF & AUTHENTICATION
+// -------------------------------------------------------------
+model Staff {
+  id              String      @id @default(cuid())
+  name            String      // e.g. "Suhas", "Shiva", "Manager", "Kitchen Chef"
+  role            String      // "WAITER" | "MANAGER" | "KITCHEN"
+  pin             String      // 4-digit PIN (e.g. "1111", "2222", "3333", "9999")
+  assignedZone    String      // "ZONE_A_S1_S8" | "ZONE_B_S9_S16" | "ALL"
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+
+  orderTickets    OrderTicket[]
+  shiftAudits     ShiftCashAudit[]
+}
+
+// -------------------------------------------------------------
+// 2. DINING SEATS (1 to 16) - Strictly Seats, Zero Tables
+// -------------------------------------------------------------
+model DiningSeat {
+  id              Int             @id // 1 to 16
+  seatNumber      Int             @unique // 1 to 16
+  zone            String          // "ZONE_A" (1-8) | "ZONE_B" (9-16)
+  assignedWaiter  String          // "Suhas" | "Shiva"
+  status          String          @default("VACANT") // "VACANT" | "OCCUPIED" | "BILL_REQUESTED"
+  currentGuestName String?        @default("-")
+
+  sessions        DiningSession[]
+  serviceRequests ServiceRequest[]
+}
+
+// -------------------------------------------------------------
+// 3. DINING SESSIONS (Active Seat Lifecycle)
+// -------------------------------------------------------------
+model DiningSession {
+  id                  String          @id @default(cuid())
+  seatId              Int
+  customerName        String          @default("-")
+  status              String          @default("ACTIVE") // "ACTIVE" | "COMPLETED"
+  startedAt           DateTime        @default(now())
+  endedAt             DateTime?
+
+  subtotal            Float           @default(0.0)
+  discountAmount      Float           @default(0.0)
+  gstAmount           Float           @default(0.0) // 5% GST
+  grandTotal          Float           @default(0.0)
+  
+  appliedPromoCode    String?
+  paymentStatus       String          @default("UNPAID") // "UNPAID" | "PAID"
+  paymentMethod       String?         // "CASH" | "UPI" | "CARD"
+  paymentPreferred    String?         // "CASH" | "UPI" | "CARD"
+  paymentLockState    String          @default("UNLOCKED") // "UNLOCKED" | "LOCKED_WAITER" | "LOCKED_SELF"
+
+  seat                DiningSeat      @relation(fields: [seatId], references: [id])
+  orderTickets        OrderTicket[]
+  serviceRequests     ServiceRequest[]
+  masterRecord        MasterSalesRecord?
+}
+
+// -------------------------------------------------------------
+// 4. MENU CATEGORIES & ITEMS
+// -------------------------------------------------------------
+model MenuCategory {
+  id              String      @id @default(cuid())
+  name            String      @unique // "Donne Biryani", "Starters", "Breads & Sides", "Beverages"
+  slug            String      @unique
+  displayOrder    Int         @default(0)
+  isActive        Boolean     @default(true)
+
+  items           MenuItem[]
+}
+
+model MenuItem {
+  id                  String       @id @default(cuid())
+  categoryId          String
+  name                String
+  description         String?
+  price               Float
+  isVeg               Boolean      @default(false)
+  isAvailable         Boolean      @default(true) // For Kitchen 86 toggle
+  isPairWith          Boolean      @default(false) // For Cart "Pair With" slider
+  imageUrl            String?
+  displayOrder        Int          @default(0)
+
+  category            MenuCategory @relation(fields: [categoryId], references: [id])
+  orderItems          OrderItem[]
+}
+
+// -------------------------------------------------------------
+// 5. ORDER TICKETS & ITEMS
+// -------------------------------------------------------------
+model OrderTicket {
+  id                  String        @id @default(cuid())
+  ticketNumber        String        @unique // e.g. "101", "102", "P-48"
+  orderType           String        @default("DINE_IN") // "DINE_IN" | "PARCEL"
+  seatId              Int?          // Null for parcel
+  sessionId           String?       // Null for parcel
+  customerName        String        @default("-")
+  customerPhone       String?       // Used for parcel orders
+  placedAt            DateTime      @default(now())
+  status              String        @default("RECEIVED") // "RECEIVED" | "COOKING" | "READY" | "COMPLETED"
+  specialNotes        String?
+  waiterName          String        // "Suhas" | "Shiva" | "Manager Desk"
+  staffId             String?
+
+  staff               Staff?        @relation(fields: [staffId], references: [id])
+  session             DiningSession? @relation(fields: [sessionId], references: [id])
+  items               OrderItem[]
+}
+
+model OrderItem {
+  id                  String       @id @default(cuid())
+  orderTicketId       String
+  menuItemId          String
+  itemName            String
+  unitPrice           Float
+  quantity            Int          @default(1)
+  specialNotes        String?
+  status              String       @default("placed") // "placed" | "preparing" | "ready" | "served" | "cancelled"
+  placedAt            DateTime     @default(now())
+
+  ticket              OrderTicket  @relation(fields: [orderTicketId], references: [id])
+  menuItem            MenuItem     @relation(fields: [menuItemId], references: [id])
+}
+
+// -------------------------------------------------------------
+// 6. IN-DINING SERVICE REQUESTS (Call Waiter)
+// -------------------------------------------------------------
+model ServiceRequest {
+  id              String        @id @default(cuid())
+  seatId          Int
+  sessionId       String
+  requestType     String        // "WATER" | "CLEAN_SEAT" | "EXTRA_PLATES" | "CALL_WAITER"
+  status          String        @default("PENDING") // "PENDING" | "RESOLVED"
+  requestedAt     DateTime      @default(now())
+  resolvedAt      DateTime?
+  resolvedBy      String?       // "Suhas" | "Shiva"
+
+  seat            DiningSeat    @relation(fields: [seatId], references: [id])
+  session         DiningSession @relation(fields: [sessionId], references: [id])
+}
+
+// -------------------------------------------------------------
+// 7. OFFERS, COMBOS & PROMOTIONS (With Advanced Scheduling)
+// -------------------------------------------------------------
+model PromoCode {
+  id              String        @id @default(cuid())
+  code            String        @unique // e.g. "DONNE50", "COMBO399"
+  discountType    String        // "FLAT" | "PERCENTAGE"
+  value           Float         // 50.0 or 10.0 (for 10%)
+  minOrderValue   Float         @default(0.0)
+  maxDiscount     Float?
+  
+  // Advanced Scheduling
+  startDate       DateTime?
+  endDate         DateTime?
+  startTime       String?       // "12:00"
+  endTime         String?       // "16:00"
+  daysOfWeek      String        @default("ALL") // "ALL" | JSON string '["SAT","SUN"]'
+  
+  usageLimit      Int?
+  timesUsed       Int           @default(0)
+  isActive        Boolean       @default(true)
+
+  promoCards      PromotionalCard[]
+}
+
+model PromotionalCard {
+  id              String        @id @default(cuid())
+  title           String        // e.g. "Donne Combo Feast"
+  subtitle        String        // e.g. "Biryani + Kabab + Drink @ ₹399"
+  badgeText       String?       // e.g. "COMBO399"
+  promoCodeId     String?
+  imageUrl        String?
+  
+  // Advanced Scheduling
+  startDate       DateTime?
+  endDate         DateTime?
+  startTime       String?
+  endTime         String?
+  daysOfWeek      String        @default("ALL")
+  
+  displayOrder    Int           @default(0)
+  isActive        Boolean       @default(true)
+
+  promoCode       PromoCode?    @relation(fields: [promoCodeId], references: [id])
+}
+
+// -------------------------------------------------------------
+// 8. STAFF SHIFT CASH RECONCILIATION (Manager Screen 6)
+// -------------------------------------------------------------
+model ShiftCashAudit {
+  id                  String    @id @default(cuid())
+  date                String    // "25-10-2026"
+  staffId             String?
+  staffName           String    // "Suhas", "Shiva", "Parcel Desk"
+  roleOrZone          String    // "Zone A (S1-S8)", "Zone B (S9-S16)", "Manager Counter"
+  totalTablesServed   Int       @default(0)
+  totalBilledAmount   Float     @default(0.0)
+  upiOnlineCollected  Float     @default(0.0)
+  cashCollected       Float     @default(0.0)
+  cashHandedOver      Float     @default(0.0)
+  remainingBalance    Float     @default(0.0)
+  isBalanced          Boolean   @default(true)
+  closedAt            DateTime  @default(now())
+
+  staff               Staff?    @relation(fields: [staffId], references: [id])
+}
+
+// -------------------------------------------------------------
+// 9. MASTER SALES AUDIT (Immutable Ledger for Screen 8)
+// -------------------------------------------------------------
+model MasterSalesRecord {
+  id                  String    @id @default(cuid())
+  billNumber          String    @unique // e.g. "INV-101", "INV-102"
+  date                String    // "25-10-2026"
+  orderType           String    // "Dine-in" | "Takeaway"
+  seatNumberOrToken   String    // "S1" .. "S16" | "P-48"
+  customerName        String    @default("-")
+  customerPhone       String?
+  serverName          String    // "Suhas" | "Shiva" | "Manager"
+  itemsSummary        String    // e.g. "1x Donne Biryani, 2x Kabab"
+  placedAt            String    // "12:20 PM"
+  settledAt           String    // "12:48 PM"
+  subtotal            Float
+  discountAmount      Float     @default(0.0)
+  packagingCharges    Float     @default(0.0)
+  gst5Percent         Float
+  grandTotal          Float
+  paymentMode         String    // "Cash" | "UPI" | "Card"
+  paymentStatus       String    @default("PAID")
+  createdAt           DateTime  @default(now())
+
+  sessionId           String?   @unique
+  session             DiningSession? @relation(fields: [sessionId], references: [id])
+}
+
+// -------------------------------------------------------------
+// 10. PERSISTENT IDEMPOTENCY LEDGER (Anti-Double Ordering & Replay)
+// -------------------------------------------------------------
+model IdempotencyRecord {
+  id            String    @id @default(cuid())
+  key           String    @unique // Client UUID / timestamp idempotency key
+  seatId        Int?
+  requestHash   String?
+  responseJson  String    // Serialized response to return on duplicate retry
+  createdAt     DateTime  @default(now())
+}
+
