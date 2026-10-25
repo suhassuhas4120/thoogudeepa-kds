@@ -19,6 +19,9 @@ export { sqliteWriteQueue } from './write-queue';
  * concurrency settings so all 16 seats can place orders simultaneously without lockouts.
  */
 export async function ensureWalMode() {
+  if (process.env.DATABASE_URL?.includes('postgres') || process.env.DATABASE_URL?.includes('postgresql')) {
+    return; // PostgreSQL natively handles high-concurrency ACID transactions
+  }
   try {
     await prisma.$queryRawUnsafe(`PRAGMA journal_mode = WAL;`);
     await prisma.$queryRawUnsafe(`PRAGMA busy_timeout = 10000;`);
