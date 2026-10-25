@@ -54,7 +54,7 @@ export default function CustomerScreen1({ params }: { params: { seatId: string }
 
   return (
     <div
-      className={`min-h-screen flex flex-col justify-between p-6 max-w-md mx-auto relative overflow-hidden font-sans select-none transition-colors duration-300 ${
+      className={`min-h-screen flex flex-col justify-between p-5 max-w-md mx-auto relative overflow-hidden font-sans select-none transition-colors duration-300 ${
         isOrange
           ? 'bg-[#FFFCF7] text-[#5B5049]'
           : 'bg-gradient-to-b from-[#051811] via-[#092219] to-[#04120d] text-white'
@@ -63,56 +63,55 @@ export default function CustomerScreen1({ params }: { params: { seatId: string }
       {/* Ambient background glows */}
       {isOrange ? (
         <>
-          <div className="absolute -top-24 -left-24 w-72 h-72 bg-[#D08A52]/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute top-1/3 -right-24 w-72 h-72 bg-[#8A4228]/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-20 -left-20 w-80 h-80 bg-[#D08A52]/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-1/2 -right-24 w-80 h-80 bg-[#8A4228]/10 rounded-full blur-3xl pointer-events-none" />
         </>
       ) : (
         <>
-          <div className="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute top-1/3 -right-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-20 -left-20 w-80 h-80 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-1/2 -right-24 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
         </>
       )}
 
-      {/* Top Header & Theme Switcher */}
-      <div className="pt-2 z-10 flex flex-col items-center">
-        <div className="w-full flex items-center justify-end mb-4">
+      {/* Main Content Flow */}
+      <div className="z-10 flex flex-col items-center w-full">
+        {/* Top Header with Theme Switcher */}
+        <div className="w-full flex items-center justify-end pt-1 mb-2">
           <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
         </div>
 
-        <div className="text-center">
+        {/* Brand Name (Larger & More Prominent) */}
+        <div className="text-center mb-5">
           <h1
-            className={`text-2xl font-black tracking-wider uppercase drop-shadow-sm ${
+            className={`text-3xl sm:text-4xl font-black tracking-widest uppercase drop-shadow-sm ${
               isOrange ? 'text-[#8A4228]' : 'text-amber-400'
             }`}
           >
             THOOGUDEEPA
           </h1>
           <p
-            className={`text-xs font-bold tracking-widest uppercase mt-0.5 ${
+            className={`text-xs sm:text-sm font-extrabold tracking-[0.22em] uppercase mt-1 ${
               isOrange ? 'text-[#D08A52]' : 'text-emerald-200'
             }`}
           >
             DONNE BIRYANI MANE
           </p>
           <p
-            className={`text-[11px] font-medium tracking-wide mt-1 ${
-              isOrange ? 'text-[#5B5049]/80' : 'text-emerald-400/80'
+            className={`text-xs font-semibold tracking-wider mt-1 opacity-80 ${
+              isOrange ? 'text-[#5B5049]' : 'text-emerald-400'
             }`}
           >
             ತೂಗುದೀಪ ದೊನ್ನೆ ಬಿರಿಯಾನಿ ಮನೆ
           </p>
         </div>
-      </div>
 
-      {/* Center Branding with Authentic Logo */}
-      <div className="flex flex-col items-center my-auto w-full z-10 py-4">
-        {/* Official Restaurant Logo Badge */}
+        {/* Official Restaurant Logo (Larger, Elevated & Higher Up) */}
         <div className="relative mb-5">
           <div
-            className={`w-32 h-32 rounded-full border-2 p-1.5 shadow-2xl flex items-center justify-center overflow-hidden transition-all duration-300 ${
+            className={`w-44 h-44 sm:w-48 sm:h-48 rounded-full border-[3px] p-2 shadow-2xl flex items-center justify-center overflow-hidden transition-all duration-300 ${
               isOrange
-                ? 'border-[#8A4228] bg-[#F3DFCC] shadow-[#8A4228]/15'
-                : 'border-amber-400/50 bg-[#072017] shadow-emerald-950/90'
+                ? 'border-[#8A4228] bg-[#F3DFCC] shadow-[#8A4228]/25'
+                : 'border-amber-400/60 bg-[#072017] shadow-emerald-950/90'
             }`}
           >
             <img
@@ -129,7 +128,7 @@ export default function CustomerScreen1({ params }: { params: { seatId: string }
 
         {/* Dynamic Seat Badge */}
         <div
-          className={`inline-flex items-center gap-2.5 px-5 py-2 rounded-2xl border shadow-md mb-4 transition-all duration-300 ${
+          className={`inline-flex items-center gap-2.5 px-6 py-2 rounded-full border shadow-md mb-4 transition-all duration-300 ${
             isOrange
               ? 'bg-[#F3DFCC] border-[#D08A52]/40 text-[#8A4228]'
               : 'bg-[#0b2b20] border-amber-400/30 text-amber-300 shadow-black/40'
@@ -140,21 +139,21 @@ export default function CustomerScreen1({ params }: { params: { seatId: string }
               isOrange ? 'bg-[#198754]' : 'bg-emerald-400'
             }`}
           />
-          <span className="text-sm font-black tracking-wide">
+          <span className="text-sm font-black tracking-widest">
             SEAT {String(seatId).padStart(2, '0')}
           </span>
         </div>
 
-        {/* Welcome Message Card */}
+        {/* Welcome Headline */}
         <div
-          className={`w-full border rounded-2xl py-3 px-5 text-center mb-4 shadow-sm transition-all duration-300 ${
+          className={`w-full border rounded-2xl py-2.5 px-5 text-center mb-3 shadow-sm transition-all duration-300 ${
             isOrange
               ? 'bg-[#FFFCF7] border-[#E8D5C3] shadow-[#8A4228]/5'
               : 'bg-[#0a281e]/90 border-emerald-500/20 shadow-xl'
           }`}
         >
           <h2
-            className={`text-base font-extrabold block ${
+            className={`text-base font-extrabold tracking-wide ${
               isOrange ? 'text-[#8A4228]' : 'text-slate-100'
             }`}
           >
@@ -162,7 +161,7 @@ export default function CustomerScreen1({ params }: { params: { seatId: string }
           </h2>
         </div>
 
-        {/* Customer Name Input */}
+        {/* Customer Name Input (Clean, Centered) */}
         <div className="w-full">
           <input
             type="text"
@@ -171,8 +170,8 @@ export default function CustomerScreen1({ params }: { params: { seatId: string }
             placeholder="Enter your name"
             className={`w-full rounded-2xl py-3.5 px-4 text-center text-sm font-bold shadow-inner transition focus:outline-none ${
               isOrange
-                ? 'bg-[#FFFCF7] border border-[#E8D5C3] text-[#5B5049] placeholder-[#5B5049]/50 focus:border-[#8A4228] focus:ring-1 focus:ring-[#8A4228]'
-                : 'bg-[#061c14] border border-amber-400/30 text-white placeholder-emerald-700/60 focus:border-amber-400 focus:ring-1 focus:ring-amber-400'
+                ? 'bg-[#FFFCF7] border border-[#E8D5C3] text-[#5B5049] placeholder-[#5B5049]/50 focus:border-[#8A4228] focus:ring-2 focus:ring-[#8A4228]/20'
+                : 'bg-[#061c14] border border-amber-400/30 text-white placeholder-emerald-700/60 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20'
             }`}
           />
         </div>
