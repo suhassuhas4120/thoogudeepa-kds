@@ -75,16 +75,7 @@ export default function CustomerScreen1({ params }: { params: { seatId: string }
 
       {/* Top Header & Theme Switcher */}
       <div className="pt-2 z-10 flex flex-col items-center">
-        <div className="w-full flex items-center justify-between mb-4">
-          <span
-            className={`px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase border shadow-sm ${
-              isOrange
-                ? 'bg-[#F3DFCC] border-[#D08A52]/40 text-[#8A4228]'
-                : 'bg-emerald-950/80 border-emerald-500/30 text-emerald-300'
-            }`}
-          >
-            Karnataka Military Style
-          </span>
+        <div className="w-full flex items-center justify-end mb-4">
           <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
         </div>
 
@@ -152,18 +143,11 @@ export default function CustomerScreen1({ params }: { params: { seatId: string }
           <span className="text-sm font-black tracking-wide">
             SEAT {String(seatId).padStart(2, '0')}
           </span>
-          <span
-            className={`text-[11px] font-bold ${
-              isOrange ? 'text-[#8A4228]/80' : 'text-emerald-400/80'
-            }`}
-          >
-            • DINE-IN
-          </span>
         </div>
 
         {/* Welcome Message Card */}
         <div
-          className={`w-full border rounded-2xl py-3.5 px-5 text-center mb-4 shadow-sm transition-all duration-300 ${
+          className={`w-full border rounded-2xl py-3 px-5 text-center mb-4 shadow-sm transition-all duration-300 ${
             isOrange
               ? 'bg-[#FFFCF7] border-[#E8D5C3] shadow-[#8A4228]/5'
               : 'bg-[#0a281e]/90 border-emerald-500/20 shadow-xl'
@@ -176,24 +160,10 @@ export default function CustomerScreen1({ params }: { params: { seatId: string }
           >
             Namaskara • Welcome
           </h2>
-          <p
-            className={`text-xs font-medium mt-0.5 ${
-              isOrange ? 'text-[#5B5049]/90' : 'text-emerald-300/80'
-            }`}
-          >
-            Traditional Seeraga Samba Donne Biryani prepared fresh to order.
-          </p>
         </div>
 
         {/* Customer Name Input */}
         <div className="w-full">
-          <label
-            className={`block text-[11px] font-bold uppercase tracking-wider text-center mb-1.5 ${
-              isOrange ? 'text-[#8A4228]' : 'text-amber-400/90'
-            }`}
-          >
-            Your Name (Optional)
-          </label>
           <input
             type="text"
             value={customerName}
