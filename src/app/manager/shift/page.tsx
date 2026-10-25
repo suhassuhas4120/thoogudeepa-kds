@@ -131,7 +131,7 @@ export default function ManagerShiftAuditScreen() {
               🤵 WAITER 1: SUHAS (Zone A: Seats 1 - 8)
             </h2>
             <span className="text-xs text-slate-400">
-              Tables Served: <strong className="text-white">{suhasStats.tablesCount}</strong>
+              Seats Served: <strong className="text-white">{suhasStats.tablesCount}</strong>
             </span>
           </div>
 
@@ -182,7 +182,7 @@ export default function ManagerShiftAuditScreen() {
               🤵 WAITER 2: SHIVA (Zone B: Seats 9 - 16)
             </h2>
             <span className="text-xs text-slate-400">
-              Tables Served: <strong className="text-white">{shivaStats.tablesCount}</strong>
+              Seats Served: <strong className="text-white">{shivaStats.tablesCount}</strong>
             </span>
           </div>
 

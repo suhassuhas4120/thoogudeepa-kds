@@ -132,7 +132,7 @@ export default function WaiterSuhasSettleScreen({ params }: { params: { id: stri
         </div>
       </div>
 
-      {/* Vacate Table Button */}
+      {/* Vacate Seat Button */}
       <div className="pt-4 pb-2">
         <button
           type="button"
@@ -144,7 +144,7 @@ export default function WaiterSuhasSettleScreen({ params }: { params: { id: stri
               : 'bg-slate-800 text-slate-500 border border-slate-800 cursor-not-allowed'
           }`}
         >
-          {loading ? 'Clearing Seat...' : 'Vacate Table'}
+          {loading ? 'Clearing Seat...' : 'Vacate Seat'}
         </button>
       </div>
     </div>
