@@ -1,0 +1,1103 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 10505
+>>
+stream
+0.5670000000000001 w
+0 G
+0.54 0.26 0.16 rg
+0. 841.8899999999999864 595.2799999999999727 -34.0157480314960665 re
+f
+BT
+/F2 9 Tf
+10.3499999999999996 TL
+1. 0.988 0.969 rg
+28.3464566929133888 819.212834645669318 Td
+(THOOGUDEEPA DONNE BIRYANI MANE • INITIAL ARCHITECTURE & SCREEN STRUCTURE PLAN) Tj
+ET
+BT
+/F2 15 Tf
+17.25 TL
+0.541 0.259 0.157 rg
+28.3464566929133888 773.8585039370078675 Td
+(THOOGUDEEPA DONNE BIRYANI MANE) Tj
+ET
+BT
+/F2 10.5 Tf
+12.0749999999999993 TL
+0.816 0.541 0.322 rg
+28.3464566929133888 759.6852755905511003 Td
+(MASTER INITIAL SPECIFICATION & SCREEN STRUCTURE BLUEPRINT) Tj
+ET
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+0.392 g
+28.3464566929133888 744.0947244094487587 Td
+(Architecture: Strictly 16 Dining Seats \(Zero Tables\) • 5 Interconnected Portals • Sub-15ms WebSocket Spine) Tj
+ET
+0.95 0.87 0.8 rg
+34.0157480314960665 721.4175590551180903 m
+561.2642519685039133 721.4175590551180903 l
+564.395315117150858 721.4175590551180903 566.933543307086552 718.8793308651823963 566.933543307086552 715.748267716535338 c
+566.933543307086552 704.4096850393700606 l
+566.933543307086552 701.2786218907230023 563.8024801584396073 698.7403937007873083 561.2642519685039133 698.7403937007873083 c
+34.0157480314960665 698.7403937007873083 l
+30.8846848828490508 698.7403937007873083 28.3464566929133888 701.8714568494343666 28.3464566929133888 704.4096850393700606 c
+28.3464566929133888 715.748267716535338 l
+28.3464566929133888 718.8793308651823963 31.4775198415604045 721.4175590551180903 34.0157480314960665 721.4175590551180903 c
+h
+f
+BT
+/F2 10.5 Tf
+12.0749999999999993 TL
+0.541 0.259 0.157 rg
+39.6850393700787407 705.8270078740157487 Td
+(1. CUSTOMER QR PORTAL \(8 Frictionless Mobile Screens\)) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 687.4018110236220309 Td
+(Screen 1: Welcome & Seat Landing \(/seat/[seatId]\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 674.6459055118109518 Td
+(• Header: Official brand title, logo badge, and theme switcher \(Burnt Orange vs Royal Emerald\).) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 663.8742519685039269 Td
+(• Seat Badge: Dedicated seat pill indicator \(SEAT 01 to SEAT 16\) with pulsing live indicator.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 653.1025984251969021 Td
+(• Guest Input: Centered optional customer name input.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 642.3309448818897636 Td
+(• Primary CTA: Full-width [Explore Menu ->] button initiating active dining session.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 623.0553543307087239 Td
+(Screen 2: Interactive Food Catalog \(/seat/[seatId]/menu\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 610.2994488188976447 Td
+(• Header: Seat & customer name chip with 1-tap [Call Waiter] shortcut and theme toggle.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 599.5277952755905062 Td
+(• Controls: Search bar with instant filter and Pure Veg toggle switch.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 588.7561417322834814 Td
+(• Promotions: Horizontal swipeable promotional banner carousel \(COMBO399, DONNE50\).) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 577.9844881889764565 Td
+(• Menu Grid: 21 authentic items organized into 3 categories with prices, veg/non-veg tags, and descriptions.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 567.212834645669318 Td
+(• Cart Bar: Sticky floating bottom bar showing live item count, subtotal, and [View Cart ->].) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 547.9372440944882783 Td
+(Screen 3: Review Cart & Recommended Pairings \(/seat/[seatId]/cart\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 535.1813385826771992 Td
+(• Order Review: Itemized list with thumbnail imagery, unit prices, quantity steppers, and delete button.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 524.4096850393700606 Td
+(• Upselling: Horizontal "Recommended Pairings" slider to add complementary sides/soups.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 513.6380314960630358 Td
+(• Math Engine: Real-time item subtotal, 5% GST computation, and grand total.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 502.8663779527559541 Td
+(• Order Dispatch: [Place Order ->] button with debounce protection to prevent accidental duplicate tickets.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 483.5907874015748575 Td
+(Screen 4: Live Order Tracking & Stepper \(/seat/[seatId]/tracking\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 470.8348818897637784 Td
+(• Real-Time Stepper: Visual progress timeline: Placed -> Preparing -> Ready -> Served.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 460.0632283464566967 Td
+(• Active Items: Live list of cooking items updating via WebSocket without page refreshes.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 449.2915748031495582 Td
+(• Add Items: [+] Add more dishes button returning seamlessly to menu catalog.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 438.5199212598424197 Td
+(• Mutual Payment Lock: [Pay via Waiter] vs [Self Pay \(UPI\)] - selecting one disables the other.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 419.2443307086613231 Td
+(Screen 5: Pay via Waiter Settlement \(/seat/[seatId]/settle-waiter\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 406.488425196850244 Td
+(• Promos: Coupon code entry box with instant percentage/flat deduction calculation.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 395.7167716535431623 Td
+(• Bill Summary: Total payable amount with GST breakdown and discount line.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 384.9451181102360238 Td
+(• Mode Selector: Cash at Seat vs UPI on Waiter Handset selector.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 374.1734645669288852 Td
+(• Notification: Broadcasts settlement request directly to assigned waiter phone \(Suhas / Shiva\).) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 363.4018110236218035 Td
+(• Feedback: 5-Star interactive customer rating selector with [Your Bill ->] navigation.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 344.1262204724406502 Td
+(Screen 6: Self Pay via Direct UPI QR \(/seat/[seatId]/settle-self\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 331.3703149606296279 Td
+(• Dynamic UPI QR: Dynamic QR code pre-encoded with exact bill total and restaurant UPI VPA.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 320.5986614173225462 Td
+(• 1-Tap Intent: Quick-launch buttons for Google Pay, PhonePe, and Paytm on customer mobile.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 309.8270078740154077 Td
+(• Confirmation: Real-time polling and WebSocket listener confirming payment verification.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 299.0553543307082691 Td
+(• Invoice Link: [Your Bill ->] button providing instant tax invoice.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 279.7797637795271157 Td
+(Screen 7: Digital Tax Invoice Receipt \(/seat/[seatId]/bill\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 267.0238582677161503 Td
+(• Receipt Header: Restaurant branding, GSTIN, invoice number, seat number, date and time.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 256.2522047244090118 Td
+(• Itemized Table: Full breakdown of ordered dishes, quantities, rates, and totals.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 245.4805511811018732 Td
+(• Tax Breakdown: Subtotal, CGST \(2.5%\), SGST \(2.5%\), and Grand Total.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 234.7088976377947347 Td
+(• PDF Export: Integrated [Download Bill \(PDF\)] button generating branded PDF offline via jsPDF.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 223.9372440944875962 Td
+(• Footer: Traditional Kannada & English welcome note: Thank you, visit again!) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 204.6616535433064428 Td
+(Screen 8: Quick Service Requests \(/seat/[seatId]/help\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 191.9057480314954773 Td
+(• 4 Touch Action Cards: Water, Clean Seat, Extra Plates, and Call Waiter Directly.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 181.1340944881883388 Td
+(• Special Note: Optional text area for special requests or table notes.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 170.3624409448812003 Td
+(• Dispatch: [Send Request to Waiter] button emitting alert to assigned waiter room.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 159.5907874015740617 Td
+(• Live Tracker: Real-time request status indicator: Sent -> Waiter Notified -> Resolved.) Tj
+ET
+0.95 0.87 0.8 rg
+34.0157480314960665 140.3151968503929652 m
+561.2642519685039133 140.3151968503929652 l
+564.395315117150858 140.3151968503929652 566.933543307086552 137.7769686604572712 566.933543307086552 134.6459055118102697 c
+566.933543307086552 123.3073228346449213 l
+566.933543307086552 120.176259685997934 563.8024801584396073 117.63803149606224 561.2642519685039133 117.63803149606224 c
+34.0157480314960665 117.63803149606224 l
+30.8846848828490508 117.63803149606224 28.3464566929133888 120.7690946447092415 28.3464566929133888 123.3073228346449213 c
+28.3464566929133888 134.6459055118102697 l
+28.3464566929133888 137.7769686604572712 31.4775198415604045 140.3151968503929652 34.0157480314960665 140.3151968503929652 c
+h
+f
+BT
+/F2 10.5 Tf
+12.0749999999999993 TL
+0.541 0.259 0.157 rg
+39.6850393700787407 124.7246456692905667 Td
+(2. KITCHEN DISPLAY SYSTEM - KDS \(2 High-Contrast Steam-Resistant Screens\)) Tj
+ET
+BT
+/F3 7.5 Tf
+8.625 TL
+0.549 g
+28.3464566929133888 17.0078740157480297 Td
+(Thoogudeepa Donne Biryani Mane • Confidential Master Planning Document • Page 1 of 3) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 10749
+>>
+stream
+0.5670000000000001 w
+0 G
+0.54 0.26 0.16 rg
+0. 841.8899999999999864 595.2799999999999727 -34.0157480314960665 re
+f
+BT
+/F2 9 Tf
+10.3499999999999996 TL
+1. 0.988 0.969 rg
+28.3464566929133888 819.212834645669318 Td
+(THOOGUDEEPA DONNE BIRYANI MANE • INITIAL ARCHITECTURE & SCREEN STRUCTURE PLAN) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 785.1970866141732586 Td
+(Screen 1: KDS Security Login Gateway \(/kitchen\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 772.4411811023621794 Td
+(• Interface: High-contrast dark terminal designed for commercial kitchen lighting.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 761.6695275590550409 Td
+(• Tactile Numpad: 4-digit PIN gateway \(PIN: 3333\).) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 750.8978740157480161 Td
+(• Audio Arming: Login action unlocks browser Web Audio Context for audible order chimes.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 731.6222834645668627 Td
+(Screen 2: 3-Column Production Ticket Board \(/kitchen/kds\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 718.8663779527558972 Td
+(• Column 1 \(Received Orders\): Incoming tickets showing Placed Time, Seat badge, dishes, and [Mark Cooking ->].) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 708.0947244094488724 Td
+(• Column 2 \(Items Cooking\): Active cooking orders with individual item checkboxes, cancel item option, and [Mark Ready ->].) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 697.3230708661417339 Td
+(• Column 3 \(Items Ready\): Completed dishes awaiting waiter pickup with pickup chimes.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 686.5514173228345953 Td
+(• 86 Sold-Out Drawer: Slide-over inventory drawer allowing chef to instantly 86/sold-out any dish across all customer menus.) Tj
+ET
+0.95 0.87 0.8 rg
+34.0157480314960665 667.2758267716535556 m
+561.2642519685039133 667.2758267716535556 l
+564.395315117150858 667.2758267716535556 566.933543307086552 664.7375985817178616 566.933543307086552 661.6065354330708033 c
+566.933543307086552 650.2679527559055259 l
+566.933543307086552 647.1368896072583539 563.8024801584396073 644.5986614173227736 561.2642519685039133 644.5986614173227736 c
+34.0157480314960665 644.5986614173227736 l
+30.8846848828490508 644.5986614173227736 28.3464566929133888 647.7297245659698319 28.3464566929133888 650.2679527559055259 c
+28.3464566929133888 661.6065354330708033 l
+28.3464566929133888 664.7375985817178616 31.4775198415604045 667.2758267716535556 34.0157480314960665 667.2758267716535556 c
+h
+f
+BT
+/F2 10.5 Tf
+12.0749999999999993 TL
+0.541 0.259 0.157 rg
+39.6850393700787407 651.6852755905511003 Td
+(3. WAITER MOBILITY - SUHAS \(Zone A: Seats 1 to 8\) \(5 Handheld Screens\)) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 633.2600787401574962 Td
+(Screen 1: Waiter Handheld Login \(/waiter/suhas\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 620.5041732283464171 Td
+(• 4-Digit PIN gate \(PIN: 1111\) with device screen wake-lock to prevent screen sleep during service.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 601.2285826771653774 Td
+(Screen 2: Zone A Floor Grid \(/waiter/suhas/floor\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 588.4726771653542983 Td
+(• Seats 1 to 8 live grid with color badges: Vacant \(+ Take Order\), Dining, Food Ready, Service Call, Bill Requested.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 577.7010236220471597 Td
+(• Auditory & Haptic alerts: Vibrates and pings exclusively for Seats 1 to 8.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 558.42543307086612 Td
+(Screen 3: Seat Detail & Order Action \(/waiter/suhas/seat/[id]\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 545.6695275590550409 Td
+(• Seat inspection view showing customer name, elapsed dining time, and item preparation statuses.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 534.8978740157480161 Td
+(• Service call resolution banner with 1-tap [Resolve Water] button.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 524.1262204724409912 Td
+(• Direct action controls: [+ Add Items] and [Settle Bill].) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 504.8506299212598378 Td
+(Screen 4: Fast Order Punching \(/waiter/suhas/seat/[id]/order\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 492.0947244094488155 Td
+(• Handheld touch menu for fast punching of extra dishes on the floor.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 481.3230708661417339 Td
+(• Quantity counter [- qty +] and instant [Place Order ->] button updating KDS in real time.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 462.0474803149606373 Td
+(Screen 5: Cash Collection & Vacate Seat \(/waiter/suhas/seat/[id]/settle\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 449.291574803149615 Td
+(• Final bill review, payment mode selector \(Cash / UPI\), and cash change calculator.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 438.5199212598425333 Td
+(• Payment confirmation toggle: Confirm Payment Received.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 427.7482677165353948 Td
+(• Table Reset: [Vacate Seat] button immediately resetting seat status to Vacant across the system.) Tj
+ET
+0.95 0.87 0.8 rg
+34.0157480314960665 408.4726771653542414 m
+561.2642519685039133 408.4726771653542414 l
+564.395315117150858 408.4726771653542414 566.933543307086552 405.9344489754185474 566.933543307086552 402.8033858267715459 c
+566.933543307086552 391.4648031496062117 l
+566.933543307086552 388.3337400009592102 563.8024801584396073 385.7955118110235162 561.2642519685039133 385.7955118110235162 c
+34.0157480314960665 385.7955118110235162 l
+30.8846848828490508 385.7955118110235162 28.3464566929133888 388.9265749596705177 28.3464566929133888 391.4648031496062117 c
+28.3464566929133888 402.8033858267715459 l
+28.3464566929133888 405.9344489754185474 31.4775198415604045 408.4726771653542414 34.0157480314960665 408.4726771653542414 c
+h
+f
+BT
+/F2 10.5 Tf
+12.0749999999999993 TL
+0.541 0.259 0.157 rg
+39.6850393700787407 392.8821259842518998 Td
+(4. WAITER TABLET - SHIVA \(Zone B: Seats 9 to 16\) \(3 Unified Screens\)) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 374.456929133858182 Td
+(Screen 1: Tablet Login Gateway \(/waiter/shiva\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 361.7010236220471597 Td
+(• Tablet PIN gate \(PIN: 2222\) with landscape layout.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 342.4254330708660063 Td
+(Screen 2: Zone B Landscape Floor Grid \(/waiter/shiva/floor\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 329.6695275590550409 Td
+(• 4x2 Landscape grid of Seats 9 to 16 with large touch cards and status indicators.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 318.8978740157479024 Td
+(• Emergency Break Toggle: [View All 16 Seats] allowing Shiva to cover Suhas during breaks.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 299.622283464566749 Td
+(Screen 3: Unified Master-Detail Workspace \(/waiter/shiva/seat/[id]\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 286.8663779527556699 Td
+(• Left Fixed Panel: Seat overview, active item tickets, service request alerts.) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 276.094724409448645 Td
+(• Right Dynamic Panel: Seamlessly switches between Single-Column Touch Menu and Settle Payment/Vacate Seat.) Tj
+ET
+0.95 0.87 0.8 rg
+34.0157480314960665 256.8191338582674348 m
+561.2642519685039133 256.8191338582674348 l
+564.395315117150858 256.8191338582674348 566.933543307086552 254.2809056683317692 566.933543307086552 251.1498425196847677 c
+566.933543307086552 239.8112598425194335 l
+566.933543307086552 236.680196693872432 563.8024801584396073 234.141968503936738 561.2642519685039133 234.141968503936738 c
+34.0157480314960665 234.141968503936738 l
+30.8846848828490508 234.141968503936738 28.3464566929133888 237.2730316525837395 28.3464566929133888 239.8112598425194335 c
+28.3464566929133888 251.1498425196847677 l
+28.3464566929133888 254.2809056683317692 31.4775198415604045 256.8191338582674348 34.0157480314960665 256.8191338582674348 c
+h
+f
+BT
+/F2 10.5 Tf
+12.0749999999999993 TL
+0.541 0.259 0.157 rg
+39.6850393700787407 241.22858267716515 Td
+(5. MANAGER EXECUTIVE COCKPIT \(9 Comprehensive Screens\)) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 222.8033858267714322 Td
+(Screen 1: Executive PIN Gateway \(/manager\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 210.0474803149603531 Td
+(• Manager authentication screen \(PIN: 9999\) with official Thoogudeepa brand badge.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 190.7718897637791997 Td
+(Screen 2: Live Floor Cockpit \(/manager/floor\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 178.0159842519682343 Td
+(• 16-Seat floor map partitioned into Zone A \(S1-S8\) and Zone B \(S9-S16\).) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 167.2443307086610957 Td
+(• Right-Side Selected Seat Drawer: Full ordered items inspection, subtotal, GST math, [Collect Payment] and [Vacate Seat].) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 147.9687401574799424 Td
+(Screen 3: Live Kitchen KDS Stream \(/manager/kitchen\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 135.2128346456689769 Td
+(• Real-time mirror of kitchen queue, preparation times, delayed order warnings, and 86 item inventory switcher.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 115.9372440944877098 Td
+(Screen 4: Parcel & Takeaway Operations Desk \(/manager/parcel\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 103.1813385826767444 Td
+(• Counter takeaway order puncher with customer name and phone, Rs 15 container charges, and instant KOT generation.) Tj
+ET
+BT
+/F3 7.5 Tf
+8.625 TL
+0.549 g
+28.3464566929133888 17.0078740157480297 Td
+(Thoogudeepa Donne Biryani Mane • Confidential Master Planning Document • Page 2 of 3) Tj
+ET
+endstream
+endobj
+7 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 8 0 R
+>>
+endobj
+8 0 obj
+<<
+/Length 2387
+>>
+stream
+0.5670000000000001 w
+0 G
+0.54 0.26 0.16 rg
+0. 841.8899999999999864 595.2799999999999727 -34.0157480314960665 re
+f
+BT
+/F2 9 Tf
+10.3499999999999996 TL
+1. 0.988 0.969 rg
+28.3464566929133888 819.212834645669318 Td
+(THOOGUDEEPA DONNE BIRYANI MANE • INITIAL ARCHITECTURE & SCREEN STRUCTURE PLAN) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 785.1970866141732586 Td
+(Screen 5: Menu Catalog & Pricing Engine \(/manager/menu\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 772.4411811023621794 Td
+(• Complete dish catalog with price editor, Veg/Non-Veg toggle, availability switch, and Pair-With recommendation tags.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 753.1655905511811397 Td
+(Screen 6: 16 QR Standee Suite \(/manager/qrs\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 740.4096850393700606 Td
+(• Generates and renders high-resolution printable acrylic QR standees with authentic restaurant branding for Seats 1 to 16.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 721.1340944881890209 Td
+(Screen 7: Shift Audit & Cash Reconciliation \(/manager/shift\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 708.3781889763779418 Td
+(• End-of-day register closing: Reconciles cash collected vs handed over by Suhas, Shiva, and Parcel desk with deficit/surplus math.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 689.1025984251969021 Td
+(Screen 8: Master Sales & Daily Tax Reports \(/manager/reports\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 676.346692913385823 Td
+(• Detailed tax accounting: Gross food revenue, net revenue, 5% GST breakdown, payment split \(Cash vs UPI\), and Excel export.) Tj
+ET
+BT
+/F2 9.5 Tf
+10.9249999999999989 TL
+0.541 0.259 0.157 rg
+34.0157480314960665 657.0711023622047833 Td
+(Screen 9: Promotions & Offers Engine \(/manager/promos\)) Tj
+ET
+BT
+/F1 8.2 Tf
+9.4299999999999979 TL
+0.235 g
+45.354330708661422 644.3151968503937042 Td
+(• Coupon code management \(COMBO399, DONNE50\), usage limits, and customer menu promotional carousel banners.) Tj
+ET
+BT
+/F3 7.5 Tf
+8.625 TL
+0.549 g
+28.3464566929133888 17.0078740157480297 Td
+(Thoogudeepa Donne Biryani Mane • Confidential Master Planning Document • Page 3 of 3) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R 7 0 R ]
+/Count 3
+>>
+endobj
+9 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+10 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+21 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+22 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 9 0 R
+/F2 10 0 R
+/F3 11 0 R
+/F4 12 0 R
+/F5 13 0 R
+/F6 14 0 R
+/F7 15 0 R
+/F8 16 0 R
+/F9 17 0 R
+/F10 18 0 R
+/F11 19 0 R
+/F12 20 0 R
+/F13 21 0 R
+/F14 22 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+23 0 obj
+<<
+/Producer (jsPDF 2.5.2)
+/CreationDate (D:20261026051305+05'30')
+>>
+endobj
+24 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 25
+0000000000 65535 f 
+0000024225 00000 n 
+0000026058 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000010710 00000 n 
+0000010847 00000 n 
+0000021649 00000 n 
+0000021786 00000 n 
+0000024294 00000 n 
+0000024419 00000 n 
+0000024550 00000 n 
+0000024684 00000 n 
+0000024822 00000 n 
+0000024946 00000 n 
+0000025075 00000 n 
+0000025207 00000 n 
+0000025343 00000 n 
+0000025471 00000 n 
+0000025598 00000 n 
+0000025727 00000 n 
+0000025860 00000 n 
+0000025962 00000 n 
+0000026310 00000 n 
+0000026396 00000 n 
+trailer
+<<
+/Size 25
+/Root 24 0 R
+/Info 23 0 R
+/ID [ <ED4A522403EE8403E9EE32937A034B62> <ED4A522403EE8403E9EE32937A034B62> ]
+>>
+startxref
+26500
+%%EOF
