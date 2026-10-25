@@ -153,43 +153,43 @@ export default function ManagerKitchenOversightScreen() {
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans select-none">
       {/* Executive Header */}
-      <header className="h-16 bg-slate-900 border-b border-slate-800 px-6 flex items-center justify-between shrink-0">
+      <header className="h-16 bg-[#181513] border-b border-[#2C2520] px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-[#8A4228]/25 text-[#D08A52] border border-[#8A4228]/40 flex items-center justify-center font-bold">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
             <h1 className="text-sm font-black text-white uppercase tracking-wider">
               THOOGUDEEPA DONNE BIRYANI
             </h1>
-            <p className="text-[11px] text-purple-400 font-medium">Executive Kitchen Oversight (KDS)</p>
+            <p className="text-[11px] text-[#D08A52] font-semibold tracking-wide">Executive Kitchen Oversight (KDS)</p>
           </div>
         </div>
 
         {/* 9 Manager Portal Navigation Links */}
-        <nav className="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 text-xs font-bold">
-          <Link href="/manager/floor" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
+        <nav className="flex items-center gap-1.5 bg-[#100E0C] p-1.5 rounded-2xl border border-[#2C2520] text-xs font-bold">
+          <Link href="/manager/floor" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
             Live Floor
           </Link>
-          <Link href="/manager/kitchen" className="px-3 py-1.5 rounded-xl bg-purple-500 text-white shadow-sm">
+          <Link href="/manager/kitchen" className="px-3 py-1.5 rounded-xl bg-[#8A4228] text-white shadow-sm">
             Kitchen Oversight
           </Link>
-          <Link href="/manager/menu" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
+          <Link href="/manager/menu" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
             Menu Items
           </Link>
-          <Link href="/manager/qrs" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
-            QR Stands
+          <Link href="/manager/qrs" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
+            16 QRs
           </Link>
-          <Link href="/manager/shift" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
+          <Link href="/manager/shift" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
             Shift Audit
           </Link>
-          <Link href="/manager/parcel" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
+          <Link href="/manager/parcel" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
             Parcel Desk
           </Link>
-          <Link href="/manager/reports" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
+          <Link href="/manager/reports" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
             Reports
           </Link>
-          <Link href="/manager/promos" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
+          <Link href="/manager/promos" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
             Offers & Promos
           </Link>
         </nav>
