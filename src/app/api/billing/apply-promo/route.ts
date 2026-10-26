@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Seat ID is required' }, { status: 400 });
     }
 
-    const result = await sqliteWriteQueue.enqueue(async () => {
+    const result = await sqliteWriteQueue.enqueueKey(`seat:${seatId}`, async () => {
       const seat = await prisma.diningSeat.findUnique({
         where: { id: parseInt(seatId, 10) },
         include: {

@@ -52,6 +52,7 @@ export default function CustomerScreen2({ params }: { params: { seatId: string }
   const [searchQuery, setSearchQuery] = useState('');
   const [vegOnly, setVegOnly] = useState(false);
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [placedItems, setPlacedItems] = useState<Record<string, number>>({});
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
   const [lockState, setLockState] = useState<{
     type: 'OCCUPIED' | 'ACTIVE_ELSEWHERE';
@@ -61,7 +62,7 @@ export default function CustomerScreen2({ params }: { params: { seatId: string }
     message?: string;
   } | null>(null);
 
-  useEffect(() => {
+  const fetchSeatData = () => {
     fetch(`/api/seats/${seatId}`, {
       headers: getDeviceHeaders(),
     })
@@ -88,7 +89,26 @@ export default function CustomerScreen2({ params }: { params: { seatId: string }
         if (data.success && data.data?.seat) {
           setCustomerName(data.data.seat.currentGuestName || '-');
         }
-      });
+        if (data.success && data.data?.activeSession) {
+          const counts: Record<string, number> = {};
+          data.data.activeSession.orderTickets?.forEach((t: any) => {
+            t.items?.forEach((it: any) => {
+              if (it.status !== 'cancelled') {
+                counts[it.menuItemId] = (counts[it.menuItemId] || 0) + it.quantity;
+              }
+            });
+          });
+          setPlacedItems(counts);
+        } else {
+          setPlacedItems({});
+        }
+      })
+      .catch((err) => console.error(err));
+  };
+
+  useEffect(() => {
+    fetchSeatData();
+    window.addEventListener('focus', fetchSeatData);
 
     fetch('/api/menu')
       .then((res) => res.json())
@@ -113,6 +133,10 @@ export default function CustomerScreen2({ params }: { params: { seatId: string }
         setCart(JSON.parse(savedCart));
       } catch (e) {}
     }
+
+    return () => {
+      window.removeEventListener('focus', fetchSeatData);
+    };
   }, [seatId]);
 
   useEffect(() => {
@@ -122,10 +146,22 @@ export default function CustomerScreen2({ params }: { params: { seatId: string }
         prev.map((it) => (it.id === data.menuItemId ? { ...it, isAvailable: data.isAvailable } : it))
       );
     };
+    const handleOrderPlaced = () => {
+      fetchSeatData();
+    };
+
     socket.on('menu:86_toggled', handle86);
+    socket.on('order:placed', handleOrderPlaced);
+    socket.on('order:item_status_changed', handleOrderPlaced);
+    socket.on('seat:updated', handleOrderPlaced);
+    socket.on('seat:vacated', () => setPlacedItems({}));
 
     return () => {
       socket.off('menu:86_toggled', handle86);
+      socket.off('order:placed', handleOrderPlaced);
+      socket.off('order:item_status_changed', handleOrderPlaced);
+      socket.off('seat:updated', handleOrderPlaced);
+      socket.off('seat:vacated', () => setPlacedItems({}));
     };
   }, [socket]);
 
@@ -403,7 +439,9 @@ export default function CustomerScreen2({ params }: { params: { seatId: string }
       {/* Item Grid (2-Column Food Cards) */}
       <div className="px-4 pt-3.5 grid grid-cols-2 gap-3">
         {filteredItems.map((item) => {
-          const qty = cart[item.id] || 0;
+          const placedCount = placedItems[item.id] || 0;
+          const cartCount = cart[item.id] || 0;
+          const totalDisplayQty = placedCount + cartCount;
           return (
             <div
               key={item.id}
@@ -478,7 +516,7 @@ export default function CustomerScreen2({ params }: { params: { seatId: string }
                 </p>
               </div>
 
-              {/* Action Button: [+ Add] or [- qty +] */}
+              {/* Action Button: [+ Add] or [- stepper +] */}
               {!item.isAvailable ? (
                 <div
                   className={`w-full py-1.5 text-center text-[10px] font-black rounded-xl border ${
@@ -489,7 +527,7 @@ export default function CustomerScreen2({ params }: { params: { seatId: string }
                 >
                   Sold Out
                 </div>
-              ) : qty === 0 ? (
+              ) : totalDisplayQty === 0 ? (
                 <button
                   type="button"
                   onClick={() => updateCart(item.id, 1)}
@@ -512,19 +550,35 @@ export default function CustomerScreen2({ params }: { params: { seatId: string }
                 >
                   <button
                     type="button"
-                    onClick={() => updateCart(item.id, -1)}
-                    className={`w-6 h-6 flex items-center justify-center active:scale-75 font-black ${
-                      isOrange ? 'text-[#8A4228]' : 'text-slate-950'
+                    onClick={() => {
+                      if (cartCount > 0) {
+                        updateCart(item.id, -1);
+                      }
+                    }}
+                    disabled={cartCount === 0}
+                    title={cartCount === 0 ? 'Already placed in kitchen (Ask waiter for cancellations)' : 'Decrease quantity'}
+                    className={`w-6 h-6 flex items-center justify-center font-black ${
+                      cartCount === 0
+                        ? 'opacity-30 cursor-not-allowed text-stone-500'
+                        : `active:scale-75 ${isOrange ? 'text-[#8A4228]' : 'text-slate-950'}`
                     }`}
                   >
                     <Minus className="w-3.5 h-3.5 stroke-[3]" />
                   </button>
-                  <span className={`text-xs font-black ${isOrange ? 'text-[#5B5049]' : 'text-slate-950'}`}>
-                    {qty}
-                  </span>
+                  <div className="flex flex-col items-center">
+                    <span className={`text-xs font-black ${isOrange ? 'text-[#5B5049]' : 'text-slate-950'}`}>
+                      {totalDisplayQty}
+                    </span>
+                    {placedCount > 0 && (
+                      <span className={`text-[8px] font-bold leading-none ${isOrange ? 'text-[#8A4228]/80' : 'text-slate-950/80'}`}>
+                        {placedCount} placed{cartCount > 0 ? ` (+${cartCount})` : ''}
+                      </span>
+                    )}
+                  </div>
                   <button
                     type="button"
                     onClick={() => updateCart(item.id, 1)}
+                    title="Add more"
                     className={`w-6 h-6 flex items-center justify-center active:scale-75 font-black ${
                       isOrange ? 'text-[#8A4228]' : 'text-slate-950'
                     }`}

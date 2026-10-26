@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Star, ArrowRight, CheckCircle2, QrCode } from 'lucide-react';
+import { Star, ArrowRight, CheckCircle2, QrCode, Tag } from 'lucide-react';
 import { useSocketRoom } from '@/lib/useSocket';
 import { playSuccessChime } from '@/lib/audio-synth';
 import confetti from 'canvas-confetti';
@@ -22,6 +22,10 @@ export default function CustomerScreen6({ params }: { params: { seatId: string }
   const [customerName, setCustomerName] = useState('-');
   const [grandTotalDue, setGrandTotalDue] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [loadingPromo, setLoadingPromo] = useState(false);
+  const [promoMessage, setPromoMessage] = useState<string | null>(null);
   const [rating, setRating] = useState(5);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [lockState, setLockState] = useState<{
@@ -59,12 +63,61 @@ export default function CustomerScreen6({ params }: { params: { seatId: string }
           setCustomerName(sess.customerName || '-');
           setGrandTotalDue(sess.grandTotal || 0);
           setDiscountAmount(sess.discountAmount || 0);
+          setAppliedPromo(sess.appliedPromoCode || null);
+
           if (sess.paymentStatus === 'PAID' || sess.status === 'COMPLETED') {
             setIsConfirmed(true);
+            return;
+          }
+
+          // Ensure all items are served before allowing self payment
+          const allItems: any[] = [];
+          sess.orderTickets?.forEach((t: any) => {
+            t.items?.forEach((it: any) => {
+              if (it.status !== 'cancelled') allItems.push(it);
+            });
+          });
+          const allServed = allItems.length > 0 && allItems.every((it: any) => it.status === 'served');
+          if (!allServed) {
+            router.push(`/seat/${seatId}/tracking`);
+            return;
           }
         }
       });
-  }, [seatId]);
+  }, [seatId, router]);
+
+  const handleApplyPromo = async () => {
+    if (!promoCodeInput.trim() || loadingPromo) return;
+    setLoadingPromo(true);
+    setPromoMessage(null);
+
+    try {
+      const res = await fetch('/api/billing/apply-promo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          seatId,
+          promoCode: promoCodeInput.trim().toUpperCase(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDiscountAmount(data.data.discountAmount);
+        setAppliedPromo(data.data.appliedPromoCode);
+        if (data.data.grandTotal !== undefined) {
+          setGrandTotalDue(data.data.grandTotal);
+        }
+        setPromoMessage(`Coupon applied: ₹${data.data.discountAmount.toFixed(0)} discount.`);
+      } else {
+        setPromoMessage(data.error || 'Invalid coupon code');
+      }
+    } catch (e) {
+      console.error(e);
+      setPromoMessage('Could not verify promo code');
+    } finally {
+      setLoadingPromo(false);
+    }
+  };
 
   useEffect(() => {
     if (!socket) return;
@@ -191,6 +244,74 @@ export default function CustomerScreen6({ params }: { params: { seatId: string }
             <h2 className={`text-2xl font-black mt-0.5 ${isOrange ? 'text-[#5B5049]' : 'text-white'}`}>
               Total to Pay: <span className={isOrange ? 'text-[#8A4228]' : 'text-amber-400'}>₹{finalAmount.toFixed(2)}</span>
             </h2>
+          </div>
+
+          {/* Promo Code Input Section */}
+          <div
+            className={`border rounded-2xl p-4 space-y-2.5 shadow-sm transition ${
+              isOrange
+                ? 'bg-[#F3DFCC] border-[#E8D5C3]'
+                : 'bg-gradient-to-r from-[#0b291f] to-[#072017] border-amber-400/30 text-white'
+            }`}
+          >
+            <span
+              className={`text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 ${
+                isOrange ? 'text-[#8A4228]' : 'text-amber-300'
+              }`}
+            >
+              <Tag className="w-3.5 h-3.5" />
+              <span>Apply Promo Code</span>
+            </span>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={promoCodeInput}
+                onChange={(e) => setPromoCodeInput(e.target.value)}
+                placeholder="Enter promo code"
+                className={`flex-1 rounded-xl px-3.5 py-2.5 text-xs font-black uppercase focus:outline-none transition ${
+                  isOrange
+                    ? 'bg-[#FFFCF7] border border-[#E8D5C3] text-[#8A4228] placeholder-[#5B5049]/40 focus:border-[#8A4228]'
+                    : 'bg-[#061c14] border border-emerald-500/30 text-amber-300 placeholder-emerald-700 focus:border-amber-400'
+                }`}
+              />
+              <button
+                type="button"
+                onClick={handleApplyPromo}
+                disabled={loadingPromo}
+                className={`px-4 py-2.5 font-black text-xs rounded-xl transition shadow-md active:scale-95 ${
+                  isOrange
+                    ? 'bg-[#8A4228] hover:bg-[#71351F] text-[#FFFCF7]'
+                    : 'bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 shadow-amber-500/20'
+                }`}
+              >
+                {loadingPromo ? '...' : 'APPLY'}
+              </button>
+            </div>
+
+            {promoMessage && (
+              <p
+                className={`text-[11px] font-bold ${
+                  appliedPromo
+                    ? isOrange ? 'text-[#198754]' : 'text-emerald-300'
+                    : 'text-[#D92D20]'
+                }`}
+              >
+                {promoMessage}
+              </p>
+            )}
+
+            {/* Bill Breakdown with Promo Discount if applied */}
+            {discountAmount > 0 && (
+              <div
+                className={`pt-2 border-t flex justify-between items-center text-xs font-bold ${
+                  isOrange ? 'border-[#E8D5C3] text-[#198754]' : 'border-emerald-500/20 text-emerald-400'
+                }`}
+              >
+                <span>Promo Discount ({appliedPromo}):</span>
+                <span>-₹{discountAmount.toFixed(2)}</span>
+              </div>
+            )}
           </div>
 
           {/* Dynamic UPI QR Code Box */}

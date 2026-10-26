@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid lock mode' }, { status: 400 });
     }
 
-    const result = await sqliteWriteQueue.enqueue(async () => {
+    const result = await sqliteWriteQueue.enqueueKey(`seat:${seatId}`, async () => {
       const seat = await prisma.diningSeat.findUnique({
         where: { id: parseInt(seatId, 10) },
         include: { sessions: { where: { status: 'ACTIVE' } } },
@@ -28,6 +28,31 @@ export async function POST(req: NextRequest) {
 
       if (!activeSession) {
         return { status: 400, payload: { success: false, error: 'No active session' } };
+      }
+
+      // Ensure all items are served before allowing payment lock
+      if (lockMode === 'LOCKED_WAITER' || lockMode === 'LOCKED_SELF') {
+        const tickets = await prisma.orderTicket.findMany({
+          where: { sessionId: activeSession.id },
+          include: { items: true },
+        });
+        const nonCancelledItems = tickets.flatMap((t) => t.items).filter((it) => it.status !== 'cancelled');
+        if (nonCancelledItems.length === 0) {
+          return {
+            status: 400,
+            payload: { success: false, error: 'No active orders placed yet' },
+          };
+        }
+        const hasUnserved = nonCancelledItems.some((it) => it.status !== 'served');
+        if (hasUnserved) {
+          return {
+            status: 400,
+            payload: {
+              success: false,
+              error: 'Cannot request payment until all ordered items are served.',
+            },
+          };
+        }
       }
 
       // Determine payment preferred

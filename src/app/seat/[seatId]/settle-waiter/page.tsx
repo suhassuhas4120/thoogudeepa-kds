@@ -76,6 +76,19 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
             return;
           }
 
+          // Ensure all items are served before allowing waiter settlement
+          const allItems: any[] = [];
+          sess.orderTickets?.forEach((t: any) => {
+            t.items?.forEach((it: any) => {
+              if (it.status !== 'cancelled') allItems.push(it);
+            });
+          });
+          const allServed = allItems.length > 0 && allItems.every((it: any) => it.status === 'served');
+          if (!allServed) {
+            router.push(`/seat/${seatId}/tracking`);
+            return;
+          }
+
           if (sess.paymentPreferred === 'CASH') {
             setPaymentChoice('CASH');
             setWaiterLockedMode('CASH');

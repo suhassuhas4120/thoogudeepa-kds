@@ -221,9 +221,14 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
     });
   });
 
+  const totalItemsCount = allItems.length;
+  const servedItemsCount = allItems.filter((it) => it.status === 'served').length;
+  const allItemsServed = totalItemsCount > 0 && servedItemsCount === totalItemsCount;
+
   const lockState = session?.paymentLockState || 'UNLOCKED';
 
   const handleSelectPayMode = async (mode: 'LOCKED_WAITER' | 'LOCKED_SELF') => {
+    if (!allItemsServed) return;
     try {
       await fetch('/api/billing/payment-lock', {
         method: 'POST',
@@ -512,19 +517,45 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
             : 'bg-[#051a13]/95 backdrop-blur-md'
         }`}
       >
+        {/* Status notice regarding payment unlock */}
+        {!allItemsServed && (
+          <div
+            className={`mb-2 py-1.5 px-3 rounded-xl text-center text-[10px] font-bold border transition ${
+              isOrange
+                ? 'bg-[#F3DFCC]/90 border-[#E8D5C3] text-[#8A4228]'
+                : 'bg-[#061c14] border-amber-400/30 text-amber-300'
+            }`}
+          >
+            {totalItemsCount === 0 ? (
+              <span>No orders placed yet. Please order from Menu.</span>
+            ) : (
+              <span>
+                🔒 Payment unlocks after all dishes are served ({servedItemsCount}/{totalItemsCount} served)
+              </span>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-2.5">
           {/* 1. Pay via Waiter Button */}
           <button
             type="button"
-            onClick={() => handleSelectPayMode('LOCKED_WAITER')}
-            className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 select-none shadow-sm active:scale-98 ${
-              lockState === 'LOCKED_WAITER'
+            disabled={!allItemsServed}
+            onClick={() => {
+              if (allItemsServed) handleSelectPayMode('LOCKED_WAITER');
+            }}
+            className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 select-none shadow-sm ${
+              !allItemsServed
+                ? isOrange
+                  ? 'bg-[#F3DFCC]/40 text-[#5B5049]/40 border border-[#E8D5C3]/40 cursor-not-allowed opacity-50'
+                  : 'bg-[#051711] text-emerald-700/50 border border-emerald-900/30 cursor-not-allowed opacity-50'
+                : lockState === 'LOCKED_WAITER'
                 ? isOrange
                   ? 'bg-[#8A4228] text-[#FFFCF7] ring-2 ring-[#D08A52]'
                   : 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 ring-2 ring-amber-300'
                 : isOrange
-                ? 'bg-[#F3DFCC] hover:bg-[#ebd5c0] text-[#8A4228] border border-[#E8D5C3]'
-                : 'bg-[#0a281e] hover:bg-[#0e3527] text-emerald-200 border border-emerald-500/30'
+                ? 'bg-[#F3DFCC] hover:bg-[#ebd5c0] text-[#8A4228] border border-[#E8D5C3] active:scale-98'
+                : 'bg-[#0a281e] hover:bg-[#0e3527] text-emerald-200 border border-emerald-500/30 active:scale-98'
             }`}
           >
             <span>Pay via Waiter</span>
@@ -533,15 +564,22 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
           {/* 2. Self Pay Button */}
           <button
             type="button"
-            onClick={() => handleSelectPayMode('LOCKED_SELF')}
-            className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 select-none shadow-sm active:scale-98 ${
-              lockState === 'LOCKED_SELF'
+            disabled={!allItemsServed}
+            onClick={() => {
+              if (allItemsServed) handleSelectPayMode('LOCKED_SELF');
+            }}
+            className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 select-none shadow-sm ${
+              !allItemsServed
+                ? isOrange
+                  ? 'bg-[#F3DFCC]/40 text-[#5B5049]/40 border border-[#E8D5C3]/40 cursor-not-allowed opacity-50'
+                  : 'bg-[#051711] text-emerald-700/50 border border-emerald-900/30 cursor-not-allowed opacity-50'
+                : lockState === 'LOCKED_SELF'
                 ? isOrange
                   ? 'bg-[#8A4228] text-[#FFFCF7] ring-2 ring-[#D08A52]'
                   : 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 ring-2 ring-amber-300'
                 : isOrange
-                ? 'bg-[#8A4228] hover:bg-[#71351F] text-[#FFFCF7]'
-                : 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 shadow-amber-500/20'
+                ? 'bg-[#8A4228] hover:bg-[#71351F] text-[#FFFCF7] active:scale-98'
+                : 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 shadow-amber-500/20 active:scale-98'
             }`}
           >
             <span>Self Pay (UPI)</span>
