@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CreditCard, LogOut, CheckCircle2, RefreshCw, Banknote, Smartphone } from 'lucide-react';
+import { CreditCard, LogOut, CheckCircle2, RefreshCw, Banknote, Smartphone, Printer, X } from 'lucide-react';
 import { useSocketRoom } from '@/lib/useSocket';
 import { playSuccessChime } from '@/lib/audio-synth';
 import ManagerTopNav from '@/components/ManagerTopNav';
@@ -48,6 +48,9 @@ export default function ManagerFloorScreen() {
   const [seats, setSeats] = useState<SeatData[]>([]);
   const [selectedSeatId, setSelectedSeatId] = useState<number>(1);
   const [loading, setLoading] = useState(true);
+  const [paymentMode, setPaymentMode] = useState<'CASH' | 'UPI'>('CASH');
+  const [showKotModal, setShowKotModal] = useState(false);
+  const [loadingPayment, setLoadingPayment] = useState(false);
 
   const fetchFloor = async () => {
     try {
@@ -107,7 +110,43 @@ export default function ManagerFloorScreen() {
   const session = selectedSeat?.activeSession;
   const isOccupied = selectedSeat?.status !== 'VACANT';
 
-  // Manager Actions: Collect Payment & Vacate
+  // Sync default payment mode with customer's preference if set
+  useEffect(() => {
+    if (session?.paymentPreferred === 'UPI') {
+      setPaymentMode('UPI');
+    } else if (session?.paymentPreferred === 'CASH') {
+      setPaymentMode('CASH');
+    }
+  }, [session?.paymentPreferred, selectedSeatId]);
+
+  // Manager Actions: Confirm Payment & Vacate
+  const handleConfirmPayment = async () => {
+    if (!selectedSeat || !session || (session.grandTotal || 0) <= 0 || loadingPayment) return;
+    setLoadingPayment(true);
+    try {
+      const res = await fetch('/api/billing/settle-vacate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          seatId: selectedSeat.id,
+          paymentMode: paymentMode,
+          settledBy: selectedSeat.assignedWaiter || 'General Manager Desk',
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        playSuccessChime();
+        fetchFloor();
+      } else {
+        alert(data.error || 'Failed to complete payment');
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingPayment(false);
+    }
+  };
+
   const handleCollectPaymentAndVacate = async (mode: string = 'UPI') => {
     if (!selectedSeat || !session || (session.grandTotal || 0) <= 0) return;
     try {
@@ -394,54 +433,188 @@ export default function ManagerFloorScreen() {
             )}
           </div>
 
-          {/* Action Buttons matching ASCII */}
+          {/* Action Buttons */}
           <div className="space-y-2 pt-2 border-t border-[#2C2520]">
+            {/* 1. Payment Mode Selector */}
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                Select Settlement Mode:
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMode('CASH')}
+                  disabled={!isOccupied}
+                  className={`py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition select-none ${
+                    paymentMode === 'CASH'
+                      ? 'bg-amber-600 text-white border-2 border-amber-400 shadow-md shadow-amber-900/40'
+                      : 'bg-[#1C1815] text-stone-400 border border-[#2C2520] hover:bg-[#25201C]'
+                  }`}
+                >
+                  <Banknote className="w-4 h-4" />
+                  <span>💵 CASH</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMode('UPI')}
+                  disabled={!isOccupied}
+                  className={`py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition select-none ${
+                    paymentMode === 'UPI'
+                      ? 'bg-[#8A4228] text-white border-2 border-amber-400 shadow-md shadow-[#8A4228]/40'
+                      : 'bg-[#1C1815] text-stone-400 border border-[#2C2520] hover:bg-[#25201C]'
+                  }`}
+                >
+                  <Smartphone className="w-4 h-4" />
+                  <span>📱 UPI</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Confirm Payment Button */}
+            <button
+              type="button"
+              onClick={handleConfirmPayment}
+              disabled={!isOccupied || (session?.grandTotal || 0) <= 0 || loadingPayment}
+              className={`w-full py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition shadow-md select-none ${
+                isOccupied && (session?.grandTotal || 0) > 0
+                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-98 shadow-emerald-900/30'
+                  : 'bg-[#1C1815] text-stone-600 border border-[#2C2520] cursor-not-allowed opacity-50'
+              }`}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>
+                {loadingPayment
+                  ? 'PROCESSING PAYMENT...'
+                  : `CONFIRM PAYMENT (${paymentMode} - ₹${session?.grandTotal?.toFixed(2) || '0.00'})`}
+              </span>
+            </button>
+
+            {/* 3. Two Supporting Buttons: Print KOT / Bill & Vacate Seat */}
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => handleCollectPaymentAndVacate('CASH')}
-                disabled={!isOccupied || (session?.grandTotal || 0) <= 0}
-                className={`py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-1.5 transition shadow-md select-none ${
-                  isOccupied && (session?.grandTotal || 0) > 0
-                    ? 'bg-amber-700 hover:bg-amber-600 text-white active:scale-98 shadow-amber-900/30'
-                    : 'bg-[#1C1815] text-stone-600 border border-[#2C2520] cursor-not-allowed opacity-50'
+                onClick={() => setShowKotModal(true)}
+                disabled={!isOccupied}
+                className={`py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-1.5 transition select-none ${
+                  isOccupied
+                    ? 'bg-[#24201D] hover:bg-[#2D2824] text-amber-300 border border-amber-600/40 active:scale-98'
+                    : 'bg-[#141210] text-stone-600 border border-[#2C2520] cursor-not-allowed'
                 }`}
               >
-                <Banknote className="w-4 h-4" />
-                <span>💵 COLLECT CASH</span>
+                <Printer className="w-4 h-4" />
+                <span>🖨️ PRINT KOT</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleCollectPaymentAndVacate('UPI')}
-                disabled={!isOccupied || (session?.grandTotal || 0) <= 0}
-                className={`py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-1.5 transition shadow-md select-none ${
-                  isOccupied && (session?.grandTotal || 0) > 0
-                    ? 'bg-[#8A4228] hover:bg-[#71351F] text-white active:scale-98 shadow-[#8A4228]/25'
-                    : 'bg-[#1C1815] text-stone-600 border border-[#2C2520] cursor-not-allowed opacity-50'
+                onClick={handleVacateSeat}
+                disabled={!isOccupied}
+                className={`py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-1.5 transition select-none ${
+                  isOccupied
+                    ? 'bg-[#221D1A] hover:bg-rose-950/60 hover:text-rose-200 border border-[#2C2520] text-stone-300 active:scale-98'
+                    : 'bg-[#141210] text-stone-600 border border-[#2C2520] cursor-not-allowed'
                 }`}
               >
-                <Smartphone className="w-4 h-4" />
-                <span>📱 COLLECT UPI</span>
+                <LogOut className="w-4 h-4" />
+                <span>🚪 VACATE SEAT</span>
               </button>
             </div>
-
-            <button
-              type="button"
-              onClick={handleVacateSeat}
-              disabled={!isOccupied}
-              className={`w-full py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition select-none ${
-                isOccupied
-                  ? 'bg-[#221D1A] hover:bg-rose-950/60 hover:text-rose-200 border border-[#2C2520] text-stone-300 active:scale-98'
-                  : 'bg-[#141210] text-stone-600 border border-[#2C2520] cursor-not-allowed'
-              }`}
-            >
-              <LogOut className="w-4 h-4" />
-              <span>🚪 VACATE SEAT</span>
-            </button>
           </div>
         </div>
       </div>
+
+      {/* KOT / Tax Invoice Preview Modal */}
+      {showKotModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#181513] border-2 border-[#8A4228] rounded-3xl max-w-sm w-full p-6 text-white shadow-2xl space-y-4">
+            {/* Receipt Header */}
+            <div className="text-center pb-3 border-b border-dashed border-[#3D332C]">
+              <h3 className="font-black text-base tracking-wider text-amber-400">THOOGUDEEPA</h3>
+              <p className="text-[10px] text-stone-400 uppercase tracking-widest">Donne Biryani Mane</p>
+              <div className="inline-block px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px] mt-1.5 uppercase">
+                KOT & TAX INVOICE
+              </div>
+            </div>
+
+            {/* Table & Ticket Meta */}
+            <div className="text-xs space-y-1 text-stone-300 bg-[#100E0C] p-3 rounded-xl border border-[#2C2520]">
+              <div className="flex justify-between font-bold">
+                <span className="text-amber-400">TABLE: SEAT {selectedSeat.seatNumber}</span>
+                <span>Ticket #{latestTicketNumber}</span>
+              </div>
+              <div className="flex justify-between text-[11px] text-stone-400">
+                <span>Waiter: {selectedSeat.assignedWaiter || (selectedSeat.seatNumber <= 8 ? 'Suhas' : 'Shiva')}</span>
+                <span>Time: {placedTime}</span>
+              </div>
+              <div className="flex justify-between text-[11px] text-stone-400">
+                <span>Customer: {session?.customerName || '(-)'}</span>
+                <span>Mode: {paymentMode}</span>
+              </div>
+            </div>
+
+            {/* Ordered Items Table */}
+            <div className="space-y-1.5 max-h-48 overflow-y-auto text-xs py-1">
+              {allSelectedItems.length === 0 ? (
+                <p className="text-center text-stone-500 py-2">No active items</p>
+              ) : (
+                allSelectedItems.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center py-1 border-b border-[#2C2520]/60">
+                    <span className="text-stone-200">
+                      <strong className="text-amber-400 font-mono mr-1.5">{item.quantity}x</strong>
+                      {item.itemName}
+                    </span>
+                    <span className="font-mono font-bold text-white">
+                      ₹{(item.unitPrice * item.quantity).toFixed(2)}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Financial Summary */}
+            <div className="pt-2 border-t border-dashed border-[#3D332C] space-y-1 text-xs">
+              <div className="flex justify-between text-stone-400">
+                <span>Subtotal:</span>
+                <span className="font-mono text-white">₹{session?.subtotal?.toFixed(2) || '0.00'}</span>
+              </div>
+              {(session?.discountAmount || 0) > 0 && (
+                <div className="flex justify-between text-emerald-400 font-bold">
+                  <span>Discount ({session?.appliedPromoCode || 'Promo'}):</span>
+                  <span className="font-mono">-₹{session?.discountAmount?.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-stone-400">
+                <span>GST (5%):</span>
+                <span className="font-mono text-white">₹{session?.gstAmount?.toFixed(2) || '0.00'}</span>
+              </div>
+              <div className="flex justify-between text-sm font-black text-amber-400 pt-1.5 border-t border-[#3D332C]">
+                <span>GRAND TOTAL DUE:</span>
+                <span className="font-mono text-base text-white">₹{session?.grandTotal?.toFixed(2) || '0.00'}</span>
+              </div>
+            </div>
+
+            {/* Modal Action Buttons */}
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 transition active:scale-95 shadow-md"
+              >
+                <Printer className="w-4 h-4" />
+                <span>PRINT BILL</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowKotModal(false)}
+                className="py-3 rounded-xl bg-[#221D1A] hover:bg-[#2C2520] text-stone-300 font-black text-xs flex items-center justify-center gap-1.5 border border-[#3D332C] transition active:scale-95"
+              >
+                <span>CLOSE</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
