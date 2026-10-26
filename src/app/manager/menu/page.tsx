@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  ShieldCheck,
   Plus,
   Edit2,
   Trash2,
@@ -11,11 +10,11 @@ import {
   CheckCircle2,
   XCircle,
   Sparkles,
-  LogOut,
   UtensilsCrossed
 } from 'lucide-react';
 import { useSocketRoom } from '@/lib/useSocket';
 import { playSuccessChime } from '@/lib/audio-synth';
+import ManagerTopNav from '@/components/ManagerTopNav';
 
 interface Category {
   id: string;
@@ -211,76 +210,30 @@ export default function ManagerMenuScreen() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans select-none">
-      {/* Executive Header */}
-      <header className="h-16 bg-slate-900 border-b border-slate-800 px-6 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-sm font-black text-white uppercase tracking-wider">
-              THOOGUDEEPA DONNE BIRYANI
-            </h1>
-            <p className="text-[11px] text-purple-400 font-medium">Menu Catalog & Dish Engine</p>
-          </div>
-        </div>
-
-        {/* 9 Manager Portal Navigation Links */}
-        <nav className="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 text-xs font-bold">
-          <Link href="/manager/floor" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
-            Live Floor
-          </Link>
-          <Link href="/manager/kitchen" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
-            Kitchen Oversight
-          </Link>
-          <Link href="/manager/menu" className="px-3 py-1.5 rounded-xl bg-purple-500 text-white shadow-sm">
-            Menu Items
-          </Link>
-          <Link href="/manager/qrs" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
-            QR Stands
-          </Link>
-          <Link href="/manager/shift" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
-            Shift Audit
-          </Link>
-          <Link href="/manager/parcel" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
-            Parcel Desk
-          </Link>
-          <Link href="/manager/reports" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
-            Reports
-          </Link>
-          <Link href="/manager/promos" className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">
-            Offers & Promos
-          </Link>
-        </nav>
-
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-[#100E0C] text-white flex flex-col font-sans select-none">
+      {/* Executive Unified Navigation Bar */}
+      <ManagerTopNav
+        activeTab="menu"
+        extraRightActions={
           <button
             onClick={openAddModal}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-lg transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs rounded-xl shadow-md transition active:scale-95"
           >
-            <Plus className="w-4 h-4" />
-            <span>Add New Dish</span>
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Dish</span>
           </button>
-          <Link
-            href="/manager"
-            className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition"
-            title="Lock Portal"
-          >
-            <LogOut className="w-5 h-5" />
-          </Link>
-        </div>
-      </header>
+        }
+      />
 
       {/* Filter and Search Bar */}
-      <div className="h-14 bg-slate-900/50 border-b border-slate-800 px-6 flex items-center justify-between shrink-0">
+      <div className="h-14 bg-[#181513] border-b border-[#2C2520] px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2 overflow-x-auto py-1">
           <button
             onClick={() => setSelectedCategory('ALL')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
               selectedCategory === 'ALL'
-                ? 'bg-purple-600 text-white'
-                : 'bg-slate-800 text-slate-400 hover:text-white'
+                ? 'bg-[#8A4228] text-white shadow-sm'
+                : 'bg-[#100E0C] border border-[#2C2520] text-stone-400 hover:text-white'
             }`}
           >
             All Categories ({items.length})
@@ -291,8 +244,8 @@ export default function ManagerMenuScreen() {
               onClick={() => setSelectedCategory(c.id)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
                 selectedCategory === c.id
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
+                  ? 'bg-[#8A4228] text-white shadow-sm'
+                  : 'bg-[#100E0C] border border-[#2C2520] text-stone-400 hover:text-white'
               }`}
             >
               {c.name}
@@ -301,13 +254,13 @@ export default function ManagerMenuScreen() {
         </div>
 
         <div className="relative w-64">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search dish name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+            className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
           />
         </div>
       </div>
@@ -318,8 +271,8 @@ export default function ManagerMenuScreen() {
           {filteredItems.map((item) => (
             <div
               key={item.id}
-              className={`bg-slate-900 rounded-2xl border p-4 flex flex-col justify-between transition hover:border-purple-500/40 shadow-sm ${
-                item.isAvailable ? 'border-slate-800' : 'border-red-500/30 opacity-75'
+              className={`bg-[#181513] rounded-2xl border p-4 flex flex-col justify-between transition hover:border-[#8A4228]/60 shadow-lg ${
+                item.isAvailable ? 'border-[#2C2520]' : 'border-rose-900/40 opacity-75'
               }`}
             >
               <div>
@@ -330,7 +283,7 @@ export default function ManagerMenuScreen() {
                         item.isVeg ? 'bg-emerald-500' : 'bg-red-500'
                       }`}
                     />
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-stone-400">
                       {item.category?.name || 'General'}
                     </span>
                   </div>
@@ -341,22 +294,22 @@ export default function ManagerMenuScreen() {
                       title={item.isPairWith ? 'Enabled in Cart "Pair With"' : 'Enable in Cart "Pair With"'}
                       className={`p-1.5 rounded-lg text-xs font-bold transition ${
                         item.isPairWith
-                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                          : 'bg-slate-800 text-slate-500 hover:text-slate-300'
+                          ? 'bg-[#8A4228]/20 text-[#D08A52] border border-[#8A4228]/40'
+                          : 'bg-[#100E0C] border border-[#2C2520] text-stone-500 hover:text-stone-300'
                       }`}
                     >
                       <Sparkles className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => openEditModal(item)}
-                      className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white"
+                      className="p-1.5 rounded-lg bg-[#100E0C] border border-[#2C2520] text-stone-300 hover:text-white"
                       title="Edit Dish"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDeleteItem(item.id)}
-                      className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-red-400"
+                      className="p-1.5 rounded-lg bg-[#100E0C] border border-[#2C2520] text-stone-400 hover:text-rose-400"
                       title="Delete / Disable"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -366,14 +319,14 @@ export default function ManagerMenuScreen() {
 
                 <h3 className="font-black text-white text-base leading-tight mb-1">{item.name}</h3>
                 {item.description && (
-                  <p className="text-xs text-slate-400 line-clamp-2 mb-3">{item.description}</p>
+                  <p className="text-xs text-stone-400 line-clamp-2 mb-3">{item.description}</p>
                 )}
               </div>
 
-              <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+              <div className="pt-3 border-t border-[#2C2520] flex items-center justify-between">
                 <div>
-                  <span className="text-lg font-black text-amber-400">₹{item.price}</span>
-                  <span className="text-[10px] text-slate-400 ml-1">+ 5% GST</span>
+                  <span className="text-lg font-black text-[#D08A52]">₹{item.price}</span>
+                  <span className="text-[10px] text-stone-500 ml-1">+ 5% GST</span>
                 </div>
 
                 <button
@@ -381,7 +334,7 @@ export default function ManagerMenuScreen() {
                   className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
                     item.isAvailable
                       ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                      : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                   }`}
                 >
                   {item.isAvailable ? 'Available' : 'Sold Out (86)'}
@@ -394,18 +347,18 @@ export default function ManagerMenuScreen() {
 
       {/* Add / Edit Dish Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-[#181513] border border-[#2C2520] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-4 bg-[#100E0C] border-b border-[#2C2520] flex items-center justify-between">
               <div>
                 <h3 className="font-black text-white text-base">
                   {editingItem ? 'Edit Dish' : 'Add New Menu Dish'}
                 </h3>
-                <p className="text-xs text-slate-400">Updates sync instantly to all QR menus & KDS</p>
+                <p className="text-xs text-stone-400">Updates sync instantly to all QR menus & KDS</p>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold"
+                className="w-8 h-8 rounded-lg bg-[#181513] border border-[#2C2520] text-stone-400 hover:text-white flex items-center justify-center font-bold"
               >
                 ✕
               </button>
@@ -413,24 +366,24 @@ export default function ManagerMenuScreen() {
 
             <form onSubmit={handleSaveItem} className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Dish Name *</label>
+                <label className="block text-xs font-bold text-stone-300 mb-1">Dish Name *</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g. Donne Mutton Biryani"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                  className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3.5 py-2 text-sm text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Category *</label>
+                  <label className="block text-xs font-bold text-stone-300 mb-1">Category *</label>
                   <select
                     value={formData.categoryId}
                     onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D08A52]"
                   >
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -441,7 +394,7 @@ export default function ManagerMenuScreen() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Price (₹) *</label>
+                  <label className="block text-xs font-bold text-stone-300 mb-1">Price (₹) *</label>
                   <input
                     type="number"
                     required
@@ -450,24 +403,24 @@ export default function ManagerMenuScreen() {
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     placeholder="290"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3.5 py-2 text-sm text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Description</label>
+                <label className="block text-xs font-bold text-stone-300 mb-1">Description</label>
                 <textarea
                   rows={2}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Seeraga Samba rice cooked in copper handi with spices..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                  className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3.5 py-2 text-sm text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-1">
-                <label className="flex items-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer">
+                <label className="flex items-center gap-2 p-3 bg-[#100E0C] border border-[#2C2520] rounded-xl cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.isVeg}
@@ -476,35 +429,35 @@ export default function ManagerMenuScreen() {
                   />
                   <div>
                     <span className="text-xs font-bold text-white block">Vegetarian Dish</span>
-                    <span className="text-[10px] text-slate-400">Green mark on menu</span>
+                    <span className="text-[10px] text-stone-400">Green mark on menu</span>
                   </div>
                 </label>
 
-                <label className="flex items-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer">
+                <label className="flex items-center gap-2 p-3 bg-[#100E0C] border border-[#2C2520] rounded-xl cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.isPairWith}
                     onChange={(e) => setFormData({ ...formData, isPairWith: e.target.checked })}
-                    className="w-4 h-4 accent-amber-500 rounded"
+                    className="w-4 h-4 accent-[#D08A52] rounded"
                   />
                   <div>
                     <span className="text-xs font-bold text-white block">Pair With Add-On</span>
-                    <span className="text-[10px] text-slate-400">Featured in cart slider</span>
+                    <span className="text-[10px] text-stone-400">Featured in cart slider</span>
                   </div>
                 </label>
               </div>
 
-              <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-3">
+              <div className="pt-3 border-t border-[#2C2520] flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-bold"
+                  className="px-4 py-2 bg-[#100E0C] border border-[#2C2520] text-stone-400 hover:text-white rounded-xl text-xs font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-black shadow-md"
+                  className="px-5 py-2 bg-[#8A4228] hover:bg-[#71351F] text-white rounded-xl text-xs font-black shadow-md transition"
                 >
                   {editingItem ? 'Save Changes' : 'Create Dish'}
                 </button>

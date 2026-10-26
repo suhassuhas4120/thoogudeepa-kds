@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle2, AlertCircle, Printer, Lock, Store } from 'lucide-react';
+import ManagerTopNav from '@/components/ManagerTopNav';
 
 export default function ManagerShiftAuditScreen() {
   const [dateStr, setDateStr] = useState('25-Oct-2026');
@@ -90,58 +91,50 @@ export default function ManagerShiftAuditScreen() {
     parcelStats.cashCollected;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans select-none p-6 md:p-8 max-w-5xl mx-auto">
-      {/* Top Header */}
-      <header className="flex items-center justify-between pb-5 border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/manager/floor"
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>← Back to Floor</span>
-          </Link>
-          <div className="h-4 w-px bg-slate-700" />
-          <h1 className="text-sm md:text-base font-black text-white uppercase tracking-wider">
-            STAFF SHIFT AUDIT & CASH RECONCILIATION
-          </h1>
-        </div>
+    <div className="min-h-screen bg-[#100E0C] text-white flex flex-col font-sans select-none">
+      {/* Shared Manager Top Navigation */}
+      <ManagerTopNav activeTab="shift" />
 
-        <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-amber-400">
+      {/* Subheader */}
+      <div className="bg-[#141210] border-b border-[#2C2520] px-6 py-3 flex items-center justify-between">
+        <h1 className="text-xs md:text-sm font-black text-[#D08A52] uppercase tracking-wider">
+          STAFF SHIFT AUDIT & CASH RECONCILIATION
+        </h1>
+        <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#181513] border border-[#2C2520] text-amber-400">
           Date: {dateStr}
         </span>
-      </header>
+      </div>
 
       {/* Main Audit Sections */}
-      <div className="py-6 space-y-5 flex-1">
+      <div className="p-6 md:p-8 max-w-5xl w-full mx-auto space-y-5 flex-1">
         {/* 1. SUHAS SECTION */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
-          <div className="flex justify-between items-center pb-2.5 border-b border-slate-800 mb-3">
-            <h2 className="font-black text-sm text-blue-400 uppercase tracking-wider flex items-center gap-2">
+        <div className="bg-[#181513] border border-[#2C2520] rounded-2xl p-5 shadow-xl">
+          <div className="flex justify-between items-center pb-2.5 border-b border-[#2C2520] mb-3">
+            <h2 className="font-black text-sm text-sky-400 uppercase tracking-wider flex items-center gap-2">
               <span>🤵 WAITER 1: SUHAS</span>
-              <span className="text-xs text-slate-400 font-normal">(Zone A: Seats 1 - 8)</span>
+              <span className="text-xs text-stone-400 font-normal">(Zone A: Seats 1 - 8)</span>
             </h2>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-stone-400">
               Total Seats Served: <strong className="text-white">{suhasStats.tablesCount}</strong>
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-slate-300 mb-3 font-medium">
+          <div className="flex items-center justify-between text-xs text-stone-300 mb-3 font-medium">
             <span>• Total Billed: <strong className="text-white">₹{suhasStats.totalBilled.toFixed(2)}</strong></span>
             <span>• 📱 UPI / Online: <strong className="text-white">₹{suhasStats.upiCollected.toFixed(2)}</strong></span>
           </div>
 
           {/* Inline Cash Row */}
-          <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 flex flex-wrap items-center justify-between gap-4 text-xs">
+          <div className="p-3.5 rounded-xl bg-[#221D1A] border border-[#2C2520] flex flex-wrap items-center justify-between gap-4 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-400">• 💵 Cash Collected:</span>
+              <span className="text-stone-400">• 💵 Cash Collected:</span>
               <span className="font-black text-amber-400 text-sm">₹{suhasStats.cashCollected.toFixed(2)}</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-slate-400">Handed Over:</span>
-              <div className="flex items-center bg-slate-900 border border-slate-600 rounded-lg px-2.5 py-1">
-                <span className="text-slate-500 mr-1 font-bold">₹</span>
+              <span className="text-stone-400">Handed Over:</span>
+              <div className="flex items-center bg-[#100E0C] border border-[#3D332C] rounded-lg px-2.5 py-1">
+                <span className="text-stone-500 mr-1 font-bold">₹</span>
                 <input
                   type="number"
                   value={suhasHandedOver}
@@ -152,7 +145,7 @@ export default function ManagerShiftAuditScreen() {
             </div>
 
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-400">Remaining Balance:</span>
+              <span className="text-stone-400">Remaining Balance:</span>
               <span
                 className={`font-black px-2.5 py-1 rounded-md text-xs flex items-center gap-1 ${
                   suhasBalance === 0
@@ -168,33 +161,33 @@ export default function ManagerShiftAuditScreen() {
         </div>
 
         {/* 2. SHIVA SECTION */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
-          <div className="flex justify-between items-center pb-2.5 border-b border-slate-800 mb-3">
+        <div className="bg-[#181513] border border-[#2C2520] rounded-2xl p-5 shadow-xl">
+          <div className="flex justify-between items-center pb-2.5 border-b border-[#2C2520] mb-3">
             <h2 className="font-black text-sm text-cyan-400 uppercase tracking-wider flex items-center gap-2">
               <span>🤵 WAITER 2: SHIVA</span>
-              <span className="text-xs text-slate-400 font-normal">(Zone B: Seats 9 - 16)</span>
+              <span className="text-xs text-stone-400 font-normal">(Zone B: Seats 9 - 16)</span>
             </h2>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-stone-400">
               Total Seats Served: <strong className="text-white">{shivaStats.tablesCount}</strong>
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-slate-300 mb-3 font-medium">
+          <div className="flex items-center justify-between text-xs text-stone-300 mb-3 font-medium">
             <span>• Total Billed: <strong className="text-white">₹{shivaStats.totalBilled.toFixed(2)}</strong></span>
             <span>• 📱 UPI / Online: <strong className="text-white">₹{shivaStats.upiCollected.toFixed(2)}</strong></span>
           </div>
 
           {/* Inline Cash Row */}
-          <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 flex flex-wrap items-center justify-between gap-4 text-xs">
+          <div className="p-3.5 rounded-xl bg-[#221D1A] border border-[#2C2520] flex flex-wrap items-center justify-between gap-4 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-400">• 💵 Cash Collected:</span>
+              <span className="text-stone-400">• 💵 Cash Collected:</span>
               <span className="font-black text-amber-400 text-sm">₹{shivaStats.cashCollected.toFixed(2)}</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-slate-400">Handed Over:</span>
-              <div className="flex items-center bg-slate-900 border border-slate-600 rounded-lg px-2.5 py-1">
-                <span className="text-slate-500 mr-1 font-bold">₹</span>
+              <span className="text-stone-400">Handed Over:</span>
+              <div className="flex items-center bg-[#100E0C] border border-[#3D332C] rounded-lg px-2.5 py-1">
+                <span className="text-stone-500 mr-1 font-bold">₹</span>
                 <input
                   type="number"
                   value={shivaHandedOver}
@@ -205,7 +198,7 @@ export default function ManagerShiftAuditScreen() {
             </div>
 
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-400">Remaining Balance:</span>
+              <span className="text-stone-400">Remaining Balance:</span>
               <span
                 className={`font-black px-2.5 py-1 rounded-md text-xs flex items-center gap-1 ${
                   shivaBalance === 0
@@ -221,32 +214,32 @@ export default function ManagerShiftAuditScreen() {
         </div>
 
         {/* 3. PARCEL DESK SECTION (Manager Counter - Directly into Drawer) */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
-          <div className="flex justify-between items-center pb-2.5 border-b border-slate-800 mb-3">
-            <h2 className="font-black text-sm text-amber-400 uppercase tracking-wider flex items-center gap-2">
+        <div className="bg-[#181513] border border-[#2C2520] rounded-2xl p-5 shadow-xl">
+          <div className="flex justify-between items-center pb-2.5 border-b border-[#2C2520] mb-3">
+            <h2 className="font-black text-sm text-[#D08A52] uppercase tracking-wider flex items-center gap-2">
               <span>📦 PARCEL / TAKEAWAY DESK</span>
               <span className="text-xs text-amber-300/80 font-normal">(Manager Counter)</span>
             </h2>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-stone-400">
               Total Parcels: <strong className="text-white">{parcelStats.tablesCount}</strong>
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-slate-300 mb-3 font-medium">
+          <div className="flex items-center justify-between text-xs text-stone-300 mb-3 font-medium">
             <span>• Total Billed: <strong className="text-white">₹{parcelStats.totalBilled.toFixed(2)}</strong></span>
             <span>• 📱 UPI / Online: <strong className="text-white">₹{parcelStats.upiCollected.toFixed(2)}</strong></span>
           </div>
 
-          {/* Parcel Cash Row: NO HANDOVER REQUIRED - Manager directly receives into register */}
-          <div className="p-3.5 rounded-xl bg-slate-800/80 border border-amber-500/30 flex flex-wrap items-center justify-between gap-4 text-xs">
+          {/* Parcel Cash Row */}
+          <div className="p-3.5 rounded-xl bg-[#221D1A] border border-[#8A4228]/40 flex flex-wrap items-center justify-between gap-4 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-300 font-bold">• 💵 Cash Collected:</span>
+              <span className="text-stone-300 font-bold">• 💵 Cash Collected:</span>
               <span className="font-black text-amber-400 text-sm">₹{parcelStats.cashCollected.toFixed(2)}</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 font-semibold flex items-center gap-1.5 text-xs">
-                <Store className="w-3.5 h-3.5 text-amber-400" />
+              <span className="px-3 py-1 rounded-md bg-[#8A4228]/20 border border-[#8A4228]/40 text-amber-300 font-semibold flex items-center gap-1.5 text-xs">
+                <Store className="w-3.5 h-3.5 text-[#D08A52]" />
                 <span>Directly at Manager Counter — No Handover Required</span>
               </span>
             </div>
@@ -261,12 +254,12 @@ export default function ManagerShiftAuditScreen() {
         </div>
 
         {/* Total Cash In Drawer Bar */}
-        <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-amber-600/15 border-2 border-amber-500/40 flex flex-wrap justify-between items-center shadow-lg gap-3">
+        <div className="p-5 rounded-2xl bg-gradient-to-r from-[#8A4228]/20 via-[#181513] to-[#8A4228]/20 border-2 border-[#8A4228]/60 flex flex-wrap justify-between items-center shadow-lg gap-3">
           <div>
             <span className="font-black text-sm md:text-base text-white tracking-wide flex items-center gap-2">
               <span>💰 TOTAL CASH IN DRAWER:</span>
             </span>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+            <p className="text-[11px] text-stone-400 mt-0.5">
               (Suhas Handed: ₹{(parseFloat(suhasHandedOver) || 0).toFixed(2)} + Shiva Handed: ₹{(parseFloat(shivaHandedOver) || 0).toFixed(2)} + Parcel Direct: ₹{parcelStats.cashCollected.toFixed(2)})
             </p>
           </div>
@@ -274,27 +267,27 @@ export default function ManagerShiftAuditScreen() {
             ₹{totalCashInDrawer.toFixed(2)}
           </span>
         </div>
-      </div>
 
-      {/* Action Buttons */}
-      <div className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-800">
-        <button
-          type="button"
-          onClick={() => alert(`Shift reconciled successfully! Total cash verified in drawer: ₹${totalCashInDrawer.toFixed(2)}`)}
-          className="py-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-emerald-600/20 active:scale-98 transition-all"
-        >
-          <Lock className="w-4 h-4" />
-          <span>🔒 CLOSE SHIFT & VERIFY CASH IN DRAWER</span>
-        </button>
+        {/* Action Buttons */}
+        <div className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-[#2C2520]">
+          <button
+            type="button"
+            onClick={() => alert(`Shift reconciled successfully! Total cash verified in drawer: ₹${totalCashInDrawer.toFixed(2)}`)}
+            className="py-4 rounded-xl bg-[#8A4228] hover:bg-[#71351F] text-white font-black text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-[#8A4228]/20 active:scale-98 transition-all"
+          >
+            <Lock className="w-4 h-4" />
+            <span>🔒 CLOSE SHIFT & VERIFY CASH IN DRAWER</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="py-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs md:text-sm flex items-center justify-center gap-2 border border-slate-700 active:scale-98 transition-all"
-        >
-          <Printer className="w-4 h-4" />
-          <span>📄 PRINT STAFF SHIFT SUMMARY</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="py-4 rounded-xl bg-[#1C1815] hover:bg-[#25201C] text-stone-200 font-black text-xs md:text-sm flex items-center justify-center gap-2 border border-[#2C2520] active:scale-98 transition-all"
+          >
+            <Printer className="w-4 h-4" />
+            <span>📄 PRINT STAFF SHIFT SUMMARY</span>
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { CreditCard, LogOut, CheckCircle2, RefreshCw } from 'lucide-react';
 import { useSocketRoom } from '@/lib/useSocket';
 import { playSuccessChime } from '@/lib/audio-synth';
+import ManagerTopNav from '@/components/ManagerTopNav';
 
 interface OrderItem {
   id: string;
@@ -171,52 +172,8 @@ export default function ManagerFloorScreen() {
 
   return (
     <div className="min-h-screen bg-[#100E0C] text-white flex flex-col font-sans select-none">
-      {/* ────────────────────────────────────────────────────────────────── */}
-      {/* TOP NAVIGATION BAR                                                 */}
-      {/* ────────────────────────────────────────────────────────────────── */}
-      <header className="h-14 bg-[#181513] border-b border-[#2C2520] px-6 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-base">🏨</span>
-          <span className="font-black text-sm tracking-widest text-[#D08A52] uppercase">
-            THOOGUDEEPA
-          </span>
-        </div>
-
-        {/* Navigation Tabs matching exact ASCII specification */}
-        <nav className="flex items-center gap-1.5 bg-[#100E0C] p-1 rounded-xl border border-[#2C2520] text-xs font-bold">
-          <Link href="/manager/floor" className="px-3 py-1.5 rounded-lg bg-[#8A4228] text-white shadow-sm">
-            Live Floor
-          </Link>
-          <Link href="/manager/kitchen" className="px-3 py-1.5 rounded-lg text-stone-400 hover:text-white transition">
-            Orders
-          </Link>
-          <Link href="/manager/parcel" className="px-3 py-1.5 rounded-lg text-stone-400 hover:text-white transition">
-            Parcel
-          </Link>
-          <Link href="/manager/menu" className="px-3 py-1.5 rounded-lg text-stone-400 hover:text-white transition">
-            Menu
-          </Link>
-          <Link href="/manager/qrs" className="px-3 py-1.5 rounded-lg text-stone-400 hover:text-white transition">
-            QRs
-          </Link>
-          <Link href="/manager/shift" className="px-3 py-1.5 rounded-lg text-stone-400 hover:text-white transition">
-            Shift
-          </Link>
-          <Link href="/manager/reports" className="px-3 py-1.5 rounded-lg text-stone-400 hover:text-white transition">
-            Sales Report
-          </Link>
-          <Link href="/manager/promos" className="px-3 py-1.5 rounded-lg text-stone-400 hover:text-white transition">
-            Promos
-          </Link>
-        </nav>
-
-        <div className="flex items-center gap-3">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400/50" title="Live WebSocket & Cloud DB Connected" />
-          <Link href="/manager" className="text-xs text-stone-400 hover:text-stone-200 font-medium">
-            Logout
-          </Link>
-        </div>
-      </header>
+      {/* Shared Manager Top Navigation */}
+      <ManagerTopNav activeTab="floor" />
 
       {/* ────────────────────────────────────────────────────────────────── */}
       {/* 2-COLUMN MAIN WORKSPACE                                            */}

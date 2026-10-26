@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Package, Plus, Minus, ArrowLeft, CheckCircle2, Printer, ShieldCheck } from 'lucide-react';
+import { Package, Plus, Minus, CheckCircle2, Printer } from 'lucide-react';
 import { playSuccessChime } from '@/lib/audio-synth';
 import confetti from 'canvas-confetti';
+import ManagerTopNav from '@/components/ManagerTopNav';
 
 interface MenuItem {
   id: string;
@@ -108,39 +109,21 @@ export default function ManagerParcelDeskScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans select-none">
-      {/* Top Header */}
-      <header className="h-16 bg-slate-900 border-b border-slate-800 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/manager/floor"
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Floor</span>
-          </Link>
-          <div className="h-4 w-px bg-slate-700" />
-          <h1 className="text-sm font-black text-amber-400 uppercase tracking-wider flex items-center gap-2">
-            <Package className="w-4 h-4" />
-            PARCEL & TAKEAWAY BILLING DESK
-          </h1>
-        </div>
-
-        <div className="text-xs text-slate-400 font-semibold">
-          KDS Integrated • Direct Kitchen Dispatch
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#100E0C] text-white flex flex-col font-sans select-none">
+      {/* Unified Executive Navigation Bar */}
+      <ManagerTopNav activeTab="parcel" />
 
       {/* Main Grid: Left Dish Picker + Right Billing & Settlement */}
       <div className="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden">
         {/* Left Side (7 Cols): Menu Dishes */}
-        <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-3xl p-5 flex flex-col justify-between shadow-xl">
+        <div className="lg:col-span-7 bg-[#181513] border border-[#2C2520] rounded-3xl p-5 flex flex-col justify-between shadow-xl">
           <div>
-            <div className="flex justify-between items-center pb-3 border-b border-slate-800 mb-4">
-              <h2 className="text-xs font-black text-slate-300 uppercase tracking-wider">
-                🛒 SELECT ITEMS FOR PARCEL
+            <div className="flex justify-between items-center pb-3 border-b border-[#2C2520] mb-4">
+              <h2 className="text-xs font-black text-stone-300 uppercase tracking-wider flex items-center gap-2">
+                <Package className="w-4 h-4 text-[#D08A52]" />
+                SELECT ITEMS FOR PARCEL
               </h2>
-              <span className="text-xs text-amber-400 font-bold">
+              <span className="text-xs text-[#D08A52] font-bold">
                 {items.length} items available
               </span>
             </div>
@@ -151,11 +134,11 @@ export default function ManagerParcelDeskScreen() {
                 return (
                   <div
                     key={item.id}
-                    className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between"
+                    className="p-3.5 rounded-2xl bg-[#100E0C] border border-[#2C2520] flex items-center justify-between"
                   >
                     <div>
                       <h4 className="font-bold text-xs text-white">{item.name}</h4>
-                      <span className="text-xs font-semibold text-amber-400">
+                      <span className="text-xs font-semibold text-[#D08A52]">
                         ₹{item.price.toFixed(0)}
                       </span>
                     </div>
@@ -164,25 +147,25 @@ export default function ManagerParcelDeskScreen() {
                       <button
                         type="button"
                         onClick={() => updateCart(item.id, 1)}
-                        className="px-3 py-1.5 rounded-xl bg-slate-700 hover:bg-amber-500 hover:text-slate-950 text-white font-bold text-xs transition active:scale-95 flex items-center gap-1"
+                        className="px-3 py-1.5 rounded-xl bg-[#181513] hover:bg-[#8A4228] border border-[#2C2520] text-stone-300 hover:text-white font-bold text-xs transition active:scale-95 flex items-center gap-1"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Add</span>
                       </button>
                     ) : (
-                      <div className="flex items-center bg-amber-500 text-slate-950 rounded-xl px-2 py-1 font-black text-xs shadow-md">
+                      <div className="flex items-center bg-[#8A4228] text-white rounded-xl px-2 py-1 font-black text-xs shadow-md">
                         <button
                           type="button"
                           onClick={() => updateCart(item.id, -1)}
-                          className="w-6 h-6 flex items-center justify-center active:scale-80"
+                          className="w-6 h-6 flex items-center justify-center active:scale-80 hover:bg-[#71351F] rounded"
                         >
                           <Minus className="w-3.5 h-3.5" />
                         </button>
-                        <span className="w-5 text-center">{qty}</span>
+                        <span className="w-6 text-center">{qty}</span>
                         <button
                           type="button"
                           onClick={() => updateCart(item.id, 1)}
-                          className="w-6 h-6 flex items-center justify-center active:scale-80"
+                          className="w-6 h-6 flex items-center justify-center active:scale-80 hover:bg-[#71351F] rounded"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -196,9 +179,9 @@ export default function ManagerParcelDeskScreen() {
         </div>
 
         {/* Right Side (5 Cols): Order Summary & Payment */}
-        <div className="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-5 flex flex-col justify-between shadow-xl">
+        <div className="lg:col-span-5 bg-[#181513] border border-[#2C2520] rounded-3xl p-5 flex flex-col justify-between shadow-xl">
           <div>
-            <div className="pb-3 border-b border-slate-800 mb-3">
+            <div className="pb-3 border-b border-[#2C2520] mb-3">
               <h3 className="font-black text-sm text-white uppercase tracking-wider">
                 🧾 PARCEL ORDER & BILLING
               </h3>
@@ -207,41 +190,41 @@ export default function ManagerParcelDeskScreen() {
             {/* Customer Inputs */}
             <div className="grid grid-cols-2 gap-2 mb-3">
               <div>
-                <label className="text-[10px] font-bold text-slate-400 block mb-1">Customer Name</label>
+                <label className="text-[10px] font-bold text-stone-400 block mb-1">Customer Name</label>
                 <input
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="Ramesh Kumar"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                  className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3 py-2 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-slate-400 block mb-1">Phone Number</label>
+                <label className="text-[10px] font-bold text-stone-400 block mb-1">Phone Number</label>
                 <input
                   type="text"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder="9845012345"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                  className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3 py-2 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
                 />
               </div>
             </div>
 
             {/* Items Summary */}
-            <div className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3 mb-3 max-h-[22vh] overflow-y-auto space-y-1">
+            <div className="bg-[#100E0C] border border-[#2C2520] rounded-2xl p-3 mb-3 max-h-[22vh] overflow-y-auto space-y-1">
               {Object.keys(cart).length === 0 ? (
-                <p className="text-xs text-slate-500 text-center py-2">No items selected</p>
+                <p className="text-xs text-stone-500 text-center py-2">No items selected</p>
               ) : (
                 Object.entries(cart).map(([id, qty]) => {
                   const it = itemMap.get(id);
                   if (!it) return null;
                   return (
                     <div key={id} className="flex justify-between text-xs">
-                      <span className="font-medium text-slate-300">
+                      <span className="font-medium text-stone-300">
                         {qty}x {it.name}
                       </span>
-                      <span className="font-bold text-amber-400">₹{(it.price * qty).toFixed(0)}</span>
+                      <span className="font-bold text-[#D08A52]">₹{(it.price * qty).toFixed(0)}</span>
                     </div>
                   );
                 })
@@ -249,20 +232,20 @@ export default function ManagerParcelDeskScreen() {
             </div>
 
             {/* Price Breakdown */}
-            <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-3 space-y-1 text-xs mb-3">
-              <div className="flex justify-between text-slate-400">
+            <div className="bg-[#100E0C] border border-[#2C2520] rounded-2xl p-3 space-y-1 text-xs mb-3">
+              <div className="flex justify-between text-stone-400">
                 <span>Items Subtotal:</span>
                 <span className="text-white font-medium">₹{subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-slate-400">
+              <div className="flex justify-between text-stone-400">
                 <span>Parcel Containers:</span>
                 <span className="text-white font-medium">₹{packagingCharges.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-slate-400">
+              <div className="flex justify-between text-stone-400">
                 <span>GST (5%):</span>
                 <span className="text-white font-medium">₹{gst.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-sm font-black text-amber-400 pt-1 border-t border-slate-700">
+              <div className="flex justify-between text-sm font-black text-[#D08A52] pt-1 border-t border-[#2C2520]">
                 <span>GRAND TOTAL DUE:</span>
                 <span className="text-base text-white">₹{grandTotal.toFixed(2)}</span>
               </div>
@@ -270,7 +253,7 @@ export default function ManagerParcelDeskScreen() {
 
             {/* Payment Method Selection */}
             <div className="space-y-2 mb-3">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">
                 Payment Method
               </span>
               <div className="grid grid-cols-3 gap-2">
@@ -281,8 +264,8 @@ export default function ManagerParcelDeskScreen() {
                     onClick={() => setPaymentMode(m as any)}
                     className={`py-2 rounded-xl text-xs font-bold border transition ${
                       paymentMode === m
-                        ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm'
-                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                        ? 'bg-[#8A4228] text-white border-[#8A4228] shadow-sm font-black'
+                        : 'bg-[#100E0C] border-[#2C2520] text-stone-400 hover:text-white'
                     }`}
                   >
                     {m === 'CASH' ? '💵 Cash' : m === 'UPI' ? '📱 UPI' : '💳 Card'}
@@ -293,19 +276,19 @@ export default function ManagerParcelDeskScreen() {
 
             {/* Cash Calculator if Cash is selected */}
             {paymentMode === 'CASH' && (
-              <div className="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700 text-xs flex items-center justify-between mb-3">
+              <div className="p-2.5 rounded-xl bg-[#100E0C] border border-[#2C2520] text-xs flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-400">Tendered:</span>
+                  <span className="text-stone-400">Tendered:</span>
                   <input
                     type="number"
                     value={cashTendered}
                     onChange={(e) => setCashTendered(e.target.value)}
                     placeholder="₹500"
-                    className="w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-white font-bold"
+                    className="w-20 bg-[#181513] border border-[#2C2520] rounded-lg px-2 py-1 text-white font-bold focus:outline-none focus:border-[#D08A52]"
                   />
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-slate-400 block">Change Return:</span>
+                  <span className="text-[10px] text-stone-400 block">Change Return:</span>
                   <span className="font-black text-emerald-400">₹{changeToReturn.toFixed(2)}</span>
                 </div>
               </div>
@@ -320,8 +303,8 @@ export default function ManagerParcelDeskScreen() {
               disabled={totalQty === 0 || loading}
               className={`w-full py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition shadow-xl select-none active:scale-98 ${
                 totalQty > 0
-                  ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20'
-                  : 'bg-slate-800 text-slate-500 border border-slate-800 cursor-not-allowed'
+                  ? 'bg-[#8A4228] hover:bg-[#71351F] text-white shadow-[#8A4228]/20'
+                  : 'bg-[#181513] text-stone-600 border border-[#2C2520] cursor-not-allowed'
               }`}
             >
               <Printer className="w-4 h-4" />

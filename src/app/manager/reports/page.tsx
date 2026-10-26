@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
+import ManagerTopNav from '@/components/ManagerTopNav';
 
 interface TransactionRow {
   billNumber: string;
@@ -379,28 +380,21 @@ export default function MasterSalesReportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-mono text-xs select-none">
-      {/* Top Header Bar */}
-      <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/manager/floor"
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>← Back to Floor</span>
-          </Link>
-          <div className="h-5 w-px bg-slate-700" />
-          <h1 className="text-sm md:text-base font-black text-white uppercase tracking-wider font-sans">
-            MASTER FINANCIAL & DETAILED SALES REPORT
-          </h1>
-        </div>
+    <div className="min-h-screen bg-[#100E0C] text-stone-100 flex flex-col font-mono text-xs select-none">
+      {/* Shared Manager Top Navigation */}
+      <ManagerTopNav activeTab="reports" />
+
+      {/* Subheader Bar with Title & Export Actions */}
+      <div className="bg-[#141210] border-b border-[#2C2520] px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-xs md:text-sm font-black text-[#D08A52] uppercase tracking-wider font-sans">
+          MASTER FINANCIAL & DETAILED SALES REPORT
+        </h1>
 
         {/* Filter & Export Buttons */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-amber-400 font-bold text-xs">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#181513] border border-[#2C2520] rounded-lg text-amber-400 font-bold text-xs">
             <span>Filter:</span>
-            <span className="text-white bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
+            <span className="text-white bg-[#100E0C] px-2 py-0.5 rounded border border-[#2C2520]">
               Today: {selectedDate} ▾
             </span>
           </div>
@@ -423,61 +417,61 @@ export default function MasterSalesReportPage() {
             <span>📊 Download as Excel (.xlsx)</span>
           </button>
         </div>
-      </header>
+      </div>
 
       {/* Main Content Area */}
       <main className="p-6 space-y-6 flex-1 max-w-[1600px] w-full mx-auto">
         {/* 1. COMPLETE FINANCIAL SUMMARY BREAKDOWN */}
-        <section className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-          <div className="bg-slate-800/80 px-4 py-2.5 border-b border-slate-700 font-bold text-amber-400 uppercase tracking-wider text-xs">
+        <section className="bg-[#181513] border border-[#2C2520] rounded-xl overflow-hidden shadow-xl">
+          <div className="bg-[#1C1815] px-4 py-2.5 border-b border-[#2C2520] font-bold text-amber-400 uppercase tracking-wider text-xs">
             1. COMPLETE FINANCIAL SUMMARY BREAKDOWN
           </div>
           <div className="p-4 space-y-3 font-sans text-xs">
             {/* Row 1 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-3 border-b border-slate-800">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-3 border-b border-[#2C2520]">
               <div>
-                <span className="text-slate-400">Gross Food Sales:</span>{' '}
+                <span className="text-stone-400">Gross Food Sales:</span>{' '}
                 <strong className="text-white text-sm font-mono">₹26,450.00</strong>
               </div>
               <div>
-                <span className="text-slate-400">Total GST (5%):</span>{' '}
-                <strong className="text-blue-400 text-sm font-mono">₹1,322.50</strong>
+                <span className="text-stone-400">Total GST (5%):</span>{' '}
+                <strong className="text-sky-400 text-sm font-mono">₹1,322.50</strong>
               </div>
               <div>
-                <span className="text-slate-400">Net Day Revenue:</span>{' '}
+                <span className="text-stone-400">Net Day Revenue:</span>{' '}
                 <strong className="text-emerald-400 text-sm font-mono">₹27,790.00</strong>
               </div>
             </div>
 
             {/* Row 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-3 border-b border-slate-800">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-3 border-b border-[#2C2520]">
               <div>
-                <span className="text-slate-400">Dine-in Sales (16 Seats):</span>{' '}
+                <span className="text-stone-400">Dine-in Sales (16 Seats):</span>{' '}
                 <strong className="text-white text-sm font-mono">₹19,370.00</strong>
               </div>
               <div>
-                <span className="text-slate-400">Takeaway / Parcel Sales:</span>{' '}
+                <span className="text-stone-400">Takeaway / Parcel Sales:</span>{' '}
                 <strong className="text-amber-400 text-sm font-mono">₹8,420.00</strong>
               </div>
               <div>
-                <span className="text-slate-400">Total Orders Completed:</span>{' '}
+                <span className="text-stone-400">Total Orders Completed:</span>{' '}
                 <strong className="text-white text-sm font-mono">60</strong>{' '}
-                <span className="text-slate-400 text-[11px]">(42 Dine-in, 18 Parcel)</span>
+                <span className="text-stone-400 text-[11px]">(42 Dine-in, 18 Parcel)</span>
               </div>
             </div>
 
             {/* Row 3 */}
-            <div className="text-xs text-slate-300 flex flex-wrap items-center gap-2">
-              <span className="text-slate-400 font-bold">Payment Split:</span>
-              <span className="bg-slate-800 px-2.5 py-1 rounded border border-slate-700">
+            <div className="text-xs text-stone-300 flex flex-wrap items-center gap-2">
+              <span className="text-stone-400 font-bold">Payment Split:</span>
+              <span className="bg-[#1C1815] px-2.5 py-1 rounded border border-[#2C2520]">
                 💵 Cash: <strong className="text-amber-400">₹10,450 (37.6%)</strong>
               </span>
               <span>•</span>
-              <span className="bg-slate-800 px-2.5 py-1 rounded border border-slate-700">
+              <span className="bg-[#1C1815] px-2.5 py-1 rounded border border-[#2C2520]">
                 📱 UPI: <strong className="text-cyan-400">₹15,240 (54.8%)</strong>
               </span>
               <span>•</span>
-              <span className="bg-slate-800 px-2.5 py-1 rounded border border-slate-700">
+              <span className="bg-[#1C1815] px-2.5 py-1 rounded border border-[#2C2520]">
                 💳 Card POS: <strong className="text-purple-400">₹2,100 (7.6%)</strong>
               </span>
             </div>
@@ -485,39 +479,39 @@ export default function MasterSalesReportPage() {
         </section>
 
         {/* 2. ITEM-WISE SALES PERFORMANCE */}
-        <section className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-          <div className="bg-slate-800/80 px-4 py-2.5 border-b border-slate-700 font-bold text-cyan-400 uppercase tracking-wider text-xs flex justify-between items-center">
+        <section className="bg-[#181513] border border-[#2C2520] rounded-xl overflow-hidden shadow-xl">
+          <div className="bg-[#1C1815] px-4 py-2.5 border-b border-[#2C2520] font-bold text-cyan-400 uppercase tracking-wider text-xs flex justify-between items-center">
             <span>2. ITEM-WISE SALES PERFORMANCE</span>
-            <span className="text-[11px] text-slate-400 font-normal">Top Revenue Contributors</span>
+            <span className="text-[11px] text-stone-400 font-normal">Top Revenue Contributors</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse font-sans text-xs">
-              <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-bold uppercase text-[11px]">
+              <thead className="bg-[#100E0C] text-stone-400 border-b border-[#2C2520] font-bold uppercase text-[11px]">
                 <tr>
-                  <th className="p-3 border-r border-slate-800">DISH NAME</th>
-                  <th className="p-3 border-r border-slate-800">CATEGORY</th>
-                  <th className="p-3 border-r border-slate-800 text-right">QTY SOLD</th>
-                  <th className="p-3 border-r border-slate-800 text-right">UNIT PRICE</th>
-                  <th className="p-3 border-r border-slate-800 text-right">TOTAL REVENUE (₹)</th>
+                  <th className="p-3 border-r border-[#2C2520]">DISH NAME</th>
+                  <th className="p-3 border-r border-[#2C2520]">CATEGORY</th>
+                  <th className="p-3 border-r border-[#2C2520] text-right">QTY SOLD</th>
+                  <th className="p-3 border-r border-[#2C2520] text-right">UNIT PRICE</th>
+                  <th className="p-3 border-r border-[#2C2520] text-right">TOTAL REVENUE (₹)</th>
                   <th className="p-3 text-right">CONTRIBUTION %</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 font-mono text-xs">
+              <tbody className="divide-y divide-[#2C2520] font-mono text-xs">
                 {itemPerformance.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-slate-800/50 transition-colors">
-                    <td className="p-3 font-sans font-bold text-white border-r border-slate-800">
+                  <tr key={idx} className="hover:bg-[#201B18] transition-colors">
+                    <td className="p-3 font-sans font-bold text-white border-r border-[#2C2520]">
                       {row.dishName}
                     </td>
-                    <td className="p-3 font-sans text-slate-300 border-r border-slate-800">
+                    <td className="p-3 font-sans text-stone-300 border-r border-[#2C2520]">
                       {row.category}
                     </td>
-                    <td className="p-3 text-right text-white font-bold border-r border-slate-800">
+                    <td className="p-3 text-right text-white font-bold border-r border-[#2C2520]">
                       {row.qtySold}
                     </td>
-                    <td className="p-3 text-right text-slate-300 border-r border-slate-800">
+                    <td className="p-3 text-right text-stone-300 border-r border-[#2C2520]">
                       ₹{row.unitPrice.toFixed(2)}
                     </td>
-                    <td className="p-3 text-right text-emerald-400 font-bold border-r border-slate-800">
+                    <td className="p-3 text-right text-emerald-400 font-bold border-r border-[#2C2520]">
                       ₹{row.totalRevenue.toFixed(2)}
                     </td>
                     <td className="p-3 text-right text-amber-400 font-bold">
@@ -531,91 +525,91 @@ export default function MasterSalesReportPage() {
         </section>
 
         {/* 3. MASTER DETAILED TRANSACTION AUDIT (MAXIMUM COLUMNS) */}
-        <section className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-          <div className="bg-slate-800/80 px-4 py-2.5 border-b border-slate-700 flex flex-wrap items-center justify-between gap-3">
+        <section className="bg-[#181513] border border-[#2C2520] rounded-xl overflow-hidden shadow-xl">
+          <div className="bg-[#1C1815] px-4 py-2.5 border-b border-[#2C2520] flex flex-wrap items-center justify-between gap-3">
             <span className="font-bold text-emerald-400 uppercase tracking-wider text-xs">
               3. MASTER DETAILED TRANSACTION AUDIT (MAXIMUM COLUMNS)
             </span>
             <div className="relative w-72">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search Bill #, Guest, Server or Mode..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-8 pr-3 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-sans"
+                className="w-full bg-[#100E0C] border border-[#2C2520] rounded-lg pl-8 pr-3 py-1 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-[#8A4228] font-sans"
               />
             </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
-              <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-bold uppercase text-[10px]">
+              <thead className="bg-[#100E0C] text-stone-400 border-b border-[#2C2520] font-bold uppercase text-[10px]">
                 <tr>
-                  <th className="p-2.5 border-r border-slate-800">BILL #</th>
-                  <th className="p-2.5 border-r border-slate-800">DATE</th>
-                  <th className="p-2.5 border-r border-slate-800">TYPE</th>
-                  <th className="p-2.5 border-r border-slate-800">SEAT</th>
-                  <th className="p-2.5 border-r border-slate-800">CUSTOMER NAME</th>
-                  <th className="p-2.5 border-r border-slate-800">SERVER</th>
-                  <th className="p-2.5 border-r border-slate-800">ITEMS SUMMARY</th>
-                  <th className="p-2.5 border-r border-slate-800">PLACED</th>
-                  <th className="p-2.5 border-r border-slate-800">SETTLED</th>
-                  <th className="p-2.5 border-r border-slate-800 text-right">SUBTOT</th>
-                  <th className="p-2.5 border-r border-slate-800 text-right">GST 5%</th>
-                  <th className="p-2.5 border-r border-slate-800 text-right">GRAND TOT</th>
-                  <th className="p-2.5 border-r border-slate-800 text-center">MODE</th>
+                  <th className="p-2.5 border-r border-[#2C2520]">BILL #</th>
+                  <th className="p-2.5 border-r border-[#2C2520]">DATE</th>
+                  <th className="p-2.5 border-r border-[#2C2520]">TYPE</th>
+                  <th className="p-2.5 border-r border-[#2C2520]">SEAT</th>
+                  <th className="p-2.5 border-r border-[#2C2520]">CUSTOMER NAME</th>
+                  <th className="p-2.5 border-r border-[#2C2520]">SERVER</th>
+                  <th className="p-2.5 border-r border-[#2C2520]">ITEMS SUMMARY</th>
+                  <th className="p-2.5 border-r border-[#2C2520]">PLACED</th>
+                  <th className="p-2.5 border-r border-[#2C2520]">SETTLED</th>
+                  <th className="p-2.5 border-r border-[#2C2520] text-right">SUBTOT</th>
+                  <th className="p-2.5 border-r border-[#2C2520] text-right">GST 5%</th>
+                  <th className="p-2.5 border-r border-[#2C2520] text-right">GRAND TOT</th>
+                  <th className="p-2.5 border-r border-[#2C2520] text-center">MODE</th>
                   <th className="p-2.5 text-center">STATUS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 font-mono text-[11px]">
+              <tbody className="divide-y divide-[#2C2520] font-mono text-[11px]">
                 {filtered.map((t, idx) => (
-                  <tr key={idx} className="hover:bg-slate-800/50 transition-colors">
-                    <td className="p-2.5 font-bold text-amber-400 border-r border-slate-800 whitespace-nowrap">
+                  <tr key={idx} className="hover:bg-[#201B18] transition-colors">
+                    <td className="p-2.5 font-bold text-amber-400 border-r border-[#2C2520] whitespace-nowrap">
                       {t.billNumber}
                     </td>
-                    <td className="p-2.5 text-slate-400 border-r border-slate-800 whitespace-nowrap">
+                    <td className="p-2.5 text-stone-400 border-r border-[#2C2520] whitespace-nowrap">
                       {t.date}
                     </td>
-                    <td className="p-2.5 font-sans border-r border-slate-800">
+                    <td className="p-2.5 font-sans border-r border-[#2C2520]">
                       <span
                         className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                           t.orderType.toLowerCase().includes('dine')
-                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                            ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
                             : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                         }`}
                       >
                         {t.orderType}
                       </span>
                     </td>
-                    <td className="p-2.5 font-bold text-white border-r border-slate-800">
+                    <td className="p-2.5 font-bold text-white border-r border-[#2C2520]">
                       {t.seatNumberOrToken}
                     </td>
-                    <td className="p-2.5 font-sans font-bold text-slate-100 border-r border-slate-800 whitespace-nowrap">
+                    <td className="p-2.5 font-sans font-bold text-stone-100 border-r border-[#2C2520] whitespace-nowrap">
                       {t.customerName}
                     </td>
-                    <td className="p-2.5 font-sans text-slate-300 border-r border-slate-800">
+                    <td className="p-2.5 font-sans text-stone-300 border-r border-[#2C2520]">
                       {t.serverName}
                     </td>
-                    <td className="p-2.5 font-sans text-slate-300 border-r border-slate-800 max-w-xs truncate">
+                    <td className="p-2.5 font-sans text-stone-300 border-r border-[#2C2520] max-w-xs truncate">
                       {t.itemsSummary}
                     </td>
-                    <td className="p-2.5 text-slate-400 border-r border-slate-800">
+                    <td className="p-2.5 text-stone-400 border-r border-[#2C2520]">
                       {t.placedAt}
                     </td>
-                    <td className="p-2.5 text-slate-300 border-r border-slate-800">
+                    <td className="p-2.5 text-stone-300 border-r border-[#2C2520]">
                       {t.settledAt}
                     </td>
-                    <td className="p-2.5 text-right text-slate-300 border-r border-slate-800">
+                    <td className="p-2.5 text-right text-stone-300 border-r border-[#2C2520]">
                       ₹{t.subtotal.toFixed(2)}
                     </td>
-                    <td className="p-2.5 text-right text-blue-400 border-r border-slate-800">
+                    <td className="p-2.5 text-right text-sky-400 border-r border-[#2C2520]">
                       ₹{t.gst5Percent.toFixed(2)}
                     </td>
-                    <td className="p-2.5 text-right font-black text-emerald-400 border-r border-slate-800">
+                    <td className="p-2.5 text-right font-black text-emerald-400 border-r border-[#2C2520]">
                       ₹{t.grandTotal.toFixed(2)}
                     </td>
-                    <td className="p-2.5 text-center font-sans border-r border-slate-800">
+                    <td className="p-2.5 text-center font-sans border-r border-[#2C2520]">
                       <span
                         className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                           t.paymentMode.toLowerCase() === 'upi'

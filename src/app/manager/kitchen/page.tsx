@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, AlertTriangle, EyeOff, X, Check, Clock } from 'lucide-react';
 import { useSocketRoom } from '@/lib/useSocket';
 import { playKitchenBell } from '@/lib/audio-synth';
+import ManagerTopNav from '@/components/ManagerTopNav';
 
 interface OrderItem {
   id: string;
@@ -145,89 +146,83 @@ export default function ManagerKitchenMonitorScreen() {
 
   return (
     <div className="min-h-screen bg-[#100E0C] text-white flex flex-col font-sans select-none">
-      {/* ────────────────────────────────────────────────────────────────── */}
-      {/* TOP HEADER MATCHING ASCII: ← Back to Floor | Title | [ 86 Items ]   */}
-      {/* ────────────────────────────────────────────────────────────────── */}
-      <header className="h-14 bg-[#181513] border-b border-[#2C2520] px-6 flex items-center justify-between shrink-0">
-        <Link
-          href="/manager/floor"
-          className="flex items-center gap-1.5 text-xs font-bold text-stone-300 hover:text-white transition"
-        >
-          <ArrowLeft className="w-4 h-4 text-[#D08A52]" />
-          <span>← Back to Floor</span>
-        </Link>
+      {/* Shared Manager Top Navigation */}
+      <ManagerTopNav
+        activeTab="orders"
+        extraRightActions={
+          <button
+            type="button"
+            onClick={() => setShow86Drawer(true)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm ${
+              soldOutCount > 0
+                ? 'bg-rose-950/60 text-rose-300 border border-rose-500/40 hover:bg-rose-900/60'
+                : 'bg-[#221D1A] text-stone-300 border border-[#2C2520] hover:text-white'
+            }`}
+          >
+            <EyeOff className="w-3.5 h-3.5" />
+            <span>[ 86 / Sold Out ({soldOutCount}) ]</span>
+          </button>
+        }
+      />
 
-        <h1 className="text-sm font-black text-white tracking-widest uppercase">
+      {/* Subheader Title Bar */}
+      <div className="bg-[#141210] border-b border-[#2C2520] px-6 py-2.5 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-xs md:text-sm font-black text-[#D08A52] tracking-wider uppercase">
           KITCHEN MONITOR & ACTIVE TICKETS
         </h1>
 
-        <button
-          type="button"
-          onClick={() => setShow86Drawer(true)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm ${
-            soldOutCount > 0
-              ? 'bg-rose-950/60 text-rose-300 border border-rose-500/40 hover:bg-rose-900/60'
-              : 'bg-[#221D1A] text-stone-300 border border-[#2C2520] hover:text-white'
-          }`}
-        >
-          <EyeOff className="w-3.5 h-3.5" />
-          <span>[ 86 / Sold Out Items ({soldOutCount}) ]</span>
-        </button>
-      </header>
+        {/* Filters */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-stone-400 mr-1">Filters:</span>
 
-      {/* ────────────────────────────────────────────────────────────────── */}
-      {/* FILTER BUTTONS MATCHING ASCII                                      */}
-      {/* ────────────────────────────────────────────────────────────────── */}
-      <div className="bg-[#141210] border-b border-[#2C2520] px-6 py-2.5 flex items-center gap-2">
-        <span className="text-xs font-bold text-stone-400 mr-2">Filters:</span>
+          <button
+            type="button"
+            onClick={() => setActiveFilter('ALL')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+              activeFilter === 'ALL'
+                ? 'bg-[#8A4228] text-white shadow-sm'
+                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+            }`}
+          >
+            [ All Active ({tickets.filter((t) => !t.items?.every((i) => i.status === 'served')).length}) ]
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveFilter('ALL')}
-          className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-            activeFilter === 'ALL'
-              ? 'bg-[#8A4228] text-white shadow-sm'
-              : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
-          }`}
-        >
-          [ All Active ({tickets.filter((t) => !t.items?.every((i) => i.status === 'served')).length}) ]
-        </button>
+          <button
+            type="button"
+            onClick={() => setActiveFilter('COOKING')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+              activeFilter === 'COOKING'
+                ? 'bg-sky-600 text-white shadow-sm'
+                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+            }`}
+          >
+            [ Cooking ({tickets.filter((t) => t.items?.some((i) => i.status === 'preparing' || i.status === 'placed')).length}) ]
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveFilter('COOKING')}
-          className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-            activeFilter === 'COOKING'
-              ? 'bg-sky-600 text-white shadow-sm'
-              : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
-          }`}
-        >
-          [ Cooking ({tickets.filter((t) => t.items?.some((i) => i.status === 'preparing' || i.status === 'placed')).length}) ]
-        </button>
+          <button
+            type="button"
+            onClick={() => setActiveFilter('READY')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+              activeFilter === 'READY'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+            }`}
+          >
+            [ Ready ({tickets.filter((t) => t.items?.some((i) => i.status === 'ready')).length}) ]
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveFilter('READY')}
-          className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-            activeFilter === 'READY'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
-          }`}
-        >
-          [ Ready ({tickets.filter((t) => t.items?.some((i) => i.status === 'ready')).length}) ]
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveFilter('COMPLETED')}
-          className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-            activeFilter === 'COMPLETED'
-              ? 'bg-stone-700 text-white shadow-sm'
-              : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
-          }`}
-        >
-          [ Completed Today ({tickets.filter((t) => t.items?.length > 0 && t.items.every((i) => i.status === 'served')).length}) ]
-        </button>
+          <button
+            type="button"
+            onClick={() => setActiveFilter('COMPLETED')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+              activeFilter === 'COMPLETED'
+                ? 'bg-stone-700 text-white shadow-sm'
+                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+            }`}
+          >
+            [ Completed Today ({tickets.filter((t) => t.items?.length > 0 && t.items.every((i) => i.status === 'served')).length}) ]
+          </button>
+        </div>
       </div>
 
       {/* ────────────────────────────────────────────────────────────────── */}
