@@ -15,7 +15,7 @@ export async function POST(
       return NextResponse.json({ success: false, error: 'Invalid status' }, { status: 400 });
     }
 
-    const result = await sqliteWriteQueue.enqueue(async () => {
+    const result = await sqliteWriteQueue.enqueueKey(`item:${orderItemId}`, async () => {
       const orderItem = await prisma.orderItem.findUnique({
         where: { id: orderItemId },
         include: {

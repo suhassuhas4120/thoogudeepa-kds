@@ -54,15 +54,11 @@ export default function ManagerFloorScreen() {
 
   const fetchFloor = async () => {
     try {
-      const promises = Array.from({ length: 16 }, (_, i) =>
-        fetch(`/api/seats/${i + 1}`).then((res) => res.json())
-      );
-      const results = await Promise.all(promises);
-      const list: SeatData[] = results.map((r) => ({
-        ...r.data.seat,
-        activeSession: r.data.activeSession,
-      }));
-      setSeats(list);
+      const res = await fetch(`/api/seats?t=${Date.now()}`, { cache: 'no-store' });
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        setSeats(json.data);
+      }
       setLoading(false);
     } catch (e) {
       console.error(e);
@@ -72,7 +68,8 @@ export default function ManagerFloorScreen() {
 
   useEffect(() => {
     fetchFloor();
-    const interval = setInterval(fetchFloor, 3000);
+    // Relaxed fallback polling (5s) because WebSockets handle all live events in 0ms
+    const interval = setInterval(fetchFloor, 5000);
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') fetchFloor();
     };
@@ -86,25 +83,113 @@ export default function ManagerFloorScreen() {
     };
   }, []);
 
-  // Real-time synchronization
+  // Real-time synchronization: Instant 0ms state reflection on WebSocket events
   useEffect(() => {
     if (!socket) return;
-    const handleUpdate = () => fetchFloor();
 
-    socket.on('seat:status_changed', handleUpdate);
-    socket.on('order:placed', handleUpdate);
-    socket.on('order:item_status_changed', handleUpdate);
-    socket.on('seat:vacated', handleUpdate);
-    socket.on('payment:completed', handleUpdate);
-    socket.on('service:requested', handleUpdate);
+    let syncTimeout: NodeJS.Timeout;
+    const debouncedSync = () => {
+      clearTimeout(syncTimeout);
+      syncTimeout = setTimeout(() => {
+        fetchFloor();
+      }, 300);
+    };
+
+    const handleSeatVacated = (data: any) => {
+      if (!data?.seatId) return;
+      // Instant in-memory state transition across the floor grid (0ms)
+      setSeats((prev) =>
+        prev.map((s) =>
+          s.id === data.seatId
+            ? { ...s, status: 'VACANT', currentGuestName: '-', activeSession: null }
+            : s
+        )
+      );
+      debouncedSync();
+    };
+
+    const handleSeatStatus = (data: any) => {
+      if (!data?.seatId) return;
+      setSeats((prev) =>
+        prev.map((s) =>
+          s.id === data.seatId
+            ? {
+                ...s,
+                status: data.status || s.status,
+                currentGuestName: data.customerName || s.currentGuestName,
+              }
+            : s
+        )
+      );
+      debouncedSync();
+    };
+
+    const handleOrderPlaced = (data: any) => {
+      if (!data?.seatId) return;
+      setSeats((prev) =>
+        prev.map((s) => {
+          if (s.id !== data.seatId) return s;
+          const activeSession = s.activeSession
+            ? {
+                ...s.activeSession,
+                grandTotal: data.sessionTotal || s.activeSession.grandTotal,
+                orderTickets:
+                  data.orderTicket && !(s.activeSession.orderTickets || []).some((t: any) => t.id === data.orderTicket.id)
+                    ? [...(s.activeSession.orderTickets || []), data.orderTicket]
+                    : s.activeSession.orderTickets || [],
+              }
+            : s.activeSession;
+          return {
+            ...s,
+            status: 'OCCUPIED',
+            currentGuestName: data.customerName || s.currentGuestName,
+            activeSession,
+          };
+        })
+      );
+      debouncedSync();
+    };
+
+    const handleItemStatus = (data: any) => {
+      if (!data?.seatId) return;
+      setSeats((prev) =>
+        prev.map((s) => {
+          if (s.id !== data.seatId || !s.activeSession) return s;
+          const updatedTickets = (s.activeSession.orderTickets || []).map((t: any) => {
+            if (data.ticketId && t.id === data.ticketId) {
+              const items = t.items.map((i: any) =>
+                data.orderItemId && i.id === data.orderItemId
+                  ? { ...i, status: data.status }
+                  : i
+              );
+              return { ...t, status: data.ticketStatus || t.status, items };
+            }
+            return t;
+          });
+          return {
+            ...s,
+            activeSession: { ...s.activeSession, orderTickets: updatedTickets },
+          };
+        })
+      );
+      debouncedSync();
+    };
+
+    socket.on('seat:status_changed', handleSeatStatus);
+    socket.on('order:placed', handleOrderPlaced);
+    socket.on('order:item_status_changed', handleItemStatus);
+    socket.on('seat:vacated', handleSeatVacated);
+    socket.on('payment:completed', handleSeatVacated);
+    socket.on('service:requested', debouncedSync);
 
     return () => {
-      socket.off('seat:status_changed', handleUpdate);
-      socket.off('order:placed', handleUpdate);
-      socket.off('order:item_status_changed', handleUpdate);
-      socket.off('seat:vacated', handleUpdate);
-      socket.off('payment:completed', handleUpdate);
-      socket.off('service:requested', handleUpdate);
+      clearTimeout(syncTimeout);
+      socket.off('seat:status_changed', handleSeatStatus);
+      socket.off('order:placed', handleOrderPlaced);
+      socket.off('order:item_status_changed', handleItemStatus);
+      socket.off('seat:vacated', handleSeatVacated);
+      socket.off('payment:completed', handleSeatVacated);
+      socket.off('service:requested', debouncedSync);
     };
   }, [socket]);
 

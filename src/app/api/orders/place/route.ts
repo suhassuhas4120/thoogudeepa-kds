@@ -34,9 +34,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Execute order creation inside in-process Serialized Write Queue
-    // Eliminates all SQLITE_BUSY / P2010 lock contentions when all 16 seats submit simultaneously
-    const result = await sqliteWriteQueue.enqueue(async () => {
+    // Execute order creation inside high-throughput seat-keyed mutex
+    const result = await sqliteWriteQueue.enqueueKey(`seat:${seatId}`, async () => {
       const seat = await prisma.diningSeat.findUnique({
         where: { id: parseInt(seatId, 10) },
         include: { sessions: { where: { status: 'ACTIVE' } } },

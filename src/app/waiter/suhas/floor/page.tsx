@@ -31,26 +31,22 @@ export default function WaiterSuhasFloorScreen() {
   const [unreadAlerts, setUnreadAlerts] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
-  // Fetch all 16 seats and filter Seats 1 to 8 (Zone A)
+  // Fetch Seats 1 to 8 (Zone A) in 1 single fast query
   const fetchFloor = async () => {
     try {
-      const promises = Array.from({ length: 8 }, (_, i) =>
-        fetch(`/api/seats/${i + 1}`).then((res) => res.json())
-      );
-      const results = await Promise.all(promises);
-      const seatList: SeatData[] = results.map((r) => ({
-        ...r.data.seat,
-        activeSession: r.data.activeSession,
-      }));
-      setSeats(seatList);
+      const res = await fetch(`/api/seats?zone=ZONE_A&t=${Date.now()}`, { cache: 'no-store' });
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        setSeats(json.data);
 
-      // Count unread alerts (pending food ready or service requests)
-      let alerts = 0;
-      seatList.forEach((s) => {
-        if (s.activeSession?.serviceRequests?.some((sr) => sr.status === 'PENDING')) alerts++;
-        if (s.activeSession?.orderTickets?.some((t) => t.items?.some((i) => i.status === 'ready'))) alerts++;
-      });
-      setUnreadAlerts(alerts);
+        // Count unread alerts (pending food ready or service requests)
+        let alerts = 0;
+        json.data.forEach((s: SeatData) => {
+          if (s.activeSession?.serviceRequests?.some((sr) => sr.status === 'PENDING')) alerts++;
+          if (s.activeSession?.orderTickets?.some((t) => t.items?.some((i) => i.status === 'ready'))) alerts++;
+        });
+        setUnreadAlerts(alerts);
+      }
       setLoading(false);
     } catch (e) {
       console.error(e);
@@ -61,7 +57,8 @@ export default function WaiterSuhasFloorScreen() {
   useEffect(() => {
     unlockAudio();
     fetchFloor();
-    const interval = setInterval(fetchFloor, 3000);
+    // 5-second relaxed fallback polling
+    const interval = setInterval(fetchFloor, 5000);
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') fetchFloor();
     };
@@ -75,38 +72,114 @@ export default function WaiterSuhasFloorScreen() {
     };
   }, []);
 
-  // Real-time synchronization
+  // Real-time synchronization: Instant in-memory updates
   useEffect(() => {
     if (!socket) return;
 
-    const handleNewOrder = () => {
+    let syncTimeout: NodeJS.Timeout;
+    const debouncedSync = () => {
+      clearTimeout(syncTimeout);
+      syncTimeout = setTimeout(() => {
+        fetchFloor();
+      }, 300);
+    };
+
+    const handleNewOrder = (data?: any) => {
       playWaiterAlert();
-      fetchFloor();
+      if (data?.seatId && data.seatId <= 8) {
+        setSeats((prev) =>
+          prev.map((s) => {
+            if (s.id !== data.seatId) return s;
+            const activeSession = s.activeSession
+              ? {
+                  ...s.activeSession,
+                  grandTotal: data.sessionTotal || s.activeSession.grandTotal,
+                  orderTickets:
+                    data.orderTicket && !(s.activeSession.orderTickets || []).some((t: any) => t.id === data.orderTicket.id)
+                      ? [...(s.activeSession.orderTickets || []), data.orderTicket]
+                      : s.activeSession.orderTickets || [],
+                }
+              : s.activeSession;
+            return {
+              ...s,
+              status: 'OCCUPIED',
+              currentGuestName: data.customerName || s.currentGuestName,
+              activeSession,
+            };
+          })
+        );
+      }
+      debouncedSync();
     };
 
-    const handleItemStatus = () => {
-      fetchFloor();
+    const handleItemStatus = (data?: any) => {
+      if (data?.seatId && data.seatId <= 8) {
+        setSeats((prev) =>
+          prev.map((s) => {
+            if (s.id !== data.seatId || !s.activeSession) return s;
+            const updatedTickets = (s.activeSession.orderTickets || []).map((t: any) => {
+              if (data.ticketId && t.id === data.ticketId) {
+                const items = t.items.map((i: any) =>
+                  data.orderItemId && i.id === data.orderItemId ? { ...i, status: data.status } : i
+                );
+                return { ...t, status: data.ticketStatus || t.status, items };
+              }
+              return t;
+            });
+            return {
+              ...s,
+              activeSession: { ...s.activeSession, orderTickets: updatedTickets },
+            };
+          })
+        );
+      }
+      debouncedSync();
     };
 
-    const handleServiceReq = () => {
-      playWaiterAlert();
-      fetchFloor();
+    const handleSeatVacated = (data?: any) => {
+      if (data?.seatId && data.seatId <= 8) {
+        setSeats((prev) =>
+          prev.map((s) =>
+            s.id === data.seatId
+              ? { ...s, status: 'VACANT', currentGuestName: '-', activeSession: null }
+              : s
+          )
+        );
+      }
+      debouncedSync();
     };
 
-    const handleSeatVacated = () => {
-      fetchFloor();
+    const handleSeatStatus = (data?: any) => {
+      if (data?.seatId && data.seatId <= 8) {
+        setSeats((prev) =>
+          prev.map((s) =>
+            s.id === data.seatId
+              ? { ...s, status: data.status || s.status, currentGuestName: data.customerName || s.currentGuestName }
+              : s
+          )
+        );
+      }
+      debouncedSync();
     };
 
     socket.on('order:placed', handleNewOrder);
     socket.on('order:item_status_changed', handleItemStatus);
-    socket.on('service:requested', handleServiceReq);
+    socket.on('seat:status_changed', handleSeatStatus);
+    socket.on('service:requested', () => {
+      playWaiterAlert();
+      debouncedSync();
+    });
     socket.on('seat:vacated', handleSeatVacated);
+    socket.on('payment:completed', handleSeatVacated);
 
     return () => {
+      clearTimeout(syncTimeout);
       socket.off('order:placed', handleNewOrder);
       socket.off('order:item_status_changed', handleItemStatus);
-      socket.off('service:requested', handleServiceReq);
+      socket.off('seat:status_changed', handleSeatStatus);
+      socket.off('service:requested', debouncedSync);
       socket.off('seat:vacated', handleSeatVacated);
+      socket.off('payment:completed', handleSeatVacated);
     };
   }, [socket]);
 

@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid parameters' }, { status: 400 });
     }
 
-    const result = await sqliteWriteQueue.enqueue(async () => {
+    const result = await sqliteWriteQueue.enqueueKey(`ticket:${ticketId}`, async () => {
       const ticket = await prisma.orderTicket.findUnique({
         where: { id: ticketId },
         include: { items: true },

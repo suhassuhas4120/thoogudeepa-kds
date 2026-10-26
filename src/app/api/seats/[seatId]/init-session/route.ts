@@ -60,8 +60,8 @@ export async function POST(
       ? String(customerName).trim()
       : '-';
 
-    // 2. ATOMIC EXECUTION via mutex queue: Guarantees race-condition winner detection
-    const result = await sqliteWriteQueue.enqueue(async () => {
+    // 2. ATOMIC EXECUTION via seat-keyed mutex: Guarantees race-condition winner detection per seat without blocking other seats
+    const result = await sqliteWriteQueue.enqueueKey(`seat:${seatId}`, async () => {
       let seat = await prisma.diningSeat.findUnique({
         where: { id: seatId },
         include: { sessions: { where: { status: 'ACTIVE' } } },

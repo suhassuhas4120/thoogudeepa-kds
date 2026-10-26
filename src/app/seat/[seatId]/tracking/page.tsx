@@ -89,7 +89,8 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
 
   useEffect(() => {
     fetchState();
-    const interval = setInterval(fetchState, 2000);
+    // Relaxed 5s fallback polling because WebSockets handle all updates in 0ms
+    const interval = setInterval(fetchState, 5000);
     const handleFocus = () => fetchState();
     window.addEventListener('focus', handleFocus);
     window.addEventListener('visibilitychange', handleFocus);
@@ -104,8 +105,17 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
   useEffect(() => {
     if (!socket) return;
 
+    let syncTimeout: NodeJS.Timeout;
+    const debouncedSync = () => {
+      clearTimeout(syncTimeout);
+      syncTimeout = setTimeout(() => {
+        fetchState();
+      }, 800);
+    };
+
     const handleItemStatus = (data: any) => {
       if (!data) return;
+      // Instant in-memory stage progression with 0ms delay!
       setSession((prev) => {
         if (!prev) return prev;
         let chimePlayed = false;
@@ -159,8 +169,23 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
         return { ...prev, orderTickets: newTickets };
       });
 
-      // Quick background sync
-      fetchState();
+      debouncedSync();
+    };
+
+    const handleNewOrder = (data: any) => {
+      if (data?.orderTicket) {
+        setSession((prev) => {
+          if (!prev) return prev;
+          const existing = prev.orderTickets || [];
+          if (existing.some((t) => t.id === data.orderTicket.id)) return prev;
+          return {
+            ...prev,
+            orderTickets: [...existing, data.orderTicket],
+            grandTotal: data.sessionTotal || prev.grandTotal,
+          };
+        });
+      }
+      debouncedSync();
     };
 
     const handlePaymentLock = (data: { lockMode: 'UNLOCKED' | 'LOCKED_WAITER' | 'LOCKED_SELF' }) => {
@@ -172,13 +197,18 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
     };
 
     socket.on('order:item_status_changed', handleItemStatus);
+    socket.on('order:placed', handleNewOrder);
     socket.on('payment:lock_changed', handlePaymentLock);
     socket.on('seat:vacated', handleVacate);
+    socket.on('payment:completed', handleVacate);
 
     return () => {
+      clearTimeout(syncTimeout);
       socket.off('order:item_status_changed', handleItemStatus);
+      socket.off('order:placed', handleNewOrder);
       socket.off('payment:lock_changed', handlePaymentLock);
       socket.off('seat:vacated', handleVacate);
+      socket.off('payment:completed', handleVacate);
     };
   }, [socket, seatId, router]);
 

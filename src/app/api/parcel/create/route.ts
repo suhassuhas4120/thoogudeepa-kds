@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Items list required' }, { status: 400 });
     }
 
-    const result = await sqliteWriteQueue.enqueue(async () => {
+    const result = await sqliteWriteQueue.enqueueKey('parcel', async () => {
       // 1. Fetch official item details
       const itemIds = items.map((i: { menuItemId: string }) => i.menuItemId);
       const dbItems = await prisma.menuItem.findMany({
@@ -92,12 +92,15 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // 4. Create Master Sales Record with safe unique invoice #
-      const allRecords = await prisma.masterSalesRecord.findMany({
+      // 4. Create Master Sales Record with safe unique invoice # (Fast In-Memory Resolution)
+      const recentRecords = await prisma.masterSalesRecord.findMany({
         select: { billNumber: true },
+        orderBy: { id: 'desc' },
+        take: 200,
       });
+      const existingBills = new Set(recentRecords.map((r) => r.billNumber));
       let maxNum = 100;
-      allRecords.forEach((r) => {
+      recentRecords.forEach((r) => {
         const match = r.billNumber.match(/INV-(\d+)/i);
         if (match) {
           const num = parseInt(match[1], 10);
@@ -105,7 +108,7 @@ export async function POST(req: NextRequest) {
         }
       });
       let nextNum = maxNum + 1;
-      while (await prisma.masterSalesRecord.findUnique({ where: { billNumber: `INV-${nextNum}` } })) {
+      while (existingBills.has(`INV-${nextNum}`)) {
         nextNum++;
       }
       const billNumber = `INV-${nextNum}`;

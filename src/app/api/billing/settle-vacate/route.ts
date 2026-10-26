@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Seat ID is required' }, { status: 400 });
     }
 
-    const result = await sqliteWriteQueue.enqueue(async () => {
+    const result = await sqliteWriteQueue.enqueueKey(`seat:${seatId}`, async () => {
       const seat = await prisma.diningSeat.findUnique({
         where: { id: parseInt(seatId, 10) },
         include: {
@@ -110,12 +110,15 @@ export async function POST(req: NextRequest) {
       });
       const itemsSummary = itemsSummaryArray.join(', ') || 'Standard Dine-in';
 
-      // 2. Generate Safe Unique Invoice Number
-      const allRecords = await prisma.masterSalesRecord.findMany({
+      // 2. Generate Safe Unique Invoice Number (Fast In-Memory Resolution)
+      const recentRecords = await prisma.masterSalesRecord.findMany({
         select: { billNumber: true },
+        orderBy: { id: 'desc' },
+        take: 200,
       });
+      const existingBills = new Set(recentRecords.map((r) => r.billNumber));
       let maxNum = 100;
-      allRecords.forEach((r) => {
+      recentRecords.forEach((r) => {
         const match = r.billNumber.match(/INV-(\d+)/i);
         if (match) {
           const num = parseInt(match[1], 10);
@@ -123,7 +126,7 @@ export async function POST(req: NextRequest) {
         }
       });
       let nextNum = maxNum + 1;
-      while (await prisma.masterSalesRecord.findUnique({ where: { billNumber: `INV-${nextNum}` } })) {
+      while (existingBills.has(`INV-${nextNum}`)) {
         nextNum++;
       }
       const billNumber = `INV-${nextNum}`;
@@ -139,49 +142,47 @@ export async function POST(req: NextRequest) {
 
       const chosenPaymentMode = paymentMode || session.paymentPreferred || 'CASH';
 
-      // 3. Create Immutable MasterSalesRecord (Screen 8)
-      const masterRecord = await prisma.masterSalesRecord.create({
-        data: {
-          billNumber,
-          date: formattedDate,
-          orderType: 'Dine-in',
-          seatNumberOrToken: `S${seat.seatNumber}`,
-          customerName: session.customerName && session.customerName !== '-' ? session.customerName : '(-)',
-          serverName: settledBy || seat.assignedWaiter,
-          itemsSummary,
-          placedAt: initialPlacedTime,
-          settledAt: formattedSettledTime,
-          subtotal: session.subtotal,
-          discountAmount: session.discountAmount,
-          packagingCharges: 0.0,
-          gst5Percent: session.gstAmount,
-          grandTotal: session.grandTotal,
-          paymentMode: chosenPaymentMode.toUpperCase(),
-          paymentStatus: 'PAID',
-          sessionId: session.id,
-        },
-      });
-
-      // 4. Mark DiningSession as COMPLETED
-      await prisma.diningSession.update({
-        where: { id: session.id },
-        data: {
-          status: 'COMPLETED',
-          endedAt: now,
-          paymentStatus: 'PAID',
-          paymentMethod: chosenPaymentMode.toUpperCase(),
-          paymentLockState: 'UNLOCKED',
-        },
-      });
-
-      // 5. Reset DiningSeat to VACANT
-      await prisma.diningSeat.update({
-        where: { id: seat.id },
-        data: {
-          status: 'VACANT',
-          currentGuestName: '-',
-        },
-      });
+      // 3. Perform Writes in a Single Atomic Transaction Pipeline
+      const [masterRecord] = await prisma.$transaction([
+        prisma.masterSalesRecord.create({
+          data: {
+            billNumber,
+            date: formattedDate,
+            orderType: 'Dine-in',
+            seatNumberOrToken: `S${seat.seatNumber}`,
+            customerName: session.customerName && session.customerName !== '-' ? session.customerName : '(-)',
+            serverName: settledBy || seat.assignedWaiter,
+            itemsSummary,
+            placedAt: initialPlacedTime,
+            settledAt: formattedSettledTime,
+            subtotal: session.subtotal,
+            discountAmount: session.discountAmount,
+            packagingCharges: 0.0,
+            gst5Percent: session.gstAmount,
+            grandTotal: session.grandTotal,
+            paymentMode: chosenPaymentMode.toUpperCase(),
+            paymentStatus: 'PAID',
+            sessionId: session.id,
+          },
+        }),
+        prisma.diningSession.update({
+          where: { id: session.id },
+          data: {
+            status: 'COMPLETED',
+            endedAt: now,
+            paymentStatus: 'PAID',
+            paymentMethod: chosenPaymentMode.toUpperCase(),
+            paymentLockState: 'UNLOCKED',
+          },
+        }),
+        prisma.diningSeat.update({
+          where: { id: seat.id },
+          data: {
+            status: 'VACANT',
+            currentGuestName: '-',
+          },
+        }),
+      ]);
 
       // 6. Broadcast via WebSocket across all portals
       const isZoneA = seat.zone === 'ZONE_A';

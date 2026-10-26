@@ -23,55 +23,29 @@ export async function GET(
     const { token: deviceToken } = extractDeviceToken(req);
 
     // Enforce 1-Device Seat Locking & Active Order Lockout for Diners
-    if (!isStaff) {
-      const access = await validateSeatAccess(seatId, deviceToken, false);
-      if (!access.allowed) {
-        const errorResponse = NextResponse.json(
-          {
-            success: false,
-            error: access.error,
-            message: access.message,
-            seatNumber: access.activeSeatNumber || seatId,
-            activeSeatId: access.activeSeatId,
-            activeSeatNumber: access.activeSeatNumber,
-            deviceToken,
-          },
-          { status: 403 }
-        );
-        return attachDeviceTokenCookie(errorResponse, deviceToken);
-      }
+    const access = await validateSeatAccess(seatId, deviceToken, isStaff);
+    if (!access.allowed) {
+      const errorResponse = NextResponse.json(
+        {
+          success: false,
+          error: access.error,
+          message: access.message,
+          seatNumber: access.activeSeatNumber || seatId,
+          activeSeatId: access.activeSeatId,
+          activeSeatNumber: access.activeSeatNumber,
+          deviceToken,
+        },
+        { status: 403 }
+      );
+      return attachDeviceTokenCookie(errorResponse, deviceToken);
     }
 
-    const seat = await prisma.diningSeat.findUnique({
-      where: { id: seatId },
-      include: {
-        sessions: {
-          where: { status: 'ACTIVE' },
-          include: {
-            orderTickets: {
-              include: {
-                items: {
-                  include: {
-                    menuItem: true,
-                  },
-                },
-              },
-              orderBy: { placedAt: 'asc' },
-            },
-            serviceRequests: {
-              where: { status: 'PENDING' },
-              orderBy: { requestedAt: 'desc' },
-            },
-          },
-        },
-      },
-    });
-
+    const seat = access.seat;
     if (!seat) {
       return NextResponse.json({ success: false, error: 'Seat not found' }, { status: 404 });
     }
 
-    let activeSession: any = seat.sessions[0] || null;
+    let activeSession: any = access.activeSession || null;
 
     // If vacant but looking for bill history (e.g. immediately post-payment)
     if (!activeSession) {

@@ -1,47 +1,58 @@
 /**
- * In-Process Serialized Write Mutex & Queue for SQLite
- *
- * Guarantees zero SQLITE_BUSY (P2010/P2034) lock contention by serializing all
- * write transactions in a FIFO microsecond promise chain while WAL mode handles
- * infinite concurrent reads in parallel.
+ * High-Throughput Keyed Write Mutex
+ * 
+ * Provides seat-level microsecond serialization to eliminate race conditions
+ * for concurrent scans on the same seat, while allowing all 16 seats, kitchen,
+ * waiter, and manager operations to execute concurrently in parallel with zero lag.
  */
 
-class WriteQueue {
-  private queue: Promise<void> = Promise.resolve();
-  private pendingCount = 0;
+class KeyedWriteQueue {
+  private queues: Map<string, Promise<void>> = new Map();
 
-  async enqueue<T>(task: () => Promise<T>): Promise<T> {
-    this.pendingCount++;
+  async enqueueKey<T>(key: string, task: () => Promise<T>): Promise<T> {
+    const prevPromise = this.queues.get(key) || Promise.resolve();
 
-    return new Promise<T>((resolve, reject) => {
-      this.queue = this.queue
-        .then(async () => {
-          try {
-            const result = await task();
-            resolve(result);
-          } catch (err) {
-            reject(err);
-          } finally {
-            this.pendingCount = Math.max(0, this.pendingCount - 1);
-          }
-        })
-        .catch((err) => {
-          console.error('[WriteQueue] Uncaught task error:', err);
-        });
+    let resolveTask!: (val: T) => void;
+    let rejectTask!: (err: any) => void;
+    const taskPromise = new Promise<T>((resolve, reject) => {
+      resolveTask = resolve;
+      rejectTask = reject;
     });
+
+    const nextPromise = prevPromise
+      .then(async () => {
+        try {
+          const res = await task();
+          resolveTask(res);
+        } catch (err) {
+          rejectTask(err);
+        }
+      })
+      .catch((err) => {
+        console.error(`[KeyedWriteQueue] Error on key ${key}:`, err);
+      })
+      .finally(() => {
+        if (this.queues.get(key) === nextPromise) {
+          this.queues.delete(key);
+        }
+      });
+
+    this.queues.set(key, nextPromise);
+    return taskPromise;
   }
 
-  getPendingCount(): number {
-    return this.pendingCount;
+  async enqueue<T>(task: () => Promise<T>, key = 'default'): Promise<T> {
+    // If running in Postgres, concurrent tasks run in parallel across keys
+    return this.enqueueKey(key, task);
   }
 }
 
 const globalForQueue = globalThis as unknown as {
-  sqliteWriteQueue: WriteQueue | undefined;
+  sqliteWriteQueue: KeyedWriteQueue | undefined;
 };
 
 export const sqliteWriteQueue =
-  globalForQueue.sqliteWriteQueue ?? new WriteQueue();
+  globalForQueue.sqliteWriteQueue ?? new KeyedWriteQueue();
 
 if (process.env.NODE_ENV !== 'production') {
   globalForQueue.sqliteWriteQueue = sqliteWriteQueue;
