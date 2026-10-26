@@ -43,7 +43,8 @@ export async function POST(req: NextRequest) {
 
       const now = new Date();
       const formattedDate = now.toLocaleDateString('en-GB').replace(/\//g, '-');
-      const formattedPlacedTime = now.toLocaleTimeString('en-US', {
+      const formattedPlacedTime = now.toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata',
         hour: '2-digit',
         minute: '2-digit',
         hour12: true,

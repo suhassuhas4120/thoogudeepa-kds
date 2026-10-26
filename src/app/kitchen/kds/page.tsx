@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChefHat, Check, Volume2, Package, X, AlertTriangle, ArrowRight } from 'lucide-react';
+import { ChefHat, Check, Volume2, Package, X, AlertTriangle, ArrowRight, Clock } from 'lucide-react';
 import { useSocketRoom } from '@/lib/useSocket';
 import { playKitchenBell, unlockAudio } from '@/lib/audio-synth';
 import AudioShield from '@/components/AudioShield';
@@ -24,6 +24,7 @@ interface Ticket {
   customerName: string;
   customerPhone?: string;
   placedAtTime: string;
+  placedAt?: string;
   status: 'RECEIVED' | 'COOKING' | 'READY' | 'COMPLETED';
   waiterName: string;
   specialNotes?: string;
@@ -36,6 +37,21 @@ interface MenuItem86 {
   isAvailable: boolean;
   price: number;
 }
+
+const formatOrderTime = (placedAt?: string, placedAtTime?: string) => {
+  if (placedAt) {
+    const d = new Date(placedAt);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+    }
+  }
+  return placedAtTime || '';
+};
 
 export default function KitchenKdsBoard() {
   const socket = useSocketRoom('room:kitchen');
@@ -86,10 +102,10 @@ export default function KitchenKdsBoard() {
     fetchTickets(true);
     fetchMenu();
 
-    // 3-second background polling backup (skipped during active mutations to prevent flicker)
+    // 2-second background polling backup (skipped during active mutations to prevent flicker)
     const interval = setInterval(() => {
       fetchTickets();
-    }, 3000);
+    }, 2000);
 
     // Instant re-fetch on window focus / tab visibility
     const handleVisibility = () => {
@@ -111,12 +127,63 @@ export default function KitchenKdsBoard() {
   useEffect(() => {
     if (!socket) return;
 
-    const handleNewOrder = () => {
+    const handleNewOrder = (data?: any) => {
       playKitchenBell();
+      if (data?.orderTicket) {
+        setTickets((prev) => {
+          if (prev.some((t) => t.id === data.orderTicket.id)) return prev;
+          return [data.orderTicket, ...prev];
+        });
+      }
       fetchTickets(true);
     };
 
-    const handleItemStatusChanged = () => {
+    const handleItemStatusChanged = (data?: any) => {
+      if (!data) {
+        fetchTickets();
+        return;
+      }
+      // Instant in-memory state transition across columns with zero lag!
+      setTickets((prev) =>
+        prev.map((t) => {
+          if (data.ticketId && t.id === data.ticketId) {
+            if (Array.isArray(data.items) && data.items.length > 0) {
+              const statusMap = new Map(data.items.map((it: any) => [it.id, it.status]));
+              return {
+                ...t,
+                status: (data.ticketStatus || t.status) as any,
+                items: t.items.map((i) =>
+                  statusMap.has(i.id) ? { ...i, status: statusMap.get(i.id) as any } : i
+                ),
+              };
+            }
+            if (data.orderItemId) {
+              return {
+                ...t,
+                status: (data.ticketStatus || t.status) as any,
+                items: t.items.map((i) =>
+                  i.id === data.orderItemId ? { ...i, status: data.status as any } : i
+                ),
+              };
+            }
+            if (data.status) {
+              return {
+                ...t,
+                status: (data.ticketStatus || (data.status === 'preparing' ? 'COOKING' : data.status === 'ready' ? 'READY' : t.status)) as any,
+                items: t.items.map((i) => ({
+                  ...i,
+                  status: data.status === 'preparing'
+                    ? (i.status === 'placed' ? 'preparing' : i.status)
+                    : (i.status !== 'cancelled' ? data.status : i.status),
+                })),
+              };
+            }
+          }
+          return t;
+        })
+      );
+
+      // Background silent re-sync
       fetchTickets();
     };
 
@@ -147,12 +214,25 @@ export default function KitchenKdsBoard() {
 
     // 1. Instant Optimistic UI Update
     setTickets((prev) =>
-      prev.map((t) => ({
-        ...t,
-        items: t.items.map((i) =>
+      prev.map((t) => {
+        const hasItem = t.items.some((i) => i.id === orderItemId);
+        if (!hasItem) return t;
+        const newItems = t.items.map((i) =>
           i.id === orderItemId ? { ...i, status: status as any } : i
-        ),
-      }))
+        );
+        const nonCancelled = newItems.filter((i) => i.status !== 'cancelled');
+        const allReady = nonCancelled.length > 0 && nonCancelled.every((i) => i.status === 'ready' || i.status === 'served');
+        const anyCooking = nonCancelled.some((i) => i.status === 'preparing');
+        let newStatus = t.status;
+        if (allReady) newStatus = 'READY';
+        else if (anyCooking) newStatus = 'COOKING';
+
+        return {
+          ...t,
+          status: newStatus as any,
+          items: newItems,
+        };
+      })
     );
 
     // 2. Server mutation
@@ -165,8 +245,9 @@ export default function KitchenKdsBoard() {
     } catch (e) {
       console.error(e);
     } finally {
-      isMutatingRef.current = false;
-      fetchTickets(true);
+      setTimeout(() => {
+        isMutatingRef.current = false;
+      }, 1200);
     }
   };
 
@@ -174,11 +255,11 @@ export default function KitchenKdsBoard() {
   const handleBatchStatus = async (ticket: Ticket, targetStatus: 'preparing' | 'ready') => {
     isMutatingRef.current = true;
 
-    // 1. Instant Optimistic UI Update (entire ticket slides to next column instantly)
+    // 1. Instant Optimistic UI Update (entire ticket slides to next column in 0ms)
+    const mappedStatus = targetStatus === 'preparing' ? 'COOKING' : 'READY';
     setTickets((prev) =>
       prev.map((t) => {
         if (t.id !== ticket.id) return t;
-        const mappedStatus = targetStatus === 'preparing' ? 'COOKING' : 'READY';
         return {
           ...t,
           status: mappedStatus as any,
@@ -202,8 +283,9 @@ export default function KitchenKdsBoard() {
     } catch (e) {
       console.error(e);
     } finally {
-      isMutatingRef.current = false;
-      fetchTickets(true);
+      setTimeout(() => {
+        isMutatingRef.current = false;
+      }, 1200);
     }
   };
 
@@ -342,8 +424,9 @@ export default function KitchenKdsBoard() {
 
                         {/* Order Placed Time */}
                         <div className="text-right">
-                          <span className="text-xs font-black text-amber-400 block">
-                            🕒 {ticket.placedAtTime}
+                          <span className="text-xs font-black text-amber-400 flex items-center justify-end gap-1 font-mono">
+                            <Clock className="w-3.5 h-3.5 text-amber-400" />
+                            <span>{formatOrderTime(ticket.placedAt, ticket.placedAtTime)}</span>
                           </span>
                           <span className="text-[10px] uppercase font-bold text-slate-500">
                             Placed Time
@@ -449,8 +532,9 @@ export default function KitchenKdsBoard() {
                         </div>
 
                         <div className="text-right">
-                          <span className="text-xs font-black text-blue-400 block">
-                            🕒 {ticket.placedAtTime}
+                          <span className="text-xs font-black text-blue-400 flex items-center justify-end gap-1 font-mono">
+                            <Clock className="w-3.5 h-3.5 text-blue-400" />
+                            <span>{formatOrderTime(ticket.placedAt, ticket.placedAtTime)}</span>
                           </span>
                           <span className="text-[10px] uppercase font-bold text-slate-500">
                             Placed Time
@@ -566,8 +650,9 @@ export default function KitchenKdsBoard() {
                       </div>
 
                       <div className="text-right">
-                        <span className="text-xs font-black text-emerald-400 block">
-                          🕒 {ticket.placedAtTime}
+                        <span className="text-xs font-black text-emerald-400 flex items-center justify-end gap-1 font-mono">
+                          <Clock className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>{formatOrderTime(ticket.placedAt, ticket.placedAtTime)}</span>
                         </span>
                         <span className="text-[10px] uppercase font-bold text-slate-500">
                           Placed Time

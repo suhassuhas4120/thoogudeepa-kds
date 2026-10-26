@@ -91,13 +91,86 @@ export default function ManagerKitchenMonitorScreen() {
     };
   }, []);
 
+  const formatOrderTime = (placedAt?: string, placedAtTime?: string) => {
+    if (placedAt) {
+      const d = new Date(placedAt);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleTimeString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        });
+      }
+    }
+    return placedAtTime || '';
+  };
+
   useEffect(() => {
     if (!socket) return;
-    const handleTicket = () => {
+
+    const handleTicket = (data: any) => {
       playKitchenBell();
+      if (data?.orderTicket) {
+        setTickets((prev) => {
+          if (prev.some((t) => t.id === data.orderTicket.id)) return prev;
+          return [data.orderTicket, ...prev];
+        });
+      }
       fetchKdsData();
     };
-    const handleStatus = () => fetchKdsData();
+
+    const handleStatus = (data: any) => {
+      if (!data) {
+        fetchKdsData();
+        return;
+      }
+      // Instant in-memory update across the table with 0 lag
+      setTickets((prev) =>
+        prev.map((t) => {
+          if (data.ticketId && t.id === data.ticketId) {
+            if (Array.isArray(data.items) && data.items.length > 0) {
+              const itemStatusMap = new Map(data.items.map((it: any) => [it.id, it.status]));
+              return {
+                ...t,
+                status: data.ticketStatus || t.status,
+                items: t.items.map((i) =>
+                  itemStatusMap.has(i.id) ? { ...i, status: itemStatusMap.get(i.id) as any } : i
+                ),
+              };
+            }
+            if (data.orderItemId) {
+              return {
+                ...t,
+                status: data.ticketStatus || t.status,
+                items: t.items.map((i) =>
+                  i.id === data.orderItemId ? { ...i, status: data.status as any } : i
+                ),
+              };
+            }
+            if (data.status) {
+              return {
+                ...t,
+                status: data.ticketStatus || (data.status === 'served' ? 'COMPLETED' : t.status),
+                items: t.items.map((i) => ({ ...i, status: data.status })),
+              };
+            }
+          }
+          return t;
+        })
+      );
+      if (selectedTicket && data.ticketId && selectedTicket.id === data.ticketId) {
+        setSelectedTicket((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            status: data.ticketStatus || (data.status === 'served' ? 'COMPLETED' : prev.status),
+            items: prev.items.map((i) => ({ ...i, status: data.status || i.status })),
+          };
+        });
+      }
+      fetchKdsData();
+    };
 
     socket.on('order:placed', handleTicket);
     socket.on('order:item_status_changed', handleStatus);
@@ -110,7 +183,7 @@ export default function ManagerKitchenMonitorScreen() {
       socket.off('menu:item_86_toggled', handleStatus);
       socket.off('menu:updated', handleStatus);
     };
-  }, [socket]);
+  }, [socket, selectedTicket]);
 
   // Toggle item 86 availability
   const handleToggle86 = async (itemId: string, currentStatus: boolean) => {
@@ -391,7 +464,7 @@ export default function ManagerKitchenMonitorScreen() {
                         {itemsSummary}
                       </td>
                       <td className="py-3 px-4 text-amber-400 font-mono font-bold">
-                        {ticket.placedAtTime || '12:20 PM'}
+                        {formatOrderTime(ticket.placedAt, ticket.placedAtTime)}
                       </td>
                       <td className="py-3 px-3">
                         <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${statusBadge.color}`}>
@@ -462,7 +535,7 @@ export default function ManagerKitchenMonitorScreen() {
                   </div>
                   <p className="text-xs text-stone-400 mt-1 flex items-center gap-2">
                     <Clock className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Placed: <strong className="text-stone-200">{selectedTicket.placedAtTime || '12:20 PM'}</strong></span>
+                    <span>Placed: <strong className="text-stone-200">{formatOrderTime(selectedTicket.placedAt, selectedTicket.placedAtTime)}</strong></span>
                     <span>•</span>
                     <span>Server: <strong className="text-stone-200">{isParcel ? 'Manager Desk' : (selectedTicket.waiterName || 'Staff')}</strong></span>
                   </p>

@@ -66,7 +66,8 @@ export async function POST(req: NextRequest) {
         seat.zone === 'ZONE_A' ? 'room:waiter:zoneA' : 'room:waiter:zoneB';
       const seatRoom: SocketRoom = `room:seat:${seat.seatNumber}`;
 
-      const formattedTime = now.toLocaleTimeString('en-US', {
+      const formattedTime = now.toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata',
         hour: '2-digit',
         minute: '2-digit',
         hour12: true,

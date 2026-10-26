@@ -51,11 +51,13 @@ export async function GET() {
         customerName: t.customerName,
         customerPhone: t.customerPhone,
         totalAmount,
-        placedAtTime: new Date(t.placedAt).toLocaleTimeString('en-US', {
+        placedAtTime: new Date(t.placedAt).toLocaleTimeString('en-IN', {
+          timeZone: 'Asia/Kolkata',
           hour: '2-digit',
           minute: '2-digit',
           hour12: true,
         }),
+        placedAt: t.placedAt instanceof Date ? t.placedAt.toISOString() : new Date(t.placedAt).toISOString(),
         status: t.status,
         specialNotes: t.specialNotes,
         waiterName: t.waiterName,

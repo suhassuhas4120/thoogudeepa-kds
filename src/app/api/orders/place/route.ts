@@ -83,7 +83,8 @@ export async function POST(req: NextRequest) {
       const nextTicketNumber = String(101 + ticketCount);
 
       const now = new Date();
-      const formattedPlacedTime = now.toLocaleTimeString('en-US', {
+      const formattedPlacedTime = now.toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata',
         hour: '2-digit',
         minute: '2-digit',
         hour12: true,

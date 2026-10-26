@@ -43,7 +43,8 @@ export async function POST(req: NextRequest) {
 
       const now = new Date();
       const formattedDate = now.toLocaleDateString('en-GB').replace(/\//g, '-'); // "25-10-2026"
-      const formattedSettledTime = now.toLocaleTimeString('en-US', {
+      const formattedSettledTime = now.toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata',
         hour: '2-digit',
         minute: '2-digit',
         hour12: true,
@@ -70,7 +71,8 @@ export async function POST(req: NextRequest) {
       const billNumber = `INV-${101 + count}`;
 
       const initialPlacedTime = session.orderTickets[0]?.placedAt
-        ? new Date(session.orderTickets[0].placedAt).toLocaleTimeString('en-US', {
+        ? new Date(session.orderTickets[0].placedAt).toLocaleTimeString('en-IN', {
+            timeZone: 'Asia/Kolkata',
             hour: '2-digit',
             minute: '2-digit',
             hour12: true,

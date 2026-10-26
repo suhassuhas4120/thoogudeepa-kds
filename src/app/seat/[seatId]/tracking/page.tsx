@@ -59,23 +59,78 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
 
   useEffect(() => {
     fetchState();
+    const interval = setInterval(fetchState, 2000);
+    const handleFocus = () => fetchState();
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('visibilitychange', handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('visibilitychange', handleFocus);
+    };
   }, [seatId]);
 
   useEffect(() => {
     if (!socket) return;
 
-    const handleItemStatus = (data: { orderItemId: string; status: OrderItem['status'] }) => {
+    const handleItemStatus = (data: any) => {
+      if (!data) return;
       setSession((prev) => {
         if (!prev) return prev;
-        const newTickets = prev.orderTickets.map((t) => ({
-          ...t,
-          items: t.items.map((it) => (it.id === data.orderItemId ? { ...it, status: data.status } : it)),
-        }));
-        if (data.status === 'ready' || data.status === 'served') {
+        let chimePlayed = false;
+
+        const newTickets = (prev.orderTickets || []).map((t) => {
+          // 1. If batch update matches ticket
+          if (data.ticketId && t.id === data.ticketId) {
+            if (data.status === 'ready' || data.status === 'served') {
+              chimePlayed = true;
+            }
+            if (Array.isArray(data.items) && data.items.length > 0) {
+              const statusMap = new Map(data.items.map((it: any) => [it.id, it.status]));
+              return {
+                ...t,
+                items: t.items.map((it) =>
+                  statusMap.has(it.id) ? { ...it, status: statusMap.get(it.id) as any } : it
+                ),
+              };
+            }
+            return {
+              ...t,
+              items: t.items.map((it) => ({
+                ...it,
+                status: data.status === 'preparing'
+                  ? (it.status === 'placed' ? 'preparing' : it.status)
+                  : (it.status !== 'cancelled' ? data.status : it.status),
+              })),
+            };
+          }
+
+          // 2. If single item update matches item
+          if (data.orderItemId && t.items.some((it) => it.id === data.orderItemId)) {
+            if (data.status === 'ready' || data.status === 'served') {
+              chimePlayed = true;
+            }
+            return {
+              ...t,
+              items: t.items.map((it) =>
+                it.id === data.orderItemId ? { ...it, status: data.status } : it
+              ),
+            };
+          }
+
+          return t;
+        });
+
+        if (chimePlayed) {
           playSuccessChime();
         }
+
         return { ...prev, orderTickets: newTickets };
       });
+
+      // Quick background sync
+      fetchState();
     };
 
     const handlePaymentLock = (data: { lockMode: 'UNLOCKED' | 'LOCKED_WAITER' | 'LOCKED_SELF' }) => {

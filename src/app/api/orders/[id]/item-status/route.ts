@@ -124,10 +124,11 @@ export async function POST(
         status: updatedItem.status,
         itemName: updatedItem.itemName,
         ticketStatus: newTicketStatus,
+        items: allItems.map((i) => ({ id: i.id, status: i.id === updatedItem.id ? updatedItem.status : i.status })),
       };
 
       emitToMultipleRooms(
-        ['room:kitchen', targetWaiterRoom, 'room:manager', seatRoom],
+        ['room:kitchen', targetWaiterRoom, 'room:manager', seatRoom, 'room:global'],
         'order:item_status_changed',
         payload
       );

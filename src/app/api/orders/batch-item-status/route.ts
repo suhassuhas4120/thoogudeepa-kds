@@ -67,10 +67,12 @@ export async function POST(req: NextRequest) {
         seatId: updatedTicket.seatId,
         status: status,
         ticketStatus: mappedTicketStatus,
+        items: updatedTicket.items.map((i) => ({ id: i.id, status: i.status })),
+        orderItemId: updatedTicket.items[0]?.id,
       };
 
       emitToMultipleRooms(
-        ['room:kitchen', targetWaiterRoom, 'room:manager', seatRoom],
+        ['room:kitchen', targetWaiterRoom, 'room:manager', seatRoom, 'room:global'],
         'order:item_status_changed',
         payload
       );
