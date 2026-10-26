@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CreditCard, LogOut, CheckCircle2, RefreshCw } from 'lucide-react';
+import { CreditCard, LogOut, CheckCircle2, RefreshCw, Banknote, Smartphone } from 'lucide-react';
 import { useSocketRoom } from '@/lib/useSocket';
 import { playSuccessChime } from '@/lib/audio-synth';
 import ManagerTopNav from '@/components/ManagerTopNav';
@@ -395,19 +395,35 @@ export default function ManagerFloorScreen() {
 
           {/* Action Buttons matching ASCII */}
           <div className="space-y-2 pt-2 border-t border-[#2C2520]">
-            <button
-              type="button"
-              onClick={() => handleCollectPaymentAndVacate('UPI')}
-              disabled={!isOccupied}
-              className={`w-full py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition shadow-md select-none ${
-                isOccupied
-                  ? 'bg-[#8A4228] hover:bg-[#71351F] text-white active:scale-98 shadow-[#8A4228]/25'
-                  : 'bg-[#1C1815] text-stone-600 border border-[#2C2520] cursor-not-allowed'
-              }`}
-            >
-              <CreditCard className="w-4 h-4" />
-              <span>💳 COLLECT PAYMENT</span>
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleCollectPaymentAndVacate('CASH')}
+                disabled={!isOccupied}
+                className={`py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-1.5 transition shadow-md select-none ${
+                  isOccupied
+                    ? 'bg-amber-700 hover:bg-amber-600 text-white active:scale-98 shadow-amber-900/30'
+                    : 'bg-[#1C1815] text-stone-600 border border-[#2C2520] cursor-not-allowed'
+                }`}
+              >
+                <Banknote className="w-4 h-4" />
+                <span>💵 COLLECT CASH</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleCollectPaymentAndVacate('UPI')}
+                disabled={!isOccupied}
+                className={`py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-1.5 transition shadow-md select-none ${
+                  isOccupied
+                    ? 'bg-[#8A4228] hover:bg-[#71351F] text-white active:scale-98 shadow-[#8A4228]/25'
+                    : 'bg-[#1C1815] text-stone-600 border border-[#2C2520] cursor-not-allowed'
+                }`}
+              >
+                <Smartphone className="w-4 h-4" />
+                <span>📱 COLLECT UPI</span>
+              </button>
+            </div>
 
             <button
               type="button"

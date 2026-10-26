@@ -24,6 +24,7 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [paymentChoice, setPaymentChoice] = useState<'CASH' | 'UPI'>('CASH');
+  const [waiterLockedMode, setWaiterLockedMode] = useState<'CASH' | 'UPI' | null>(null);
   const [selectedUpiApp, setSelectedUpiApp] = useState<string>('PhonePe');
   const [isSettled, setIsSettled] = useState(false);
   const [rating, setRating] = useState(5);
@@ -41,6 +42,13 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
           setDiscountAmount(sess.discountAmount || 0);
           setAppliedPromo(sess.appliedPromoCode || null);
           setWaiterName(data.data.seat.assignedWaiter || (seatId <= 8 ? 'Suhas' : 'Shiva'));
+          if (sess.paymentPreferred === 'CASH') {
+            setPaymentChoice('CASH');
+            setWaiterLockedMode('CASH');
+          } else if (sess.paymentPreferred === 'UPI') {
+            setPaymentChoice('UPI');
+            setWaiterLockedMode('UPI');
+          }
         }
       });
   }, [seatId]);
@@ -55,9 +63,33 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
       } catch (e) {}
     };
 
+    const handlePaymentLock = (data: any) => {
+      if (data?.paymentPreferred === 'CASH') {
+        setPaymentChoice('CASH');
+        setWaiterLockedMode('CASH');
+      } else if (data?.paymentPreferred === 'UPI') {
+        setPaymentChoice('UPI');
+        setWaiterLockedMode('UPI');
+      }
+      if (data?.grandTotal !== undefined) {
+        setGrandTotalDue(data.grandTotal);
+      }
+      if (data?.discountAmount !== undefined) {
+        setDiscountAmount(data.discountAmount);
+      }
+      if (data?.appliedPromoCode !== undefined) {
+        setAppliedPromo(data.appliedPromoCode);
+      }
+    };
+
     socket.on('seat:vacated', handleVacate);
+    socket.on('payment:lock_changed', handlePaymentLock);
+    socket.on('seat:updated', handlePaymentLock);
+
     return () => {
       socket.off('seat:vacated', handleVacate);
+      socket.off('payment:lock_changed', handlePaymentLock);
+      socket.off('seat:updated', handlePaymentLock);
     };
   }, [socket]);
 
@@ -276,8 +308,11 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
               <button
                 type="button"
                 onClick={() => handleSelectPaymentChoice('CASH')}
+                disabled={waiterLockedMode === 'UPI'}
                 className={`py-3 px-3 rounded-xl border text-xs font-black transition flex items-center justify-center gap-2 ${
-                  paymentChoice === 'CASH'
+                  waiterLockedMode === 'UPI'
+                    ? 'opacity-40 cursor-not-allowed bg-stone-800 text-stone-500 border-stone-700'
+                    : paymentChoice === 'CASH'
                     ? isOrange
                       ? 'bg-[#8A4228] text-[#FFFCF7] border-[#8A4228]'
                       : 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 border-amber-300 shadow-amber-500/20'
@@ -292,8 +327,11 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
               <button
                 type="button"
                 onClick={() => handleSelectPaymentChoice('UPI')}
+                disabled={waiterLockedMode === 'CASH'}
                 className={`py-3 px-3 rounded-xl border text-xs font-black transition flex items-center justify-center gap-2 ${
-                  paymentChoice === 'UPI'
+                  waiterLockedMode === 'CASH'
+                    ? 'opacity-40 cursor-not-allowed bg-stone-800 text-stone-500 border-stone-700'
+                    : paymentChoice === 'UPI'
                     ? isOrange
                       ? 'bg-[#8A4228] text-[#FFFCF7] border-[#8A4228]'
                       : 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 border-amber-300 shadow-amber-500/20'
@@ -306,6 +344,18 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
                 <span>UPI on Device</span>
               </button>
             </div>
+
+            {waiterLockedMode === 'CASH' && (
+              <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 pt-0.5">
+                🔒 Waiter selected Cash settlement at table — UPI option disabled.
+              </p>
+            )}
+
+            {waiterLockedMode === 'UPI' && (
+              <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 pt-0.5">
+                🔒 Waiter selected UPI QR scan — Cash option disabled.
+              </p>
+            )}
 
             {paymentChoice === 'UPI' && (
               <div className="flex gap-2 pt-1 overflow-x-auto no-scrollbar">

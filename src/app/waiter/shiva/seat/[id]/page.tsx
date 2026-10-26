@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Check, ArrowLeft, Plus, Minus, CreditCard, Droplet, ArrowRight, QrCode } from 'lucide-react';
+import { Check, ArrowLeft, Plus, Minus, CreditCard, Droplet, ArrowRight, QrCode, Banknote, Smartphone } from 'lucide-react';
 import { useSocketRoom } from '@/lib/useSocket';
 import { playSuccessChime } from '@/lib/audio-synth';
 
@@ -65,6 +65,25 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
   // Right Side Settlement State
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [loadingVacate, setLoadingVacate] = useState(false);
+  const [waiterPaymentMode, setWaiterPaymentMode] = useState<'CASH' | 'UPI'>('UPI');
+
+  const handleSelectWaiterPaymentMode = async (mode: 'CASH' | 'UPI') => {
+    setWaiterPaymentMode(mode);
+    try {
+      await fetch('/api/billing/payment-lock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          seatId,
+          lockMode: 'LOCKED_WAITER',
+          paymentPreferred: mode,
+        }),
+      });
+      fetchSeatDetails();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fetchSeatDetails = () => {
     fetch(`/api/seats/${seatId}`)
@@ -73,6 +92,11 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
         if (data.success) {
           setSeatData(data.data.seat);
           setSession(data.data.activeSession);
+          if (data.data.activeSession?.paymentPreferred === 'CASH') {
+            setWaiterPaymentMode('CASH');
+          } else if (data.data.activeSession?.paymentPreferred === 'UPI') {
+            setWaiterPaymentMode('UPI');
+          }
         }
       });
   };
@@ -195,7 +219,7 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           seatId,
-          paymentMode: session?.paymentPreferred || 'UPI',
+          paymentMode: waiterPaymentMode || session?.paymentPreferred || 'UPI',
           settledBy: 'Shiva',
         }),
       });
@@ -536,30 +560,78 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
                   </div>
 
                   <span className="text-xs font-bold text-stone-300 block pt-1">
-                    Payment Preferred:{' '}
+                    Customer Preference:{' '}
                     {session?.paymentPreferred === 'CASH' ? '💵 Cash at Seat' : '📱 UPI on Device'}
                   </span>
                 </div>
 
-                {/* QR Display */}
-                <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-4 flex flex-col items-center">
-                  <div className="w-40 h-40 bg-white rounded-2xl p-3 flex flex-col items-center justify-center shadow-lg">
-                    <div className="w-full h-full border-4 border-slate-900 p-2 flex flex-col items-center justify-between">
-                      <div className="w-full flex justify-between">
-                        <div className="w-8 h-8 bg-slate-900" />
-                        <div className="w-8 h-8 bg-slate-900" />
-                      </div>
-                      <span className="font-black text-[11px] text-slate-900">QR CODE</span>
-                      <div className="w-full flex justify-between">
-                        <div className="w-8 h-8 bg-slate-900" />
-                        <div className="w-5 h-5 border-2 border-slate-900" />
+                {/* Waiter Mode Toggle: Cash vs UPI */}
+                <div className="space-y-1 mb-4">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Select Waiter Settlement Mode:
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSelectWaiterPaymentMode('CASH')}
+                      className={`py-2.5 px-3 rounded-xl border text-xs font-black transition flex items-center justify-center gap-1.5 ${
+                        waiterPaymentMode === 'CASH'
+                          ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
+                          : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'
+                      }`}
+                    >
+                      <Banknote className="w-4 h-4" />
+                      <span>💵 Collect Cash</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectWaiterPaymentMode('UPI')}
+                      className={`py-2.5 px-3 rounded-xl border text-xs font-black transition flex items-center justify-center gap-1.5 ${
+                        waiterPaymentMode === 'UPI'
+                          ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
+                          : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'
+                      }`}
+                    >
+                      <Smartphone className="w-4 h-4" />
+                      <span>📱 Scan UPI QR</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Dynamic Payment Box: QR Code or Cash Collection Card */}
+                {waiterPaymentMode === 'UPI' ? (
+                  <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-4 flex flex-col items-center">
+                    <div className="w-40 h-40 bg-white rounded-2xl p-3 flex flex-col items-center justify-center shadow-lg">
+                      <div className="w-full h-full border-4 border-slate-900 p-2 flex flex-col items-center justify-between">
+                        <div className="w-full flex justify-between">
+                          <div className="w-8 h-8 bg-slate-900" />
+                          <div className="w-8 h-8 bg-slate-900" />
+                        </div>
+                        <span className="font-black text-[11px] text-slate-900">QR CODE</span>
+                        <div className="w-full flex justify-between">
+                          <div className="w-8 h-8 bg-slate-900" />
+                          <div className="w-5 h-5 border-2 border-slate-900" />
+                        </div>
                       </div>
                     </div>
+                    <span className="text-xs font-bold text-slate-300 mt-2 font-mono">
+                      Amount : ₹{grandTotal.toFixed(2)}
+                    </span>
                   </div>
-                  <span className="text-xs font-bold text-slate-300 mt-2 font-mono">
-                    Amount : ₹{grandTotal.toFixed(2)}
-                  </span>
-                </div>
+                ) : (
+                  <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 flex flex-col items-center justify-center text-center">
+                    <div className="w-14 h-14 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mb-2.5 border border-amber-500/20">
+                      <Banknote className="w-7 h-7" />
+                    </div>
+                    <h4 className="font-black text-sm text-white">Cash Settlement at Seat</h4>
+                    <p className="text-xs text-slate-300 mt-1 max-w-[220px]">
+                      Collect <strong className="text-amber-400 font-mono">₹{grandTotal.toFixed(2)}</strong> cash from diner and hand over change.
+                    </p>
+                    <span className="text-[10px] text-amber-300 font-bold bg-amber-950/60 border border-amber-600/30 px-2 py-0.5 rounded mt-2.5">
+                      ✓ Customer UPI option disabled
+                    </span>
+                  </div>
+                )}
 
                 {/* Confirmation Check */}
                 <button

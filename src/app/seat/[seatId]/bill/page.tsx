@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Download, ArrowLeft } from 'lucide-react';
+import { Download, ArrowLeft, Banknote, Smartphone } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { useCustomerTheme } from '@/lib/useCustomerTheme';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import CustomerBottomNav from '@/components/CustomerBottomNav';
+import { useSocketRoom } from '@/lib/useSocket';
 
 interface OrderItem {
   id: string;
@@ -17,6 +18,7 @@ interface OrderItem {
 
 export default function CustomerScreen7({ params }: { params: { seatId: string } }) {
   const seatId = parseInt(params.seatId, 10);
+  const socket = useSocketRoom(`room:seat:${seatId}`);
   const { theme, toggleTheme } = useCustomerTheme();
   const isOrange = theme === 'burnt-orange';
 
@@ -28,8 +30,10 @@ export default function CustomerScreen7({ params }: { params: { seatId: string }
   const [discount, setDiscount] = useState(0);
   const [gst, setGst] = useState(0);
   const [grandTotal, setGrandTotal] = useState(0);
+  const [paymentMode, setPaymentMode] = useState<string>('CASH');
+  const [paymentStatus, setPaymentStatus] = useState<string>('PAID');
 
-  useEffect(() => {
+  const fetchBillData = useCallback(() => {
     fetch(`/api/seats/${seatId}`)
       .then((res) => res.json())
       .then((data) => {
@@ -41,20 +45,40 @@ export default function CustomerScreen7({ params }: { params: { seatId: string }
             setDiscount(sess.discountAmount || 0);
             setGst(sess.gstAmount || 0);
             setGrandTotal(sess.grandTotal || 0);
+            setPaymentMode(sess.paymentMethod || sess.paymentPreferred || 'CASH');
+            setPaymentStatus(sess.paymentStatus || 'PAID');
 
             const allItems: OrderItem[] = [];
             sess.orderTickets?.forEach((t: { items: OrderItem[] }) => {
-              t.items.forEach((it) => allItems.push(it));
+              t.items?.forEach((it: OrderItem) => allItems.push(it));
             });
             setItems(allItems);
           }
         }
-      });
+      })
+      .catch((err) => console.error('Fetch bill error:', err));
+  }, [seatId]);
+
+  useEffect(() => {
+    fetchBillData();
 
     const now = new Date();
     setDateStr(now.toLocaleDateString('en-GB').replace(/\//g, '-'));
     setBillNumber(`INV-${100 + seatId}`);
-  }, [seatId]);
+
+    if (!socket) return;
+    const handleUpdate = () => {
+      fetchBillData();
+    };
+
+    socket.on('seat:updated', handleUpdate);
+    socket.on('payment:lock_changed', handleUpdate);
+
+    return () => {
+      socket.off('seat:updated', handleUpdate);
+      socket.off('payment:lock_changed', handleUpdate);
+    };
+  }, [seatId, fetchBillData, socket]);
 
   const handleDownloadPDF = () => {
     try {
@@ -114,7 +138,12 @@ export default function CustomerScreen7({ params }: { params: { seatId: string }
       doc.setFont('helvetica', 'bold');
       doc.text('GRAND TOTAL:', 8, y);
       doc.text(`Rs.${grandTotal.toFixed(2)}`, 72, y, { align: 'right' });
-      y += 8;
+      y += 5;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.text(`Payment: ${paymentMode.toUpperCase() === 'CASH' ? 'CASH' : 'UPI'} [${paymentStatus}]`, 8, y);
+      y += 6;
 
       doc.setFont('helvetica', 'normal');
       doc.text('Thank You, Visit Again!', 40, y, { align: 'center' });
@@ -241,6 +270,33 @@ export default function CustomerScreen7({ params }: { params: { seatId: string }
               <span className={isOrange ? 'text-[#5B5049]' : 'text-slate-950'}>Grand Total:</span>
               <span className={`text-lg font-black ${isOrange ? 'text-[#8A4228]' : 'text-emerald-900'}`}>
                 ₹{grandTotal.toFixed(2)}
+              </span>
+            </div>
+          </div>
+
+          {/* Payment Mode Status */}
+          <div className="py-2.5 flex items-center justify-between text-xs border-b border-dashed border-[#E8D5C3]">
+            <span className="font-semibold text-[#5B5049]/80">Payment Mode:</span>
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
+              paymentMode.toUpperCase() === 'CASH'
+                ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+            }`}>
+              {paymentMode.toUpperCase() === 'CASH' ? (
+                <>
+                  <Banknote className="w-3.5 h-3.5 text-amber-800" />
+                  <span>CASH</span>
+                </>
+              ) : (
+                <>
+                  <Smartphone className="w-3.5 h-3.5 text-emerald-800" />
+                  <span>UPI / ONLINE</span>
+                </>
+              )}
+              <span className={`ml-1 text-[10px] px-1.5 py-0.2 rounded font-black uppercase text-white ${
+                paymentStatus === 'PAID' ? 'bg-emerald-600' : 'bg-amber-600'
+              }`}>
+                {paymentStatus}
               </span>
             </div>
           </div>

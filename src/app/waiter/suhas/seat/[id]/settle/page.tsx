@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Check, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Check, CheckCircle2, Banknote, Smartphone } from 'lucide-react';
 import { playSuccessChime } from '@/lib/audio-synth';
 
 export default function WaiterSuhasSettleScreen({ params }: { params: { id: string } }) {
@@ -42,6 +42,24 @@ export default function WaiterSuhasSettleScreen({ params }: { params: { id: stri
   useEffect(() => {
     fetchSession();
   }, [seatId]);
+
+  const handleSelectWaiterPaymentMode = async (mode: 'CASH' | 'UPI') => {
+    setPreferredMode(mode);
+    try {
+      await fetch('/api/billing/payment-lock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          seatId,
+          lockMode: 'LOCKED_WAITER',
+          paymentPreferred: mode,
+        }),
+      });
+      fetchSession();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleVacateSeat = async () => {
     if (!confirmed || loading) return;
@@ -112,32 +130,80 @@ export default function WaiterSuhasSettleScreen({ params }: { params: { id: stri
               </span>
             </div>
             <span className="text-xs font-bold text-stone-300 block pt-1">
-              Payment Preferred: {preferredMode === 'CASH' ? '💵 Cash at Seat' : '📱 UPI on Device'}
+              Customer Preference: {preferredMode === 'CASH' ? '💵 Cash at Seat' : '📱 UPI on Device'}
             </span>
           </div>
 
-          {/* QR Code Box */}
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col items-center shadow-xl">
-            <div className="w-48 h-48 bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-lg">
-              <div className="w-full h-full border-4 border-slate-900 p-2 flex flex-col items-center justify-between">
-                <div className="w-full flex justify-between">
-                  <div className="w-8 h-8 bg-slate-900" />
-                  <div className="w-8 h-8 bg-slate-900" />
-                </div>
-                <div className="text-center font-black text-xs text-slate-900">
-                  QR
-                </div>
-                <div className="w-full flex justify-between">
-                  <div className="w-8 h-8 bg-slate-900" />
-                  <div className="w-6 h-6 border-2 border-slate-900" />
+          {/* Waiter Mode Toggle: Cash vs UPI */}
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+              Select Waiter Settlement Mode:
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleSelectWaiterPaymentMode('CASH')}
+                className={`py-2.5 px-3 rounded-xl border text-xs font-black transition flex items-center justify-center gap-1.5 ${
+                  preferredMode === 'CASH'
+                    ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
+                    : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-850'
+                }`}
+              >
+                <Banknote className="w-4 h-4" />
+                <span>💵 Collect Cash</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSelectWaiterPaymentMode('UPI')}
+                className={`py-2.5 px-3 rounded-xl border text-xs font-black transition flex items-center justify-center gap-1.5 ${
+                  preferredMode === 'UPI'
+                    ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
+                    : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-850'
+                }`}
+              >
+                <Smartphone className="w-4 h-4" />
+                <span>📱 Scan UPI QR</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Dynamic Payment Box: QR Code or Cash Collection Card */}
+          {preferredMode === 'UPI' ? (
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col items-center shadow-xl">
+              <div className="w-48 h-48 bg-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-lg">
+                <div className="w-full h-full border-4 border-slate-900 p-2 flex flex-col items-center justify-between">
+                  <div className="w-full flex justify-between">
+                    <div className="w-8 h-8 bg-slate-900" />
+                    <div className="w-8 h-8 bg-slate-900" />
+                  </div>
+                  <div className="text-center font-black text-xs text-slate-900">
+                    QR
+                  </div>
+                  <div className="w-full flex justify-between">
+                    <div className="w-8 h-8 bg-slate-900" />
+                    <div className="w-6 h-6 border-2 border-slate-900" />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <span className="text-sm font-bold text-slate-200 mt-4 font-mono">
-              Amount : ₹{grandTotal.toFixed(2)}
-            </span>
-          </div>
+              <span className="text-sm font-bold text-slate-200 mt-4 font-mono">
+                Amount : ₹{grandTotal.toFixed(2)}
+              </span>
+            </div>
+          ) : (
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col items-center justify-center text-center shadow-xl">
+              <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mb-3 border border-amber-500/20">
+                <Banknote className="w-8 h-8" />
+              </div>
+              <h4 className="font-black text-sm text-white">Cash Settlement at Seat</h4>
+              <p className="text-xs text-slate-300 mt-1 max-w-[220px]">
+                Collect <strong className="text-amber-400 font-mono">₹{grandTotal.toFixed(2)}</strong> cash from diner and hand over change.
+              </p>
+              <span className="text-[10px] text-amber-300 font-bold bg-amber-950/60 border border-amber-600/30 px-2 py-0.5 rounded mt-3">
+                ✓ Customer UPI option disabled
+              </span>
+            </div>
+          )}
 
           {/* Confirm Payment Checkbox */}
           <button

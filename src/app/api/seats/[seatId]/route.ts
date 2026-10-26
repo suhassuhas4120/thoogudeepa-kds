@@ -42,7 +42,29 @@ export async function GET(
       return NextResponse.json({ success: false, error: 'Seat not found' }, { status: 404 });
     }
 
-    const activeSession = seat.sessions[0] || null;
+    let activeSession: any = seat.sessions[0] || null;
+    if (!activeSession) {
+      activeSession = await prisma.diningSession.findFirst({
+        where: { seatId: seat.id },
+        orderBy: { startedAt: 'desc' },
+        include: {
+          orderTickets: {
+            include: {
+              items: {
+                include: {
+                  menuItem: true,
+                },
+              },
+            },
+            orderBy: { placedAt: 'asc' },
+          },
+          serviceRequests: {
+            where: { status: 'PENDING' },
+            orderBy: { requestedAt: 'desc' },
+          },
+        },
+      });
+    }
 
     return NextResponse.json({
       success: true,
