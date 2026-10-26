@@ -9,9 +9,25 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const dateQuery = searchParams.get('date');
 
-    const whereClause: { date?: string } = {};
-    if (dateQuery) {
-      whereClause.date = dateQuery;
+    let whereClause: any = {};
+    if (dateQuery && dateQuery !== 'ALL') {
+      let altDate = dateQuery;
+      if (dateQuery.includes('-')) {
+        const parts = dateQuery.split('-');
+        if (parts[0].length === 4) {
+          // YYYY-MM-DD -> DD-MM-YYYY
+          altDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        } else if (parts[2].length === 4) {
+          // DD-MM-YYYY -> YYYY-MM-DD
+          altDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+      }
+      whereClause = {
+        OR: [
+          { date: dateQuery },
+          { date: altDate }
+        ]
+      };
     }
 
     const records = await prisma.masterSalesRecord.findMany({
@@ -34,14 +50,15 @@ export async function GET(req: NextRequest) {
       totalGst += r.gst5Percent;
       netDayRevenue += r.grandTotal;
 
-      if (r.orderType === 'Dine-in') {
+      if (r.orderType.toLowerCase().includes('dine')) {
         dineInSales += r.grandTotal;
       } else {
         takeawaySales += r.grandTotal;
       }
 
-      if (r.paymentMode === 'CASH') cashSales += r.grandTotal;
-      else if (r.paymentMode === 'UPI') upiSales += r.grandTotal;
+      const mode = (r.paymentMode || '').toUpperCase();
+      if (mode.includes('CASH')) cashSales += r.grandTotal;
+      else if (mode.includes('UPI')) upiSales += r.grandTotal;
       else cardSales += r.grandTotal;
     });
 
