@@ -110,18 +110,7 @@ export default function ManagerKitchenMonitorScreen() {
     }
   };
 
-  // Helper to compute elapsed minutes
-  const getElapsedMinutes = (placedTimeStr?: string, createdAtStr?: string) => {
-    if (!placedTimeStr && !createdAtStr) return 5;
-    try {
-      const placedDate = createdAtStr ? new Date(createdAtStr) : new Date();
-      const diffMs = Date.now() - placedDate.getTime();
-      const mins = Math.max(1, Math.floor(diffMs / 60000));
-      return isNaN(mins) ? 6 : mins;
-    } catch {
-      return 5;
-    }
-  };
+
 
   // Compute status summary of ticket
   const getTicketStatusBadge = (ticket: Ticket) => {
@@ -253,8 +242,7 @@ export default function ManagerKitchenMonitorScreen() {
                 <th className="py-3 px-3">SEAT</th>
                 <th className="py-3 px-4">SERVER</th>
                 <th className="py-3 px-4">ITEMS</th>
-                <th className="py-3 px-3">ORDERED</th>
-                <th className="py-3 px-3">ELAPSED</th>
+                <th className="py-3 px-4">ORDER TIME</th>
                 <th className="py-3 px-3">STATUS</th>
                 <th className="py-3 px-4 text-right">ACTIONS</th>
               </tr>
@@ -262,7 +250,7 @@ export default function ManagerKitchenMonitorScreen() {
             <tbody className="divide-y divide-[#26201B]">
               {filteredTickets.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-stone-500">
+                  <td colSpan={7} className="py-12 text-center text-stone-500">
                     No tickets found in this filter view.
                   </td>
                 </tr>
@@ -271,11 +259,15 @@ export default function ManagerKitchenMonitorScreen() {
                   const itemsSummary = (ticket.items || [])
                     .map((i) => `${i.itemName} x${i.quantity}`)
                     .join(', ');
-                  const elapsedMins = getElapsedMinutes(ticket.placedAtTime, ticket.createdAt);
-                  const isWarning = elapsedMins >= 12;
                   const statusBadge = getTicketStatusBadge(ticket);
-                  const seatDisplay = ticket.orderType === 'TAKEAWAY' ? '📦 Takeaway' : `S${ticket.seatId || '1'}`;
-                  const serverName = ticket.waiterName || (ticket.seatId && ticket.seatId <= 8 ? 'Suhas' : 'Shiva');
+                  const isTakeaway =
+                    (ticket.orderType || '').toUpperCase().includes('TAKE') ||
+                    (ticket.orderType || '').toUpperCase().includes('PARCEL') ||
+                    ticket.ticketNumber?.startsWith('P');
+                  const seatDisplay = isTakeaway ? '📦 Parcel' : `S${ticket.seatId || '1'}`;
+                  const serverName = isTakeaway
+                    ? 'Manager Desk'
+                    : ticket.waiterName || (ticket.seatId && ticket.seatId <= 8 ? 'Suhas' : 'Shiva');
 
                   return (
                     <tr key={ticket.id} className="hover:bg-[#201B18] transition">
@@ -291,17 +283,8 @@ export default function ManagerKitchenMonitorScreen() {
                       <td className="py-3 px-4 text-stone-200 max-w-md truncate" title={itemsSummary}>
                         {itemsSummary}
                       </td>
-                      <td className="py-3 px-3 text-stone-400 font-mono">
+                      <td className="py-3 px-4 text-amber-400 font-mono font-bold">
                         {ticket.placedAtTime || '12:20 PM'}
-                      </td>
-                      <td className="py-3 px-3">
-                        <span
-                          className={`font-mono font-bold ${
-                            isWarning ? 'text-rose-400' : 'text-emerald-400'
-                          }`}
-                        >
-                          {String(elapsedMins).padStart(2, '0')}m {isWarning ? '(⚠️)' : '(OK)'}
-                        </span>
                       </td>
                       <td className="py-3 px-3">
                         <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${statusBadge.color}`}>
