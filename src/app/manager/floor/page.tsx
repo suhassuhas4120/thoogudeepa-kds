@@ -117,7 +117,7 @@ export default function ManagerFloorScreen() {
         body: JSON.stringify({
           seatId: selectedSeat.id,
           paymentMode: mode,
-          settledBy: 'General Manager Desk',
+          settledBy: selectedSeat.assignedWaiter || 'General Manager Desk',
         }),
       });
       const data = await res.json();

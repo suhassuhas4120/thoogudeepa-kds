@@ -28,6 +28,7 @@ interface TransactionRow {
   placedAt: string;
   settledAt: string;
   subtotal: number;
+  discountAmount: number;
   gst5Percent: number;
   grandTotal: number;
   paymentMode: string;
@@ -47,7 +48,7 @@ export default function MasterSalesReportPage() {
   const socket = useSocketRoom('room:manager');
 
   const todayStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-'); // e.g. "26-10-2026"
-  const [selectedDate, setSelectedDate] = useState<string>('ALL'); // 'ALL' or date string
+  const [selectedDate, setSelectedDate] = useState<string>(todayStr); // Default to today's live business
   const [transactions, setTransactions] = useState<TransactionRow[]>([]);
   const [itemPerformance, setItemPerformance] = useState<ItemPerformanceRow[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -72,6 +73,7 @@ export default function MasterSalesReportPage() {
             placedAt: r.placedAt || '—',
             settledAt: r.settledAt || '—',
             subtotal: Number(r.subtotal) || 0,
+            discountAmount: Number(r.discountAmount) || 0,
             gst5Percent: Number(r.gst5Percent) || 0,
             grandTotal: Number(r.grandTotal) || 0,
             paymentMode: r.paymentMode || 'CASH',
@@ -137,6 +139,7 @@ export default function MasterSalesReportPage() {
 
   // Real, dynamic, 100% accurate financial computations
   const grossFoodSales = transactions.reduce((acc, t) => acc + (t.subtotal || 0), 0);
+  const totalDiscount = transactions.reduce((acc, t) => acc + (t.discountAmount || 0), 0);
   const totalGst = transactions.reduce((acc, t) => acc + (t.gst5Percent || 0), 0);
   const netDayRevenue = transactions.reduce((acc, t) => acc + (t.grandTotal || 0), 0);
 
@@ -199,6 +202,7 @@ export default function MasterSalesReportPage() {
       [],
       ['Metric', 'Amount (₹) / Details'],
       ['Gross Food Sales', `₹${grossFoodSales.toFixed(2)}`],
+      ['Total Discounts', `-₹${totalDiscount.toFixed(2)}`],
       ['Total GST (5%)', `₹${totalGst.toFixed(2)}`],
       ['Net Day Revenue', `₹${netDayRevenue.toFixed(2)}`],
       ['Dine-in Sales (16 Seats)', `₹${dineInSales.toFixed(2)}`],
@@ -240,6 +244,7 @@ export default function MasterSalesReportPage() {
         'PLACED TIME',
         'SETTLED TIME',
         'SUBTOTAL (₹)',
+        'DISCOUNT (₹)',
         'GST 5% (₹)',
         'GRAND TOTAL (₹)',
         'PAYMENT MODE',
@@ -257,6 +262,7 @@ export default function MasterSalesReportPage() {
         t.placedAt,
         t.settledAt,
         t.subtotal,
+        t.discountAmount,
         t.gst5Percent,
         t.grandTotal,
         t.paymentMode,
@@ -286,7 +292,7 @@ export default function MasterSalesReportPage() {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.text(
-      `Gross Food Sales: Rs. ${grossFoodSales.toFixed(2)}   |   Total GST (5%): Rs. ${totalGst.toFixed(2)}   |   Net Day Revenue: Rs. ${netDayRevenue.toFixed(2)}`,
+      `Gross Food Sales: Rs. ${grossFoodSales.toFixed(2)}  |  Total Discounts: -Rs. ${totalDiscount.toFixed(2)}  |  Total GST: Rs. ${totalGst.toFixed(2)}  |  Net Revenue: Rs. ${netDayRevenue.toFixed(2)}`,
       18,
       31
     );
@@ -343,40 +349,42 @@ export default function MasterSalesReportPage() {
     doc.setFillColor(40, 40, 40);
     doc.rect(14, y, 269, 6, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.text('BILL #', 16, y + 4.2);
-    doc.text('DATE', 32, y + 4.2);
-    doc.text('TYPE', 48, y + 4.2);
-    doc.text('SEAT', 62, y + 4.2);
-    doc.text('CUSTOMER NAME', 74, y + 4.2);
-    doc.text('SERVER', 106, y + 4.2);
-    doc.text('ITEMS SUMMARY', 122, y + 4.2);
-    doc.text('PLACED', 180, y + 4.2);
-    doc.text('SETTLED', 195, y + 4.2);
-    doc.text('SUBTOT', 210, y + 4.2);
-    doc.text('GST 5%', 225, y + 4.2);
-    doc.text('GRAND TOT', 242, y + 4.2);
-    doc.text('MODE', 260, y + 4.2);
-    doc.text('STATUS', 272, y + 4.2);
+    doc.text('BILL #', 14, y + 4.2);
+    doc.text('DATE', 28, y + 4.2);
+    doc.text('TYPE', 44, y + 4.2);
+    doc.text('SEAT', 58, y + 4.2);
+    doc.text('CUSTOMER NAME', 68, y + 4.2);
+    doc.text('SERVER', 96, y + 4.2);
+    doc.text('ITEMS SUMMARY', 114, y + 4.2);
+    doc.text('PLACED', 162, y + 4.2);
+    doc.text('SETTLED', 176, y + 4.2);
+    doc.text('SUBTOT', 190, y + 4.2);
+    doc.text('DISC', 205, y + 4.2);
+    doc.text('GST 5%', 220, y + 4.2);
+    doc.text('GRAND', 236, y + 4.2);
+    doc.text('MODE', 254, y + 4.2);
+    doc.text('STATUS', 270, y + 4.2);
 
     doc.setTextColor(0, 0, 0);
     doc.setFont('helvetica', 'normal');
     y += 6;
 
     filtered.slice(0, 20).forEach((t) => {
-      doc.text(t.billNumber, 16, y + 4.2);
-      doc.text(t.date, 32, y + 4.2);
-      doc.text(t.orderType, 48, y + 4.2);
-      doc.text(t.seatNumberOrToken, 62, y + 4.2);
-      doc.text(t.customerName.substring(0, 16), 74, y + 4.2);
-      doc.text(t.serverName, 106, y + 4.2);
-      doc.text(t.itemsSummary.substring(0, 30), 122, y + 4.2);
-      doc.text(t.placedAt, 180, y + 4.2);
-      doc.text(t.settledAt, 195, y + 4.2);
-      doc.text(`Rs. ${t.subtotal.toFixed(0)}`, 210, y + 4.2);
-      doc.text(`Rs. ${t.gst5Percent.toFixed(0)}`, 225, y + 4.2);
-      doc.text(`Rs. ${t.grandTotal.toFixed(0)}`, 242, y + 4.2);
-      doc.text(t.paymentMode, 260, y + 4.2);
-      doc.text(t.paymentStatus, 272, y + 4.2);
+      doc.text(t.billNumber, 14, y + 4.2);
+      doc.text(t.date, 28, y + 4.2);
+      doc.text(t.orderType, 44, y + 4.2);
+      doc.text(t.seatNumberOrToken, 58, y + 4.2);
+      doc.text(t.customerName.substring(0, 12), 68, y + 4.2);
+      doc.text(t.serverName.substring(0, 8), 96, y + 4.2);
+      doc.text(t.itemsSummary.substring(0, 24), 114, y + 4.2);
+      doc.text(t.placedAt, 162, y + 4.2);
+      doc.text(t.settledAt, 176, y + 4.2);
+      doc.text(`Rs.${t.subtotal.toFixed(0)}`, 190, y + 4.2);
+      doc.text(t.discountAmount > 0 ? `-Rs.${t.discountAmount.toFixed(0)}` : 'Rs.0', 205, y + 4.2);
+      doc.text(`Rs.${t.gst5Percent.toFixed(0)}`, 220, y + 4.2);
+      doc.text(`Rs.${t.grandTotal.toFixed(0)}`, 236, y + 4.2);
+      doc.text(t.paymentMode, 254, y + 4.2);
+      doc.text(t.paymentStatus, 270, y + 4.2);
       y += 5;
     });
 
@@ -448,12 +456,18 @@ export default function MasterSalesReportPage() {
             </span>
           </div>
           <div className="p-5 space-y-4 font-sans text-xs">
-            {/* Row 1: Gross, GST, Net */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b border-[#2C2520]">
+            {/* Row 1: Gross, Discounts, GST, Net */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-4 border-b border-[#2C2520]">
               <div className="p-3 bg-[#13110F] border border-[#26201B] rounded-xl">
                 <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Gross Food Sales:</span>
                 <strong className="text-white text-lg font-mono font-black mt-1 block">
                   ₹{grossFoodSales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </strong>
+              </div>
+              <div className="p-3 bg-[#13110F] border border-[#26201B] rounded-xl">
+                <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Total Discounts:</span>
+                <strong className="text-emerald-400 text-lg font-mono font-black mt-1 block">
+                  -₹{totalDiscount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </strong>
               </div>
               <div className="p-3 bg-[#13110F] border border-[#26201B] rounded-xl">
@@ -464,7 +478,7 @@ export default function MasterSalesReportPage() {
               </div>
               <div className="p-3 bg-[#13110F] border border-[#26201B] rounded-xl">
                 <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Net Day Revenue:</span>
-                <strong className="text-emerald-400 text-lg font-mono font-black mt-1 block">
+                <strong className="text-amber-400 text-lg font-mono font-black mt-1 block">
                   ₹{netDayRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </strong>
               </div>
@@ -595,6 +609,7 @@ export default function MasterSalesReportPage() {
                   <th className="p-2.5 border-r border-[#2C2520]">PLACED</th>
                   <th className="p-2.5 border-r border-[#2C2520]">SETTLED</th>
                   <th className="p-2.5 border-r border-[#2C2520] text-right">SUBTOT</th>
+                  <th className="p-2.5 border-r border-[#2C2520] text-right">DISCOUNT</th>
                   <th className="p-2.5 border-r border-[#2C2520] text-right">GST 5%</th>
                   <th className="p-2.5 border-r border-[#2C2520] text-right">GRAND TOT</th>
                   <th className="p-2.5 border-r border-[#2C2520]">MODE</th>
@@ -604,7 +619,7 @@ export default function MasterSalesReportPage() {
               <tbody className="divide-y divide-[#26201B]">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={14} className="p-8 text-center text-stone-500 font-sans">
+                    <td colSpan={15} className="p-8 text-center text-stone-500 font-sans">
                       {loading ? 'Loading real-time records...' : 'No settled transactions found matching this search or date filter.'}
                     </td>
                   </tr>
@@ -648,6 +663,9 @@ export default function MasterSalesReportPage() {
                       </td>
                       <td className="p-2.5 text-right font-mono text-stone-300 border-r border-[#2C2520]">
                         ₹{t.subtotal.toFixed(2)}
+                      </td>
+                      <td className="p-2.5 text-right font-mono text-emerald-400 font-bold border-r border-[#2C2520]">
+                        {t.discountAmount > 0 ? `-₹${t.discountAmount.toFixed(2)}` : '₹0.00'}
                       </td>
                       <td className="p-2.5 text-right font-mono text-stone-400 border-r border-[#2C2520]">
                         ₹{t.gst5Percent.toFixed(2)}

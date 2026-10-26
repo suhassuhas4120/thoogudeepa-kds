@@ -4,43 +4,47 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle2, AlertCircle, Printer, Lock, Store } from 'lucide-react';
 import ManagerTopNav from '@/components/ManagerTopNav';
+import { useSocketRoom } from '@/lib/useSocket';
 
 export default function ManagerShiftAuditScreen() {
-  const [dateStr, setDateStr] = useState('25-Oct-2026');
-  const [suhasHandedOver, setSuhasHandedOver] = useState('3450');
-  const [shivaHandedOver, setShivaHandedOver] = useState('2800');
+  const socket = useSocketRoom('room:manager');
+  const [dateStr, setDateStr] = useState('26-Oct-2026');
+  const [suhasHandedOver, setSuhasHandedOver] = useState('0');
+  const [shivaHandedOver, setShivaHandedOver] = useState('0');
 
-  // Initial verified records or live from database
+  // Real-time calculated live states
   const [suhasStats, setSuhasStats] = useState({
-    tablesCount: 22,
-    totalBilled: 10240,
-    upiCollected: 6790,
-    cashCollected: 3450,
+    tablesCount: 0,
+    totalBilled: 0,
+    upiCollected: 0,
+    cashCollected: 0,
   });
 
   const [shivaStats, setShivaStats] = useState({
-    tablesCount: 20,
-    totalBilled: 9130,
-    upiCollected: 6330,
-    cashCollected: 2800,
+    tablesCount: 0,
+    totalBilled: 0,
+    upiCollected: 0,
+    cashCollected: 0,
   });
 
   const [parcelStats, setParcelStats] = useState({
-    tablesCount: 18,
-    totalBilled: 8420,
-    upiCollected: 4220,
-    cashCollected: 4200,
+    tablesCount: 0,
+    totalBilled: 0,
+    upiCollected: 0,
+    cashCollected: 0,
   });
 
-  useEffect(() => {
+  const fetchShiftData = () => {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
     const month = now.toLocaleString('en-US', { month: 'short' });
     const year = now.getFullYear();
     setDateStr(`${day}-${month}-${year}`);
 
-    // Fetch live totals from /api/reports/master-sales
-    fetch('/api/reports/master-sales')
+    const todayDbStr = `${day}-${String(now.getMonth() + 1).padStart(2, '0')}-${year}`;
+
+    // Fetch live totals for today from /api/reports/master-sales
+    fetch(`/api/reports/master-sales?date=${todayDbStr}&t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data?.records) {
@@ -50,35 +54,63 @@ export default function ManagerShiftAuditScreen() {
           let pTables = 0, pBilled = 0, pUpi = 0, pCash = 0;
 
           records.forEach((r: any) => {
-            if (r.orderType === 'Takeaway') {
+            const isTakeaway = r.orderType === 'Takeaway' || (r.seatNumberOrToken && r.seatNumberOrToken.startsWith('P'));
+            const seatNum = parseInt((r.seatNumberOrToken || '').replace(/\D/g, ''), 10);
+            const isZoneA = r.serverName === 'Suhas' || (!isTakeaway && seatNum >= 1 && seatNum <= 8);
+            const isZoneB = r.serverName === 'Shiva' || (!isTakeaway && seatNum >= 9 && seatNum <= 16);
+
+            const mode = (r.paymentMode || '').toUpperCase();
+            const isCash = mode.includes('CASH');
+
+            if (isTakeaway) {
               pTables++;
               pBilled += r.grandTotal;
-              if (r.paymentMode === 'CASH') pCash += r.grandTotal;
+              if (isCash) pCash += r.grandTotal;
               else pUpi += r.grandTotal;
-            } else if (r.serverName === 'Suhas') {
+            } else if (isZoneA) {
               sTables++;
               sBilled += r.grandTotal;
-              if (r.paymentMode === 'CASH') sCash += r.grandTotal;
+              if (isCash) sCash += r.grandTotal;
               else sUpi += r.grandTotal;
-            } else if (r.serverName === 'Shiva') {
+            } else if (isZoneB) {
               shTables++;
               shBilled += r.grandTotal;
-              if (r.paymentMode === 'CASH') shCash += r.grandTotal;
+              if (isCash) shCash += r.grandTotal;
               else shUpi += r.grandTotal;
             }
           });
 
-          if (records.length > 0) {
-            setSuhasStats({ tablesCount: sTables, totalBilled: sBilled, upiCollected: sUpi, cashCollected: sCash });
-            setShivaStats({ tablesCount: shTables, totalBilled: shBilled, upiCollected: shUpi, cashCollected: shCash });
-            setParcelStats({ tablesCount: pTables, totalBilled: pBilled, upiCollected: pUpi, cashCollected: pCash });
-            setSuhasHandedOver(String(sCash));
-            setShivaHandedOver(String(shCash));
-          }
+          setSuhasStats({ tablesCount: sTables, totalBilled: sBilled, upiCollected: sUpi, cashCollected: sCash });
+          setShivaStats({ tablesCount: shTables, totalBilled: shBilled, upiCollected: shUpi, cashCollected: shCash });
+          setParcelStats({ tablesCount: pTables, totalBilled: pBilled, upiCollected: pUpi, cashCollected: pCash });
+          setSuhasHandedOver(String(sCash));
+          setShivaHandedOver(String(shCash));
         }
       })
       .catch(console.error);
-  }, []);
+  };
+
+  useEffect(() => {
+    fetchShiftData();
+    const interval = setInterval(fetchShiftData, 3000);
+
+    if (socket) {
+      socket.on('seat:vacated', fetchShiftData);
+      socket.on('payment:completed', fetchShiftData);
+      socket.on('payment:lock_changed', fetchShiftData);
+      socket.on('order:placed', fetchShiftData);
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (socket) {
+        socket.off('seat:vacated', fetchShiftData);
+        socket.off('payment:completed', fetchShiftData);
+        socket.off('payment:lock_changed', fetchShiftData);
+        socket.off('order:placed', fetchShiftData);
+      }
+    };
+  }, [socket]);
 
   // Balance Math
   const suhasBalance = suhasStats.cashCollected - (parseFloat(suhasHandedOver) || 0);

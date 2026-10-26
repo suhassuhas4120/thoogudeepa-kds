@@ -37,6 +37,7 @@ export async function GET(req: NextRequest) {
 
     // Compute financial summary
     let grossFoodSales = 0;
+    let totalDiscount = 0;
     let totalGst = 0;
     let netDayRevenue = 0;
     let dineInSales = 0;
@@ -47,6 +48,7 @@ export async function GET(req: NextRequest) {
 
     records.forEach((r) => {
       grossFoodSales += r.subtotal;
+      totalDiscount += r.discountAmount || 0;
       totalGst += r.gst5Percent;
       netDayRevenue += r.grandTotal;
 
@@ -68,6 +70,7 @@ export async function GET(req: NextRequest) {
         records,
         summary: {
           grossFoodSales,
+          totalDiscount,
           totalGst,
           netDayRevenue,
           dineInSales,
