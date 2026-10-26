@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
   try {
     await ensureWalMode();
     const body = await req.json();
-    const { seatId, sessionId, lockMode } = body;
+    const { seatId, sessionId, lockMode, paymentPreferred } = body;
 
     if (!seatId || !['LOCKED_WAITER', 'LOCKED_SELF', 'UNLOCKED'].includes(lockMode)) {
       return NextResponse.json({ success: false, error: 'Invalid lock mode' }, { status: 400 });
@@ -30,12 +30,24 @@ export async function POST(req: NextRequest) {
         return { status: 400, payload: { success: false, error: 'No active session' } };
       }
 
+      // Determine payment preferred
+      let chosenPaymentPreferred = activeSession.paymentPreferred;
+      if (paymentPreferred) {
+        chosenPaymentPreferred = paymentPreferred;
+      } else if (lockMode === 'LOCKED_SELF') {
+        chosenPaymentPreferred = 'UPI';
+      } else if (lockMode === 'LOCKED_WAITER') {
+        chosenPaymentPreferred = chosenPaymentPreferred || 'WAITER_COLLECT';
+      } else if (lockMode === 'UNLOCKED') {
+        chosenPaymentPreferred = null;
+      }
+
       // Update payment lock state
       const updated = await prisma.diningSession.update({
         where: { id: activeSession.id },
         data: {
           paymentLockState: lockMode,
-          paymentPreferred: lockMode === 'LOCKED_SELF' ? 'UPI' : lockMode === 'LOCKED_WAITER' ? 'WAITER_COLLECT' : null,
+          paymentPreferred: chosenPaymentPreferred,
         },
       });
 
@@ -54,11 +66,15 @@ export async function POST(req: NextRequest) {
         seatId: seat.id,
         seatNumber: seat.seatNumber,
         lockMode: updated.paymentLockState,
+        paymentPreferred: updated.paymentPreferred,
         seatStatus: newSeatStatus,
         grandTotal: updated.grandTotal,
+        discountAmount: updated.discountAmount,
+        appliedPromoCode: updated.appliedPromoCode,
       };
 
-      emitToMultipleRooms([targetWaiterRoom, 'room:manager', seatRoom], 'payment:lock_changed', payload);
+      emitToMultipleRooms([targetWaiterRoom, 'room:manager', seatRoom, 'room:global'], 'payment:lock_changed', payload);
+      emitToMultipleRooms([targetWaiterRoom, 'room:manager', seatRoom, 'room:global'], 'seat:updated', payload);
 
       return {
         status: 200,

@@ -11,24 +11,36 @@ export default function WaiterSuhasSettleScreen({ params }: { params: { id: stri
   const seatId = parseInt(params.id, 10);
 
   const [ticketNumber, setTicketNumber] = useState('101');
+  const [subtotal, setSubtotal] = useState(0);
+  const [gstAmount, setGstAmount] = useState(0);
   const [grandTotal, setGrandTotal] = useState(0);
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
   const [preferredMode, setPreferredMode] = useState('UPI');
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const fetchSession = () => {
     fetch(`/api/seats/${seatId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data?.activeSession) {
           const sess = data.data.activeSession;
+          setSubtotal(sess.subtotal || 0);
+          setGstAmount(sess.gstAmount || 0);
           setGrandTotal(sess.grandTotal || 0);
+          setAppliedPromo(sess.appliedPromoCode || null);
+          setDiscountAmount(sess.discountAmount || 0);
           setPreferredMode(sess.paymentPreferred || 'UPI');
           if (sess.orderTickets?.[0]) {
             setTicketNumber(sess.orderTickets[0].ticketNumber);
           }
         }
       });
+  };
+
+  useEffect(() => {
+    fetchSession();
   }, [seatId]);
 
   const handleVacateSeat = async () => {
@@ -77,15 +89,30 @@ export default function WaiterSuhasSettleScreen({ params }: { params: { id: stri
 
         {/* Details Card */}
         <div className="pt-4 space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-1">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-1.5">
             <span className="text-xs font-bold text-slate-400">
               Settle Bill • Ticket #{ticketNumber}
             </span>
-            <div className="text-xl font-black text-white">
-              Grand Total : ₹{grandTotal.toFixed(2)}
+            <div className="flex justify-between items-center text-xs text-slate-400">
+              <span>Bill Amount:</span>
+              <span className="font-mono text-white">
+                ₹{((subtotal || 0) + (gstAmount || 0) || grandTotal).toFixed(2)}
+              </span>
             </div>
-            <span className="text-xs font-bold text-amber-400 block pt-1">
-              Payment preferred : {preferredMode}
+            {appliedPromo && discountAmount > 0 && (
+              <div className="flex justify-between items-center text-xs text-emerald-400 font-bold bg-emerald-950/50 border border-emerald-500/30 px-2.5 py-1 rounded-lg">
+                <span>Promo Applied ({appliedPromo}):</span>
+                <span className="font-mono">-₹{discountAmount.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="pt-1.5 border-t border-slate-800 flex justify-between items-center">
+              <span className="text-xs font-bold text-slate-300">Final Amount Due:</span>
+              <span className="text-xl font-black text-amber-400 font-mono">
+                ₹{grandTotal.toFixed(2)}
+              </span>
+            </div>
+            <span className="text-xs font-bold text-stone-300 block pt-1">
+              Payment Preferred: {preferredMode === 'CASH' ? '💵 Cash at Seat' : '📱 UPI on Device'}
             </span>
           </div>
 
@@ -107,8 +134,8 @@ export default function WaiterSuhasSettleScreen({ params }: { params: { id: stri
               </div>
             </div>
 
-            <span className="text-sm font-bold text-slate-200 mt-4">
-              Amount : ₹{grandTotal.toFixed(0)}
+            <span className="text-sm font-bold text-slate-200 mt-4 font-mono">
+              Amount : ₹{grandTotal.toFixed(2)}
             </span>
           </div>
 

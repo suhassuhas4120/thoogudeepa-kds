@@ -67,40 +67,44 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
     setPromoMessage(null);
 
     try {
-      const res = await fetch('/api/menu');
+      const res = await fetch('/api/billing/apply-promo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          seatId,
+          promoCode: promoCodeInput.trim().toUpperCase(),
+        }),
+      });
       const data = await res.json();
       if (data.success) {
-        const found = data.data.promoCodes.find(
-          (c: { code: string; minOrderValue: number; discountType: string; value: number; maxDiscount?: number }) =>
-            c.code.toUpperCase() === promoCodeInput.trim().toUpperCase()
-        );
-
-        if (!found) {
-          setPromoMessage('Invalid coupon code');
-          setLoadingPromo(false);
-          return;
-        }
-
-        if (grandTotalDue < found.minOrderValue) {
-          setPromoMessage(`Requires min order of ₹${found.minOrderValue}`);
-          setLoadingPromo(false);
-          return;
-        }
-
-        const discount =
-          found.discountType === 'FLAT'
-            ? Math.min(found.value, grandTotalDue)
-            : Math.min((grandTotalDue * found.value) / 100, found.maxDiscount || grandTotalDue);
-
-        setDiscountAmount(discount);
-        setAppliedPromo(found.code);
-        setPromoMessage(`Coupon applied: ₹${discount.toFixed(0)} discount.`);
+        setDiscountAmount(data.data.discountAmount);
+        setAppliedPromo(data.data.appliedPromoCode);
+        setPromoMessage(`Coupon applied: ₹${data.data.discountAmount.toFixed(0)} discount.`);
+      } else {
+        setPromoMessage(data.error || 'Invalid coupon code');
       }
     } catch (e) {
       console.error(e);
       setPromoMessage('Could not verify promo code');
     } finally {
       setLoadingPromo(false);
+    }
+  };
+
+  const handleSelectPaymentChoice = async (mode: 'CASH' | 'UPI') => {
+    setPaymentChoice(mode);
+    try {
+      await fetch('/api/billing/payment-lock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          seatId,
+          lockMode: 'LOCKED_WAITER',
+          paymentPreferred: mode,
+        }),
+      });
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -271,7 +275,7 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setPaymentChoice('CASH')}
+                onClick={() => handleSelectPaymentChoice('CASH')}
                 className={`py-3 px-3 rounded-xl border text-xs font-black transition flex items-center justify-center gap-2 ${
                   paymentChoice === 'CASH'
                     ? isOrange
@@ -287,7 +291,7 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
               </button>
               <button
                 type="button"
-                onClick={() => setPaymentChoice('UPI')}
+                onClick={() => handleSelectPaymentChoice('UPI')}
                 className={`py-3 px-3 rounded-xl border text-xs font-black transition flex items-center justify-center gap-2 ${
                   paymentChoice === 'UPI'
                     ? isOrange

@@ -30,6 +30,7 @@ interface SeatData {
     gstAmount: number;
     grandTotal: number;
     discountAmount: number;
+    appliedPromoCode?: string;
     paymentPreferred?: string;
     orderTickets: {
       id: string;
@@ -364,9 +365,9 @@ export default function ManagerFloorScreen() {
                   <span className="text-white font-mono">₹{session?.subtotal?.toFixed(2) || '0.00'}</span>
                 </div>
                 {session?.discountAmount ? (
-                  <div className="flex justify-between text-emerald-400 font-semibold">
-                    <span>Promo Discount:</span>
-                    <span className="font-mono">-₹{session.discountAmount.toFixed(2)}</span>
+                  <div className="flex justify-between text-emerald-400 font-semibold bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded">
+                    <span>Promo Applied ({session.appliedPromoCode || 'Coupon'}):</span>
+                    <span className="font-mono font-bold">-₹{session.discountAmount.toFixed(2)}</span>
                   </div>
                 ) : null}
                 <div className="flex justify-between text-stone-400">

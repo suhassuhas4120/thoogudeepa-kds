@@ -29,7 +29,13 @@ export default function WaiterSuhasSeatDetailScreen({ params }: { params: { id: 
   const [seatData, setSeatData] = useState<{ currentGuestName?: string } | null>(null);
   const [session, setSession] = useState<{
     id: string;
+    subtotal?: number;
+    gstAmount?: number;
     grandTotal: number;
+    discountAmount?: number;
+    appliedPromoCode?: string | null;
+    paymentPreferred?: string;
+    paymentLockState?: string;
     orderTickets: { ticketNumber: string; items: OrderItem[] }[];
     serviceRequests: ServiceReq[];
   } | null>(null);
@@ -57,11 +63,15 @@ export default function WaiterSuhasSeatDetailScreen({ params }: { params: { id: 
     socket.on('order:item_status_changed', handleUpdate);
     socket.on('service:requested', handleUpdate);
     socket.on('service:resolved', handleUpdate);
+    socket.on('payment:lock_changed', handleUpdate);
+    socket.on('seat:updated', handleUpdate);
 
     return () => {
       socket.off('order:item_status_changed', handleUpdate);
       socket.off('service:requested', handleUpdate);
       socket.off('service:resolved', handleUpdate);
+      socket.off('payment:lock_changed', handleUpdate);
+      socket.off('seat:updated', handleUpdate);
     };
   }, [socket]);
 
@@ -229,13 +239,29 @@ export default function WaiterSuhasSeatDetailScreen({ params }: { params: { id: 
           <span>+ Add Items</span>
         </Link>
 
-        <Link
-          href={`/waiter/suhas/seat/${seatId}/settle`}
-          className="py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 transition active:scale-98 shadow-md shadow-amber-500/20"
-        >
-          <CreditCard className="w-4 h-4" />
-          <span>payment</span>
-        </Link>
+        {(() => {
+          const isPayViaWaiter =
+            session?.paymentLockState === 'LOCKED_WAITER' ||
+            session?.paymentPreferred === 'WAITER_COLLECT' ||
+            session?.paymentPreferred === 'CASH';
+
+          return (
+            <Link
+              href={`/waiter/suhas/seat/${seatId}/settle`}
+              className={`py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-1.5 transition active:scale-98 ${
+                isPayViaWaiter
+                  ? 'bg-blue-600 hover:bg-blue-500 text-white ring-2 ring-blue-400 shadow-lg shadow-blue-500/40 animate-pulse'
+                  : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
+              }`}
+            >
+              <CreditCard className="w-4 h-4" />
+              <span>payment</span>
+              {isPayViaWaiter && (
+                <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+              )}
+            </Link>
+          );
+        })()}
       </div>
     </div>
   );

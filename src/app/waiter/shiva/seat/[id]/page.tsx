@@ -44,8 +44,13 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
   const [seatData, setSeatData] = useState<{ currentGuestName?: string } | null>(null);
   const [session, setSession] = useState<{
     id: string;
+    subtotal?: number;
+    gstAmount?: number;
     grandTotal: number;
+    discountAmount?: number;
+    appliedPromoCode?: string | null;
     paymentPreferred?: string;
+    paymentLockState?: string;
     orderTickets: { ticketNumber: string; items: OrderItem[] }[];
     serviceRequests: ServiceReq[];
   } | null>(null);
@@ -96,11 +101,15 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
     socket.on('order:item_status_changed', handleUpdate);
     socket.on('service:requested', handleUpdate);
     socket.on('service:resolved', handleUpdate);
+    socket.on('payment:lock_changed', handleUpdate);
+    socket.on('seat:updated', handleUpdate);
 
     return () => {
       socket.off('order:item_status_changed', handleUpdate);
       socket.off('service:requested', handleUpdate);
       socket.off('service:resolved', handleUpdate);
+      socket.off('payment:lock_changed', handleUpdate);
+      socket.off('seat:updated', handleUpdate);
     };
   }, [socket]);
 
@@ -212,6 +221,10 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
   const pendingRequests = session?.serviceRequests?.filter((r) => r.status === 'PENDING') || [];
   const latestTicketNumber = session?.orderTickets?.[0]?.ticketNumber || '105';
   const grandTotal = session?.grandTotal || 0;
+  const isPayViaWaiter =
+    session?.paymentLockState === 'LOCKED_WAITER' ||
+    session?.paymentPreferred === 'WAITER_COLLECT' ||
+    session?.paymentPreferred === 'CASH';
 
   const filteredMenuItems = menuItems.filter((i) =>
     selectedCategory === 'ALL' ? true : i.categoryId === selectedCategory
@@ -362,13 +375,18 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
               type="button"
               onClick={() => setActiveTab('PAYMENT')}
               className={`py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition ${
-                activeTab === 'PAYMENT'
+                isPayViaWaiter
+                  ? 'bg-blue-600 hover:bg-blue-500 text-white ring-2 ring-blue-400 shadow-lg shadow-blue-500/40 animate-pulse'
+                  : activeTab === 'PAYMENT'
                   ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-400'
                   : 'bg-slate-800 text-slate-400 hover:text-white'
               }`}
             >
               <CreditCard className="w-4 h-4" />
               <span>Payment</span>
+              {isPayViaWaiter && (
+                <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+              )}
             </button>
           </div>
         </div>
@@ -495,11 +513,31 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
                   <span className="text-xs text-slate-400">Ticket #{latestTicketNumber}</span>
                 </div>
 
-                <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 mb-4 space-y-1">
-                  <span className="text-xs text-slate-400 block">Grand Total Due:</span>
-                  <span className="text-2xl font-black text-white">₹{grandTotal.toFixed(2)}</span>
-                  <span className="text-xs font-bold text-amber-400 block pt-1">
-                    Payment Preferred: 📱 {session?.paymentPreferred || 'UPI'}
+                <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 mb-4 space-y-1.5">
+                  <div className="flex justify-between items-center text-xs text-slate-400">
+                    <span>Bill Amount:</span>
+                    <span className="font-mono text-white">
+                      ₹{((session?.subtotal || 0) + (session?.gstAmount || 0) || grandTotal).toFixed(2)}
+                    </span>
+                  </div>
+
+                  {session?.appliedPromoCode && (session.discountAmount || 0) > 0 && (
+                    <div className="flex justify-between items-center text-xs text-emerald-400 font-bold bg-emerald-950/50 border border-emerald-500/30 px-2.5 py-1 rounded-lg">
+                      <span>Promo Applied ({session.appliedPromoCode}):</span>
+                      <span className="font-mono">-₹{session.discountAmount?.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  <div className="pt-1.5 border-t border-slate-700 flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-300">Final Amount Due:</span>
+                    <span className="text-2xl font-black text-amber-400 font-mono">
+                      ₹{grandTotal.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <span className="text-xs font-bold text-stone-300 block pt-1">
+                    Payment Preferred:{' '}
+                    {session?.paymentPreferred === 'CASH' ? '💵 Cash at Seat' : '📱 UPI on Device'}
                   </span>
                 </div>
 
@@ -518,8 +556,8 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
                       </div>
                     </div>
                   </div>
-                  <span className="text-xs font-bold text-slate-300 mt-2">
-                    Amount : ₹{grandTotal.toFixed(0)}
+                  <span className="text-xs font-bold text-slate-300 mt-2 font-mono">
+                    Amount : ₹{grandTotal.toFixed(2)}
                   </span>
                 </div>
 
