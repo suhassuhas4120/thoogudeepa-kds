@@ -389,13 +389,8 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
           <button
             type="button"
             onClick={() => handleSelectPayMode('LOCKED_WAITER')}
-            disabled={lockState === 'LOCKED_SELF'}
-            className={`py-3.5 px-3 rounded-2xl font-black text-xs transition flex items-center justify-center gap-1.5 select-none shadow-sm ${
-              lockState === 'LOCKED_SELF'
-                ? isOrange
-                  ? 'bg-[#F3DFCC]/50 text-[#5B5049]/30 border border-[#E8D5C3] cursor-not-allowed'
-                  : 'bg-[#061811] text-emerald-800 border border-emerald-950 cursor-not-allowed opacity-40'
-                : lockState === 'LOCKED_WAITER'
+            className={`py-3.5 px-3 rounded-2xl font-black text-xs transition flex items-center justify-center gap-1.5 select-none shadow-sm active:scale-98 ${
+              lockState === 'LOCKED_WAITER'
                 ? isOrange
                   ? 'bg-[#8A4228] text-[#FFFCF7] ring-2 ring-[#D08A52]'
                   : 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 ring-2 ring-amber-300'
@@ -404,27 +399,15 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
                 : 'bg-[#0a281e] hover:bg-[#0e3527] text-emerald-200 border border-emerald-500/30'
             }`}
           >
-            {lockState === 'LOCKED_SELF' ? (
-              <>
-                <Lock className="w-3.5 h-3.5" />
-                <span>Locked (Self Pay)</span>
-              </>
-            ) : (
-              <span>Pay via Waiter</span>
-            )}
+            <span>Pay via Waiter</span>
           </button>
 
           {/* 2. Self Pay Button */}
           <button
             type="button"
             onClick={() => handleSelectPayMode('LOCKED_SELF')}
-            disabled={lockState === 'LOCKED_WAITER'}
-            className={`py-3.5 px-3 rounded-2xl font-black text-xs transition flex items-center justify-center gap-1.5 select-none shadow-sm ${
-              lockState === 'LOCKED_WAITER'
-                ? isOrange
-                  ? 'bg-[#F3DFCC]/50 text-[#5B5049]/30 border border-[#E8D5C3] cursor-not-allowed'
-                  : 'bg-[#061811] text-emerald-800 border border-emerald-950 cursor-not-allowed opacity-40'
-                : lockState === 'LOCKED_SELF'
+            className={`py-3.5 px-3 rounded-2xl font-black text-xs transition flex items-center justify-center gap-1.5 select-none shadow-sm active:scale-98 ${
+              lockState === 'LOCKED_SELF'
                 ? isOrange
                   ? 'bg-[#8A4228] text-[#FFFCF7] ring-2 ring-[#D08A52]'
                   : 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 ring-2 ring-amber-300'
@@ -433,14 +416,7 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
                 : 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 shadow-amber-500/20'
             }`}
           >
-            {lockState === 'LOCKED_WAITER' ? (
-              <>
-                <Lock className="w-3.5 h-3.5" />
-                <span>Locked (Waiter)</span>
-              </>
-            ) : (
-              <span>Self Pay (UPI)</span>
-            )}
+            <span>Self Pay (UPI)</span>
           </button>
         </div>
       </div>
