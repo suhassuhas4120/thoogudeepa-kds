@@ -138,6 +138,22 @@ export default function ManagerPromosScreen() {
     setIsCardModalOpen(true);
   };
 
+  const openEditCardModal = (card: PromoCardItem) => {
+    setEditingCard(card);
+    setCardForm({
+      title: card.title,
+      subtitle: card.subtitle,
+      badgeText: card.badgeText || 'SPECIAL OFFER',
+      promoCodeId: card.promoCodeId || '',
+      startDate: card.startDate ? card.startDate.split('T')[0] : '',
+      endDate: card.endDate ? card.endDate.split('T')[0] : '',
+      startTime: card.startTime || '',
+      endTime: card.endTime || '',
+      daysOfWeek: card.daysOfWeek || 'ALL',
+    });
+    setIsCardModalOpen(true);
+  };
+
   const handleSaveCard = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -215,6 +231,23 @@ export default function ManagerPromosScreen() {
     setIsCodeModalOpen(true);
   };
 
+  const openEditCodeModal = (code: PromoCodeItem) => {
+    setEditingCode(code);
+    setCodeForm({
+      code: code.code,
+      discountType: code.discountType,
+      value: String(code.value),
+      minOrderValue: String(code.minOrderValue),
+      maxDiscount: code.maxDiscount ? String(code.maxDiscount) : '',
+      startDate: code.startDate ? code.startDate.split('T')[0] : '',
+      endDate: code.endDate ? code.endDate.split('T')[0] : '',
+      startTime: code.startTime || '',
+      endTime: code.endTime || '',
+      daysOfWeek: code.daysOfWeek || 'ALL',
+    });
+    setIsCodeModalOpen(true);
+  };
+
   const handleSaveCode = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -235,6 +268,10 @@ export default function ManagerPromosScreen() {
         playSuccessChime();
         setIsCodeModalOpen(false);
         fetchPromos();
+        // If a code was just created or updated, auto-select it in cardForm
+        if (data.data?.id) {
+          setCardForm((prev) => ({ ...prev, promoCodeId: data.data.id }));
+        }
       }
     } catch (err) {
       console.error(err);
@@ -318,24 +355,21 @@ export default function ManagerPromosScreen() {
           </Link>
         </nav>
 
-        <div className="flex items-center gap-3">
-          {activeTab === 'CARDS' ? (
-            <button
-              onClick={openNewCardModal}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-lg transition"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Design Promo Card</span>
-            </button>
-          ) : (
-            <button
-              onClick={openNewCodeModal}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-black text-xs rounded-xl shadow-lg transition"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create Promo Code</span>
-            </button>
-          )}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openNewCodeModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-md transition active:scale-95"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>+ Promo Code</span>
+          </button>
+          <button
+            onClick={openNewCardModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-md transition active:scale-95"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>+ Promo Card</span>
+          </button>
           <Link
             href="/manager"
             className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition"
@@ -412,8 +446,15 @@ export default function ManagerPromosScreen() {
                         )}
                       </button>
                       <button
+                        onClick={() => openEditCardModal(card)}
+                        className="p-1.5 text-slate-400 hover:text-amber-400 rounded-lg hover:bg-slate-800 transition"
+                        title="Edit promo card"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => handleDeleteCard(card.id)}
-                        className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-800"
+                        className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-800 transition"
                         title="Delete card"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -504,8 +545,15 @@ export default function ManagerPromosScreen() {
                         )}
                       </button>
                       <button
+                        onClick={() => openEditCodeModal(code)}
+                        className="p-1.5 text-slate-400 hover:text-purple-400 rounded-lg hover:bg-slate-800 transition"
+                        title="Edit promo code"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => handleDeleteCode(code.id)}
-                        className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-800"
+                        className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-800 transition"
                         title="Delete code"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -556,7 +604,9 @@ export default function ManagerPromosScreen() {
           <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
             <div className="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
               <div>
-                <h3 className="font-black text-amber-400 text-sm">Design Promotional Menu Card</h3>
+                <h3 className="font-black text-amber-400 text-sm">
+                  {editingCard ? 'Edit Promotional Menu Card' : 'Design Promotional Menu Card'}
+                </h3>
                 <p className="text-xs text-slate-400">
                   Appears in customer swipable hero carousel above menu
                 </p>
@@ -607,7 +657,32 @@ export default function ManagerPromosScreen() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Attached Promo Code</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold text-slate-300">Attached Promo Code</label>
+                    <div className="flex items-center gap-1.5">
+                      {cardForm.promoCodeId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const codeToEdit = promoCodes.find((c) => c.id === cardForm.promoCodeId);
+                            if (codeToEdit) openEditCodeModal(codeToEdit);
+                          }}
+                          className="text-[10px] font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1 bg-purple-500/20 px-2 py-0.5 rounded border border-purple-500/30 transition hover:bg-purple-500/30"
+                        >
+                          <Edit className="w-3 h-3" />
+                          <span>Edit</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={openNewCodeModal}
+                        className="text-[10px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30 transition hover:bg-amber-500/30"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>+ Add</span>
+                      </button>
+                    </div>
+                  </div>
                   <select
                     value={cardForm.promoCodeId}
                     onChange={(e) => setCardForm({ ...cardForm, promoCodeId: e.target.value })}
@@ -697,7 +772,7 @@ export default function ManagerPromosScreen() {
                   type="submit"
                   className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs shadow-md"
                 >
-                  Save Promo Card
+                  {editingCard ? 'Update Promo Card' : 'Save Promo Card'}
                 </button>
               </div>
             </form>
@@ -705,13 +780,15 @@ export default function ManagerPromosScreen() {
         </div>
       )}
 
-      {/* Create Promo Code Modal */}
+      {/* Create / Edit Promo Code Modal */}
       {isCodeModalOpen && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
           <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
             <div className="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
               <div>
-                <h3 className="font-black text-purple-400 text-sm">Create Promo Code</h3>
+                <h3 className="font-black text-purple-400 text-sm">
+                  {editingCode ? `Edit Promo Code: ${editingCode.code}` : 'Create Promo Code'}
+                </h3>
                 <p className="text-xs text-slate-400">
                   Customers enter this code in cart / waiter billing
                 </p>
@@ -868,7 +945,7 @@ export default function ManagerPromosScreen() {
                   type="submit"
                   className="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl text-xs shadow-md"
                 >
-                  Save Promo Code
+                  {editingCode ? 'Update Promo Code' : 'Save Promo Code'}
                 </button>
               </div>
             </form>
