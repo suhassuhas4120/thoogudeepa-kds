@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, AlertTriangle, EyeOff, X, Check, Clock, PackageCheck, Phone, User, FileText } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, EyeOff, X, Check, Clock, PackageCheck, Phone, User, FileText, Receipt, Layers, ExternalLink } from 'lucide-react';
 import { useSocketRoom } from '@/lib/useSocket';
 import { playKitchenBell } from '@/lib/audio-synth';
 import ManagerTopNav from '@/components/ManagerTopNav';
@@ -17,11 +17,21 @@ interface OrderItem {
   specialNotes?: string;
 }
 
+interface SessionRoundInfo {
+  ticketNumber: string;
+  roundNumber: number;
+  placedAt: string;
+  itemsCount: number;
+  subtotal: number;
+  itemsSummary: string;
+}
+
 interface Ticket {
   id: string;
   ticketNumber: string;
   orderType: string;
   seatId?: number;
+  sessionId?: string;
   customerName?: string;
   customerPhone?: string;
   status: string;
@@ -31,7 +41,39 @@ interface Ticket {
   waiterName?: string;
   specialNotes?: string;
   totalAmount?: number;
+  roundNumber?: number;
+  totalRounds?: number;
+  sessionRounds?: SessionRoundInfo[];
+  invoiceNumber?: string | null;
+  billSubtotal?: number;
+  billGst?: number;
+  billGrandTotal?: number;
+  billPaymentMode?: string | null;
+  billPaymentStatus?: string;
+  billSettledAt?: string | null;
   items: OrderItem[];
+}
+
+interface MasterBill {
+  id: string;
+  billNumber: string;
+  date: string;
+  orderType: string;
+  seatNumberOrToken: string;
+  customerName: string;
+  customerPhone?: string | null;
+  serverName: string;
+  itemsSummary: string;
+  placedAt: string;
+  settledAt: string;
+  subtotal: number;
+  discountAmount: number;
+  packagingCharges: number;
+  gst5Percent: number;
+  grandTotal: number;
+  paymentMode: string;
+  paymentStatus: string;
+  createdAt: string;
 }
 
 interface MenuItem86 {
@@ -46,11 +88,14 @@ interface MenuItem86 {
 export default function ManagerKitchenMonitorScreen() {
   const socket = useSocketRoom('room:manager');
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [masterBills, setMasterBills] = useState<MasterBill[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem86[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'KOT_TICKETS' | 'MASTER_BILLS'>('KOT_TICKETS');
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'ACTIVE' | 'PARCELS' | 'COOKING' | 'READY' | 'COMPLETED'>('ALL');
   const [show86Drawer, setShow86Drawer] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [selectedMasterBill, setSelectedMasterBill] = useState<MasterBill | null>(null);
   const [updatingTicketId, setUpdatingTicketId] = useState<string | null>(null);
 
   const fetchKdsData = async () => {
@@ -63,10 +108,13 @@ export default function ManagerKitchenMonitorScreen() {
       const menuData = await menuRes.json();
 
       if (ticketsData.success) {
-        setTickets(ticketsData.data);
+        setTickets(ticketsData.data || []);
+        if (ticketsData.masterBills) {
+          setMasterBills(ticketsData.masterBills);
+        }
       }
       if (menuData.success) {
-        setMenuItems(menuData.data.items);
+        setMenuItems(menuData.data.items || []);
       }
       setLoading(false);
     } catch (e) {
@@ -174,12 +222,16 @@ export default function ManagerKitchenMonitorScreen() {
 
     socket.on('order:placed', handleTicket);
     socket.on('order:item_status_changed', handleStatus);
+    socket.on('seat:vacated', fetchKdsData);
+    socket.on('payment:lock_changed', fetchKdsData);
     socket.on('menu:item_86_toggled', handleStatus);
     socket.on('menu:updated', handleStatus);
 
     return () => {
       socket.off('order:placed', handleTicket);
       socket.off('order:item_status_changed', handleStatus);
+      socket.off('seat:vacated', fetchKdsData);
+      socket.off('payment:lock_changed', fetchKdsData);
       socket.off('menu:item_86_toggled', handleStatus);
       socket.off('menu:updated', handleStatus);
     };
@@ -249,263 +301,444 @@ export default function ManagerKitchenMonitorScreen() {
           status: 'served',
         }),
       });
-
       const data = await res.json();
       if (!data.success) {
-        console.error('Failed to mark parcel done:', data.error);
         fetchKdsData();
       }
-    } catch (err) {
-      console.error('Error marking parcel done:', err);
+    } catch (e) {
+      console.error(e);
       fetchKdsData();
     } finally {
       setUpdatingTicketId(null);
     }
   };
 
-  // Compute status summary of ticket
-  const getTicketStatusBadge = (ticket: Ticket) => {
-    const items = ticket.items || [];
-    if (isTicketDone(ticket)) {
-      return { label: '✔️ Done', color: 'text-stone-400 bg-stone-800/80 border border-stone-700/50' };
-    }
-    if (items.some((i) => i.status === 'ready')) {
-      return { label: '🟢 Ready', color: 'text-emerald-400 bg-emerald-950/60 border border-emerald-500/40' };
-    }
-    if (items.some((i) => i.status === 'preparing' || i.status === 'placed')) {
-      return { label: '🔵 Cook', color: 'text-sky-400 bg-sky-950/60 border border-sky-500/40' };
-    }
-    return { label: '⚪ Placed', color: 'text-stone-300 bg-stone-800' };
-  };
-
-  // Filter calculations
+  // Counts for filter pills
+  const totalCount = tickets.length;
   const activeCount = tickets.filter((t) => !isTicketDone(t)).length;
   const parcelCount = tickets.filter((t) => isTicketParcel(t)).length;
-  const cookingCount = tickets.filter((t) => !isTicketDone(t) && t.items?.some((i) => i.status === 'preparing' || i.status === 'placed') && !t.items?.some((i) => i.status === 'ready')).length;
-  const readyCount = tickets.filter((t) => !isTicketDone(t) && t.items?.some((i) => i.status === 'ready')).length;
+  const cookingCount = tickets.filter((t) => !isTicketDone(t) && (t.items || []).some((i) => i.status === 'preparing')).length;
+  const readyCount = tickets.filter((t) => !isTicketDone(t) && (t.items || []).some((i) => i.status === 'ready')).length;
   const completedCount = tickets.filter((t) => isTicketDone(t)).length;
-  const totalCount = tickets.length;
 
-  const filteredTickets = tickets.filter((t) => {
-    const done = isTicketDone(t);
-    const items = t.items || [];
-    const isReady = !done && items.some((i) => i.status === 'ready');
-    const isCooking = !done && items.some((i) => i.status === 'preparing' || i.status === 'placed') && !isReady;
-    const isParcel = isTicketParcel(t);
+  // Filtered tickets
+  const filteredTickets = tickets.filter((ticket) => {
+    const isDone = isTicketDone(ticket);
+    const isParcel = isTicketParcel(ticket);
 
-    if (activeFilter === 'ACTIVE') return !done;
-    if (activeFilter === 'PARCELS') return isParcel;
-    if (activeFilter === 'COOKING') return isCooking;
-    if (activeFilter === 'READY') return isReady;
-    if (activeFilter === 'COMPLETED') return done;
-    return true; // default 'ALL' shows all saved orders (at least last 20-50 orders)!
+    switch (activeFilter) {
+      case 'ALL':
+        return true;
+      case 'ACTIVE':
+        return !isDone;
+      case 'PARCELS':
+        return isParcel;
+      case 'COOKING':
+        return !isDone && (ticket.items || []).some((i) => i.status === 'preparing');
+      case 'READY':
+        return !isDone && (ticket.items || []).some((i) => i.status === 'ready');
+      case 'COMPLETED':
+        return isDone;
+      default:
+        return true;
+    }
   });
 
-  const soldOutCount = menuItems.filter((i) => !i.isAvailable).length;
+  const getTicketStatusBadge = (ticket: Ticket) => {
+    if (isTicketDone(ticket)) {
+      return { label: '✓ Done', color: 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/30' };
+    }
+    const items = ticket.items || [];
+    if (items.some((i) => i.status === 'ready')) {
+      return { label: 'Ready', color: 'bg-emerald-900/60 text-emerald-300 border border-emerald-500/40' };
+    }
+    if (items.some((i) => i.status === 'preparing')) {
+      return { label: 'Cooking', color: 'bg-sky-950/80 text-sky-300 border border-sky-500/30' };
+    }
+    return { label: 'Received', color: 'bg-amber-950/80 text-amber-300 border border-amber-500/30' };
+  };
 
   return (
-    <div className="min-h-screen bg-[#100E0C] text-white flex flex-col font-sans select-none">
-      {/* Shared Manager Top Navigation */}
-      <ManagerTopNav
-        activeTab="orders"
-        extraRightActions={
+    <div className="min-h-screen bg-[#100E0C] text-stone-100 flex flex-col font-sans">
+      <ManagerTopNav activeTab="orders" />
+
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {/* SECONDARY SUB-NAV / VIEW SWITCHER                                  */}
+      {/* ────────────────────────────────────────────────────────────────── */}
+      <div className="bg-[#14110F] border-b border-[#2C2520] px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <h2 className="font-black text-sm text-stone-200 uppercase tracking-wider">
+            Orders & Kitchen Operations ({tickets.length})
+          </h2>
+
+          {/* Primary View Switcher: KOTs vs Master Invoices */}
+          <div className="flex items-center bg-[#1C1815] p-0.5 rounded-xl border border-[#2C2520] text-xs">
+            <button
+              type="button"
+              onClick={() => setViewMode('KOT_TICKETS')}
+              className={`px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
+                viewMode === 'KOT_TICKETS'
+                  ? 'bg-[#8A4228] text-white shadow-sm'
+                  : 'text-stone-400 hover:text-white'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Kitchen Orders / KOTs ({tickets.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('MASTER_BILLS')}
+              className={`px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
+                viewMode === 'MASTER_BILLS'
+                  ? 'bg-emerald-700 text-white shadow-sm'
+                  : 'text-stone-400 hover:text-white'
+              }`}
+            >
+              <Receipt className="w-3.5 h-3.5" />
+              <span>Master Invoices & Bills ({masterBills.length})</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setShow86Drawer(true)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm ${
-              soldOutCount > 0
-                ? 'bg-rose-950/60 text-rose-300 border border-rose-500/40 hover:bg-rose-900/60'
-                : 'bg-[#221D1A] text-stone-300 border border-[#2C2520] hover:text-white'
-            }`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-950/60 border border-amber-600/40 text-amber-300 hover:bg-amber-900/60 text-xs font-bold transition active:scale-95 shadow-sm"
           >
-            <EyeOff className="w-3.5 h-3.5" />
-            <span>[ 86 / Sold Out ({soldOutCount}) ]</span>
-          </button>
-        }
-      />
-
-      {/* Subheader Title Bar & Filters */}
-      <div className="bg-[#141210] border-b border-[#2C2520] px-6 py-2.5 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xs md:text-sm font-black text-[#D08A52] tracking-wider uppercase">
-          KITCHEN MONITOR & MASTER ORDERS ({totalCount})
-        </h1>
-
-        {/* Filters */}
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-xs font-bold text-stone-400 mr-1">Filter:</span>
-
-          <button
-            type="button"
-            onClick={() => setActiveFilter('ALL')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-              activeFilter === 'ALL'
-                ? 'bg-[#8A4228] text-white shadow-sm'
-                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
-            }`}
-          >
-            [ All Orders ({totalCount}) ]
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveFilter('ACTIVE')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-              activeFilter === 'ACTIVE'
-                ? 'bg-[#8A4228] text-white shadow-sm'
-                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
-            }`}
-          >
-            [ In Kitchen ({activeCount}) ]
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveFilter('PARCELS')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-              activeFilter === 'PARCELS'
-                ? 'bg-amber-600 text-white shadow-sm'
-                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
-            }`}
-          >
-            [ 📦 Parcels ({parcelCount}) ]
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveFilter('COOKING')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-              activeFilter === 'COOKING'
-                ? 'bg-sky-600 text-white shadow-sm'
-                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
-            }`}
-          >
-            [ Cooking ({cookingCount}) ]
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveFilter('READY')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-              activeFilter === 'READY'
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
-            }`}
-          >
-            [ Ready ({readyCount}) ]
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveFilter('COMPLETED')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-              activeFilter === 'COMPLETED'
-                ? 'bg-stone-700 text-white shadow-sm'
-                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
-            }`}
-          >
-            [ Completed ({completedCount}) ]
+            <AlertTriangle className="w-3.5 h-3.5" />
+            <span>86 / Sold Out Item Manager</span>
           </button>
         </div>
       </div>
 
       {/* ────────────────────────────────────────────────────────────────── */}
-      {/* MASTER TICKETS TABLE                                               */}
+      {/* FILTER TABS (Only shown in KOT view)                                */}
       {/* ────────────────────────────────────────────────────────────────── */}
-      <div className="flex-1 p-6 overflow-x-auto">
-        <div className="bg-[#181513] border border-[#2C2520] rounded-2xl overflow-hidden shadow-xl">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-[#13110F] border-b border-[#2C2520] text-stone-400 font-bold uppercase tracking-wider text-[11px]">
-                <th className="py-3 px-4">TICKET</th>
-                <th className="py-3 px-3">TYPE / SEAT</th>
-                <th className="py-3 px-4">SERVER / DESK</th>
-                <th className="py-3 px-4">ITEMS ORDERED</th>
-                <th className="py-3 px-4">TIME</th>
-                <th className="py-3 px-3">STATUS</th>
-                <th className="py-3 px-4 text-right">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#26201B]">
-              {filteredTickets.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-stone-500">
-                    No tickets found in this filter view.
-                  </td>
-                </tr>
-              ) : (
-                filteredTickets.map((ticket) => {
-                  const itemsSummary = (ticket.items || [])
-                    .map((i) => `${i.itemName} x${i.quantity}`)
-                    .join(', ');
-                  const statusBadge = getTicketStatusBadge(ticket);
-                  const isParcel = isTicketParcel(ticket);
-                  const isDone = isTicketDone(ticket);
-                  const seatDisplay = isParcel ? '📦 Parcel' : `S${ticket.seatId || '1'}`;
-                  const serverName = isParcel
-                    ? 'Manager Desk'
-                    : ticket.waiterName || (ticket.seatId && ticket.seatId <= 8 ? 'Suhas' : 'Shiva');
+      {viewMode === 'KOT_TICKETS' && (
+        <div className="bg-[#12100E] border-b border-[#2C2520] px-6 py-2.5 flex items-center justify-between text-xs overflow-x-auto">
+          <div className="flex items-center gap-2">
+            <span className="text-stone-500 font-bold uppercase tracking-wider text-[10px] mr-1">Filter KOTs:</span>
+            <button
+              type="button"
+              onClick={() => setActiveFilter('ALL')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                activeFilter === 'ALL'
+                  ? 'bg-[#8A4228] text-white shadow-sm'
+                  : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+              }`}
+            >
+              [ All Orders ({totalCount}) ]
+            </button>
 
-                  return (
-                    <tr key={ticket.id} className="hover:bg-[#201B18] transition">
+            <button
+              type="button"
+              onClick={() => setActiveFilter('ACTIVE')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                activeFilter === 'ACTIVE'
+                  ? 'bg-[#8A4228] text-white shadow-sm'
+                  : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+              }`}
+            >
+              [ In Kitchen ({activeCount}) ]
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveFilter('PARCELS')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                activeFilter === 'PARCELS'
+                  ? 'bg-amber-600 text-white shadow-sm'
+                  : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+              }`}
+            >
+              [ 📦 Parcels ({parcelCount}) ]
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveFilter('COOKING')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                activeFilter === 'COOKING'
+                  ? 'bg-sky-600 text-white shadow-sm'
+                  : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+              }`}
+            >
+              [ Cooking ({cookingCount}) ]
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveFilter('READY')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                activeFilter === 'READY'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+              }`}
+            >
+              [ Ready ({readyCount}) ]
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveFilter('COMPLETED')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                activeFilter === 'COMPLETED'
+                  ? 'bg-stone-700 text-white shadow-sm'
+                  : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+              }`}
+            >
+              [ Completed ({completedCount}) ]
+            </button>
+          </div>
+
+          <div className="text-[11px] text-stone-400 hidden sm:block">
+            <span>Showing all individual order rounds & their final invoice totals</span>
+          </div>
+        </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {/* 1. KITCHEN TICKETS (KOT) TABLE VIEW                                */}
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {viewMode === 'KOT_TICKETS' && (
+        <div className="flex-1 p-6 overflow-x-auto">
+          <div className="bg-[#181513] border border-[#2C2520] rounded-2xl overflow-hidden shadow-xl">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-[#13110F] border-b border-[#2C2520] text-stone-400 font-bold uppercase tracking-wider text-[11px]">
+                  <th className="py-3 px-4">TICKET / ROUND</th>
+                  <th className="py-3 px-3">TYPE / SEAT</th>
+                  <th className="py-3 px-4">LINKED INVOICE</th>
+                  <th className="py-3 px-4">SERVER / DESK</th>
+                  <th className="py-3 px-4">ITEMS IN THIS ORDER</th>
+                  <th className="py-3 px-4">KOT AMOUNT</th>
+                  <th className="py-3 px-4">BILL GRAND TOTAL</th>
+                  <th className="py-3 px-4">TIME</th>
+                  <th className="py-3 px-3">STATUS</th>
+                  <th className="py-3 px-4 text-right">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#26201B]">
+                {filteredTickets.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="py-12 text-center text-stone-500">
+                      No tickets found in this filter view.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredTickets.map((ticket) => {
+                    const itemsSummary = (ticket.items || [])
+                      .map((i) => `${i.itemName} x${i.quantity}`)
+                      .join(', ');
+                    const statusBadge = getTicketStatusBadge(ticket);
+                    const isParcel = isTicketParcel(ticket);
+                    const isDone = isTicketDone(ticket);
+                    const seatDisplay = isParcel ? '📦 Parcel' : `S${ticket.seatId || '1'}`;
+                    const serverName = isParcel
+                      ? 'Manager Desk'
+                      : ticket.waiterName || (ticket.seatId && ticket.seatId <= 8 ? 'Suhas' : 'Shiva');
+
+                    return (
+                      <tr key={ticket.id} className="hover:bg-[#201B18] transition">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono font-black text-amber-400 text-sm">
+                              #{ticket.ticketNumber}
+                            </span>
+                            {ticket.totalRounds && ticket.totalRounds > 1 && (
+                              <span className="px-1.5 py-0.5 rounded bg-amber-950/70 border border-amber-600/40 text-[10px] font-bold text-amber-300">
+                                R{ticket.roundNumber}/{ticket.totalRounds}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 font-bold text-white">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                            isParcel ? 'bg-amber-950/60 text-amber-300 border border-amber-500/30' : 'bg-stone-800 text-stone-200'
+                          }`}>
+                            {seatDisplay}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          {ticket.invoiceNumber ? (
+                            <div className="flex flex-col">
+                              <span className="inline-block px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-mono font-bold text-[11px] border border-emerald-500/40 w-fit">
+                                #{ticket.invoiceNumber}
+                              </span>
+                              <span className="text-[10px] text-stone-400 mt-0.5">
+                                {ticket.billPaymentMode || 'UPI'} • {ticket.billPaymentStatus || 'PAID'}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-stone-500 font-mono text-[11px]">Unbilled (Active)</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-stone-300 font-medium">
+                          {serverName}
+                        </td>
+                        <td className="py-3 px-4 text-stone-200 max-w-xs truncate" title={itemsSummary}>
+                          {itemsSummary}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="font-mono font-bold text-amber-400 text-sm">
+                            ₹{(ticket.totalAmount || 0).toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          {ticket.billGrandTotal ? (
+                            <div>
+                              <div className="font-mono font-bold text-emerald-400 text-sm">
+                                ₹{ticket.billGrandTotal.toFixed(2)}
+                              </div>
+                              <div className="text-[10px] text-stone-400 font-normal">
+                                Subtot: ₹{(ticket.billSubtotal || 0).toFixed(2)} + GST
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-stone-500 text-xs">—</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-stone-300 font-mono">
+                          {formatOrderTime(ticket.placedAt, ticket.placedAtTime)}
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${statusBadge.color}`}>
+                            {statusBadge.label}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedTicket(ticket)}
+                              className="px-3 py-1.5 rounded-lg bg-[#221D1A] hover:bg-[#2C2520] text-stone-200 hover:text-white font-bold text-xs border border-[#3A302A] transition active:scale-95 shadow-sm"
+                            >
+                              Details
+                            </button>
+
+                            {/* Dedicated Parcel "Mark Done" action button strictly for parcel orders */}
+                            {isParcel && !isDone && (
+                              <button
+                                type="button"
+                                disabled={updatingTicketId === ticket.id}
+                                onClick={() => handleMarkParcelDone(ticket)}
+                                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition active:scale-95 shadow-md flex items-center gap-1.5 disabled:opacity-50"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                                <span>{updatingTicketId === ticket.id ? 'Done...' : 'Mark Done'}</span>
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {/* 2. MASTER BILLS & INVOICES TABLE VIEW (Matches Sales Report)       */}
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {viewMode === 'MASTER_BILLS' && (
+        <div className="flex-1 p-6 overflow-x-auto">
+          <div className="bg-[#181513] border border-[#2C2520] rounded-2xl overflow-hidden shadow-xl">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-[#13110F] border-b border-[#2C2520] text-stone-400 font-bold uppercase tracking-wider text-[11px]">
+                  <th className="py-3 px-4">INVOICE #</th>
+                  <th className="py-3 px-3">DATE</th>
+                  <th className="py-3 px-3">TYPE</th>
+                  <th className="py-3 px-3">SEAT / TOKEN</th>
+                  <th className="py-3 px-4">SERVER</th>
+                  <th className="py-3 px-4">ITEMS SUMMARY</th>
+                  <th className="py-3 px-3">PLACED</th>
+                  <th className="py-3 px-3">SETTLED</th>
+                  <th className="py-3 px-4 text-right">SUBTOTAL</th>
+                  <th className="py-3 px-3 text-right">GST (5%)</th>
+                  <th className="py-3 px-4 text-right">GRAND TOTAL</th>
+                  <th className="py-3 px-3 text-center">MODE</th>
+                  <th className="py-3 px-4 text-right">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#26201B]">
+                {masterBills.length === 0 ? (
+                  <tr>
+                    <td colSpan={13} className="py-12 text-center text-stone-500">
+                      No master invoices found.
+                    </td>
+                  </tr>
+                ) : (
+                  masterBills.map((bill) => (
+                    <tr key={bill.id} className="hover:bg-[#201B18] transition">
                       <td className="py-3 px-4 font-mono font-black text-amber-400">
-                        #{ticket.ticketNumber}
+                        #{bill.billNumber}
                       </td>
-                      <td className="py-3 px-3 font-bold text-white">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${
-                          isParcel ? 'bg-amber-950/60 text-amber-300 border border-amber-500/30' : 'bg-stone-800 text-stone-200'
-                        }`}>
-                          {seatDisplay}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-stone-300 font-medium">
-                        {serverName}
-                      </td>
-                      <td className="py-3 px-4 text-stone-200 max-w-md truncate" title={itemsSummary}>
-                        {itemsSummary}
-                      </td>
-                      <td className="py-3 px-4 text-amber-400 font-mono font-bold">
-                        {formatOrderTime(ticket.placedAt, ticket.placedAtTime)}
+                      <td className="py-3 px-3 text-stone-300 font-mono text-[11px]">
+                        {bill.date}
                       </td>
                       <td className="py-3 px-3">
-                        <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${statusBadge.color}`}>
-                          {statusBadge.label}
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          bill.orderType === 'Takeaway'
+                            ? 'bg-amber-950/80 text-amber-300 border border-amber-600/30'
+                            : 'bg-stone-800 text-stone-200'
+                        }`}>
+                          {bill.orderType}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 font-bold text-white font-mono">
+                        {bill.seatNumberOrToken}
+                      </td>
+                      <td className="py-3 px-4 text-stone-300">
+                        {bill.serverName}
+                      </td>
+                      <td className="py-3 px-4 text-stone-200 max-w-xs truncate" title={bill.itemsSummary}>
+                        {bill.itemsSummary}
+                      </td>
+                      <td className="py-3 px-3 text-stone-400 font-mono text-[11px]">
+                        {bill.placedAt}
+                      </td>
+                      <td className="py-3 px-3 text-amber-400 font-mono text-[11px]">
+                        {bill.settledAt}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono font-bold text-stone-300">
+                        ₹{bill.subtotal.toFixed(2)}
+                      </td>
+                      <td className="py-3 px-3 text-right font-mono text-stone-400">
+                        ₹{bill.gst5Percent.toFixed(2)}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono font-black text-emerald-400 text-sm">
+                        ₹{bill.grandTotal.toFixed(2)}
+                      </td>
+                      <td className="py-3 px-3 text-center">
+                        <span className="px-2 py-0.5 rounded bg-stone-800 text-stone-300 text-[10px] font-bold">
+                          {bill.paymentMode}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedTicket(ticket)}
-                            className="px-3 py-1.5 rounded-lg bg-[#221D1A] hover:bg-[#2C2520] text-stone-200 hover:text-white font-bold text-xs border border-[#3A302A] transition active:scale-95 shadow-sm"
-                          >
-                            Details
-                          </button>
-
-                          {/* Dedicated Parcel "Mark Done" action button strictly for parcel orders */}
-                          {isParcel && !isDone && (
-                            <button
-                              type="button"
-                              disabled={updatingTicketId === ticket.id}
-                              onClick={() => handleMarkParcelDone(ticket)}
-                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition active:scale-95 shadow-md flex items-center gap-1.5 disabled:opacity-50"
-                            >
-                              <Check className="w-3.5 h-3.5" />
-                              <span>{updatingTicketId === ticket.id ? 'Done...' : 'Mark Done'}</span>
-                            </button>
-                          )}
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedMasterBill(bill)}
+                          className="px-3 py-1.5 rounded-lg bg-[#221D1A] hover:bg-[#2C2520] text-stone-200 hover:text-white font-bold text-xs border border-[#3A302A] transition active:scale-95 shadow-sm"
+                        >
+                          Invoice Details
+                        </button>
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ────────────────────────────────────────────────────────────────── */}
-      {/* TICKET DETAILS MODAL                                               */}
+      {/* TICKET DETAILS MODAL (With Full Session & Sales Report Sync)       */}
       {/* ────────────────────────────────────────────────────────────────── */}
       {selectedTicket && (() => {
         const isParcel = isTicketParcel(selectedTicket);
@@ -517,36 +750,67 @@ export default function ManagerKitchenMonitorScreen() {
 
         return (
           <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-            <div className="bg-[#181513] border border-[#2C2520] rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-              {/* Header */}
+            <div className="bg-[#181513] border border-[#2C2520] rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
               <div className="flex justify-between items-start pb-4 border-b border-[#2C2520] mb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-black text-lg text-white">
+                    <h3 className="font-mono font-black text-xl text-amber-400">
                       Ticket #{selectedTicket.ticketNumber}
                     </h3>
-                    <span className={`px-2 py-0.5 rounded text-[11px] font-black uppercase ${
-                      isParcel
-                        ? 'bg-amber-950/80 text-amber-300 border border-amber-500/40'
-                        : 'bg-[#2A2420] text-stone-300 border border-[#3A302A]'
-                    }`}>
-                      {isParcel ? '📦 Parcel / Takeaway' : `Dine-In • S${selectedTicket.seatId || '1'}`}
+                    <span className="px-2.5 py-0.5 bg-stone-800 text-stone-300 text-xs font-bold rounded-full">
+                      {isParcel ? '📦 TAKEAWAY' : `DINE-IN • S${selectedTicket.seatId || '1'}`}
                     </span>
+                    {selectedTicket.totalRounds && selectedTicket.totalRounds > 1 && (
+                      <span className="px-2 py-0.5 bg-amber-950/80 text-amber-300 border border-amber-600/40 text-[10px] font-bold rounded-full">
+                        Round {selectedTicket.roundNumber} of {selectedTicket.totalRounds}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-xs text-stone-400 mt-1 flex items-center gap-2">
-                    <Clock className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Placed: <strong className="text-stone-200">{formatOrderTime(selectedTicket.placedAt, selectedTicket.placedAtTime)}</strong></span>
+                  <div className="flex items-center gap-3 text-xs text-stone-400 mt-1">
+                    <span className="flex items-center gap-1 font-mono">
+                      <Clock className="w-3.5 h-3.5 text-amber-500" />
+                      Placed: {formatOrderTime(selectedTicket.placedAt, selectedTicket.placedAtTime)}
+                    </span>
                     <span>•</span>
-                    <span>Server: <strong className="text-stone-200">{isParcel ? 'Manager Desk' : (selectedTicket.waiterName || 'Staff')}</strong></span>
-                  </p>
+                    <span>Server: <strong className="text-stone-200">{selectedTicket.waiterName || 'Staff'}</strong></span>
+                  </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setSelectedTicket(null)}
-                  className="p-1.5 rounded-lg text-stone-400 hover:text-white bg-[#221D1A] border border-[#2C2520]"
+                  className="p-1 rounded-lg text-stone-400 hover:text-white hover:bg-stone-800 transition"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
+
+              {/* Linked Final Bill Banner (Direct Link to Sales Report) */}
+              {selectedTicket.invoiceNumber && (
+                <div className="mb-4 p-3.5 bg-emerald-950/30 border border-emerald-500/40 rounded-2xl flex items-center justify-between text-xs">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-black text-emerald-300 text-sm">
+                        Master Invoice: #{selectedTicket.invoiceNumber}
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-emerald-900/60 text-emerald-200 text-[10px] font-bold">
+                        {selectedTicket.billPaymentStatus || 'PAID'}
+                      </span>
+                    </div>
+                    <span className="text-stone-300 text-[11px] block mt-0.5">
+                      Paid via {selectedTicket.billPaymentMode || 'UPI'} {selectedTicket.billSettledAt ? `at ${selectedTicket.billSettledAt}` : ''}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase tracking-wider text-stone-400 block font-bold">
+                      Bill Grand Total
+                    </span>
+                    <span className="font-mono font-black text-emerald-400 text-base">
+                      ₹{selectedTicket.billGrandTotal?.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* Parcel Details Section */}
               {isParcel && (
@@ -579,12 +843,19 @@ export default function ManagerKitchenMonitorScreen() {
                 </div>
               )}
 
-              {/* Items List */}
+              {/* Items in this specific KOT ticket */}
               <div className="mb-4">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block mb-2">
-                  Items In This Order ({selectedTicket.items?.length || 0}):
-                </span>
-                <div className="space-y-2 max-h-[35vh] overflow-y-auto pr-1">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block">
+                    Items In This Order #{selectedTicket.ticketNumber} ({selectedTicket.items?.length || 0}):
+                  </span>
+                  {selectedTicket.totalRounds && selectedTicket.totalRounds > 1 && (
+                    <span className="text-[10px] font-bold text-amber-400">
+                      (Round {selectedTicket.roundNumber} of {selectedTicket.totalRounds})
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-2 max-h-[30vh] overflow-y-auto pr-1">
                   {selectedTicket.items?.map((item) => (
                     <div
                       key={item.id}
@@ -611,13 +882,76 @@ export default function ManagerKitchenMonitorScreen() {
                 </div>
               </div>
 
-              {/* Total Amount Summary */}
-              <div className="p-3 bg-[#13110F] border border-[#2C2520] rounded-xl flex justify-between items-center mb-6">
-                <span className="text-xs font-bold text-stone-400">Order Subtotal:</span>
+              {/* KOT Subtotal */}
+              <div className="p-3 bg-[#13110F] border border-[#2C2520] rounded-xl flex justify-between items-center mb-4">
+                <span className="text-xs font-bold text-stone-400">
+                  This Ticket Subtotal (#{selectedTicket.ticketNumber}):
+                </span>
                 <span className="font-mono font-black text-base text-amber-400">
                   ₹{totalCalculated.toFixed(2)}
                 </span>
               </div>
+
+              {/* Multi-Round Session & Sales Report Reconciliation */}
+              {selectedTicket.sessionRounds && selectedTicket.sessionRounds.length > 1 && (
+                <div className="mb-6 p-3.5 bg-[#201B18] border border-amber-900/30 rounded-2xl space-y-2 text-xs">
+                  <div className="flex items-center justify-between font-bold text-amber-300 pb-1.5 border-b border-[#2C2520]">
+                    <span className="flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-amber-400" />
+                      Table S{selectedTicket.seatId} Full Dining Session ({selectedTicket.totalRounds} Rounds)
+                    </span>
+                    <span className="text-[10px] text-emerald-400 font-mono font-bold">
+                      ✓ Reconciled with Sales Report
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 pt-1">
+                    {selectedTicket.sessionRounds.map((sr) => (
+                      <div
+                        key={sr.ticketNumber}
+                        className={`p-2 rounded-lg flex justify-between items-center text-xs ${
+                          sr.ticketNumber === selectedTicket.ticketNumber
+                            ? 'bg-amber-950/50 border border-amber-500/30 text-white font-bold'
+                            : 'bg-[#181513] text-stone-300'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono text-amber-400 font-bold">Round {sr.roundNumber} (#{sr.ticketNumber})</span>
+                            <span className="text-[10px] text-stone-400 font-normal">at {sr.placedAt}</span>
+                            {sr.ticketNumber === selectedTicket.ticketNumber && (
+                              <span className="px-1.5 py-0.2 rounded bg-amber-600 text-white text-[9px] font-black uppercase">Viewing</span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-stone-400 block font-normal mt-0.5">{sr.itemsSummary}</span>
+                        </div>
+                        <span className="font-mono font-bold text-stone-200">₹{sr.subtotal.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2 border-t border-[#2C2520] space-y-1">
+                    <div className="flex justify-between text-stone-300">
+                      <span>Total Food Subtotal (All Rounds):</span>
+                      <span className="font-mono font-bold text-amber-400">
+                        ₹{selectedTicket.billSubtotal?.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-stone-400 text-[11px]">
+                      <span>GST (5%):</span>
+                      <span className="font-mono text-stone-300">
+                        ₹{selectedTicket.billGst?.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-emerald-400 font-black text-sm pt-1 border-t border-dashed border-[#2C2520]">
+                      <span>Final Master Invoice #{selectedTicket.invoiceNumber || '—'}:</span>
+                      <span className="font-mono">
+                        ₹{selectedTicket.billGrandTotal?.toFixed(2)} ({selectedTicket.billPaymentMode || 'Paid'})
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Modal Action Buttons */}
               <div className="flex items-center gap-3">
@@ -655,6 +989,92 @@ export default function ManagerKitchenMonitorScreen() {
           </div>
         );
       })()}
+
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {/* MASTER INVOICE DETAILS MODAL                                       */}
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {selectedMasterBill && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#181513] border border-[#2C2520] rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex justify-between items-start pb-4 border-b border-[#2C2520] mb-4">
+              <div>
+                <h3 className="font-mono font-black text-xl text-emerald-400">
+                  Master Invoice #{selectedMasterBill.billNumber}
+                </h3>
+                <span className="text-xs text-stone-400 block mt-0.5">
+                  {selectedMasterBill.date} • {selectedMasterBill.orderType} • {selectedMasterBill.seatNumberOrToken}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedMasterBill(null)}
+                className="p-1 rounded-lg text-stone-400 hover:text-white hover:bg-stone-800 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 mb-6 text-xs">
+              <div className="p-3 bg-[#221D1A] border border-[#2C2520] rounded-xl space-y-2">
+                <div className="flex justify-between text-stone-300">
+                  <span className="text-stone-400 font-bold">Customer Name:</span>
+                  <span className="font-bold text-white">{selectedMasterBill.customerName || 'Walk-in Guest'}</span>
+                </div>
+                <div className="flex justify-between text-stone-300">
+                  <span className="text-stone-400 font-bold">Server:</span>
+                  <span className="font-bold text-white">{selectedMasterBill.serverName}</span>
+                </div>
+                <div className="flex justify-between text-stone-300">
+                  <span className="text-stone-400 font-bold">Order Placed:</span>
+                  <span className="font-mono text-stone-300">{selectedMasterBill.placedAt}</span>
+                </div>
+                <div className="flex justify-between text-stone-300">
+                  <span className="text-stone-400 font-bold">Settled At:</span>
+                  <span className="font-mono text-amber-400 font-bold">{selectedMasterBill.settledAt}</span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-[#221D1A] border border-[#2C2520] rounded-xl">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block mb-1">
+                  Ordered Items Summary:
+                </span>
+                <span className="text-stone-200 font-medium leading-relaxed block">
+                  {selectedMasterBill.itemsSummary}
+                </span>
+              </div>
+
+              <div className="p-3 bg-[#13110F] border border-[#2C2520] rounded-xl space-y-1.5">
+                <div className="flex justify-between text-stone-300">
+                  <span>Gross Food Subtotal:</span>
+                  <span className="font-mono font-bold text-amber-400">₹{selectedMasterBill.subtotal.toFixed(2)}</span>
+                </div>
+                {selectedMasterBill.packagingCharges > 0 && (
+                  <div className="flex justify-between text-stone-400">
+                    <span>Packaging Charges:</span>
+                    <span className="font-mono text-stone-300">₹{selectedMasterBill.packagingCharges.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-stone-400">
+                  <span>GST (5%):</span>
+                  <span className="font-mono text-stone-300">₹{selectedMasterBill.gst5Percent.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-emerald-400 font-black text-sm pt-1.5 border-t border-[#2C2520]">
+                  <span>Grand Total Paid:</span>
+                  <span className="font-mono">₹{selectedMasterBill.grandTotal.toFixed(2)} ({selectedMasterBill.paymentMode})</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSelectedMasterBill(null)}
+              className="w-full py-3 bg-[#221D1A] hover:bg-[#2C2520] text-stone-300 hover:text-white font-bold text-xs rounded-xl border border-[#2C2520] transition active:scale-95"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ────────────────────────────────────────────────────────────────── */}
       {/* 86 SOLD OUT ITEMS SLIDE-OVER DRAWER                                */}
