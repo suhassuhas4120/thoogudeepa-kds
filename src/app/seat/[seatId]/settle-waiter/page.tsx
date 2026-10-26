@@ -42,6 +42,13 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
           setDiscountAmount(sess.discountAmount || 0);
           setAppliedPromo(sess.appliedPromoCode || null);
           setWaiterName(data.data.seat.assignedWaiter || (seatId <= 8 ? 'Suhas' : 'Shiva'));
+
+          if (sess.status === 'COMPLETED' || sess.paymentStatus === 'PAID') {
+            setIsSettled(true);
+            router.push(`/seat/${seatId}/bill`);
+            return;
+          }
+
           if (sess.paymentPreferred === 'CASH') {
             setPaymentChoice('CASH');
             setWaiterLockedMode('CASH');
@@ -51,7 +58,7 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
           }
         }
       });
-  }, [seatId]);
+  }, [seatId, router]);
 
   useEffect(() => {
     if (!socket) return;
@@ -61,6 +68,10 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
       try {
         confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } });
       } catch (e) {}
+
+      setTimeout(() => {
+        router.push(`/seat/${seatId}/bill`);
+      }, 1000);
     };
 
     const handlePaymentLock = (data: any) => {
@@ -83,15 +94,17 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
     };
 
     socket.on('seat:vacated', handleVacate);
+    socket.on('payment:completed', handleVacate);
     socket.on('payment:lock_changed', handlePaymentLock);
     socket.on('seat:updated', handlePaymentLock);
 
     return () => {
       socket.off('seat:vacated', handleVacate);
+      socket.off('payment:completed', handleVacate);
       socket.off('payment:lock_changed', handlePaymentLock);
       socket.off('seat:updated', handlePaymentLock);
     };
-  }, [socket]);
+  }, [socket, seatId, router]);
 
   const handleApplyPromo = async () => {
     if (!promoCodeInput.trim() || loadingPromo) return;

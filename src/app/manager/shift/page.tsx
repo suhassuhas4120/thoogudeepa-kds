@@ -131,14 +131,23 @@ export default function ManagerShiftAuditScreen() {
               <span className="font-black text-amber-400 text-sm">₹{suhasStats.cashCollected.toFixed(2)}</span>
             </div>
 
+            <div className="flex items-center gap-1.5">
+              <span className="text-stone-400">• 🤝 Handed Over:</span>
+              <span className="font-bold text-stone-200">
+                <strong className="text-emerald-400 font-black">₹{(parseFloat(suhasHandedOver) || 0).toFixed(2)}</strong>
+                <span className="text-stone-400 text-[11px] ml-1">(Should Hand Over: ₹{suhasStats.cashCollected.toFixed(2)})</span>
+              </span>
+            </div>
+
             <div className="flex items-center gap-2">
-              <span className="text-stone-400">Handed Over:</span>
+              <span className="text-stone-300 font-bold">Handing Over:</span>
               <div className="flex items-center bg-[#100E0C] border border-[#3D332C] rounded-lg px-2.5 py-1">
                 <span className="text-stone-500 mr-1 font-bold">₹</span>
                 <input
                   type="number"
                   value={suhasHandedOver}
                   onChange={(e) => setSuhasHandedOver(e.target.value)}
+                  placeholder={String(suhasStats.cashCollected)}
                   className="w-24 bg-transparent text-white font-black focus:outline-none text-xs"
                 />
               </div>
@@ -184,14 +193,23 @@ export default function ManagerShiftAuditScreen() {
               <span className="font-black text-amber-400 text-sm">₹{shivaStats.cashCollected.toFixed(2)}</span>
             </div>
 
+            <div className="flex items-center gap-1.5">
+              <span className="text-stone-400">• 🤝 Handed Over:</span>
+              <span className="font-bold text-stone-200">
+                <strong className="text-emerald-400 font-black">₹{(parseFloat(shivaHandedOver) || 0).toFixed(2)}</strong>
+                <span className="text-stone-400 text-[11px] ml-1">(Should Hand Over: ₹{shivaStats.cashCollected.toFixed(2)})</span>
+              </span>
+            </div>
+
             <div className="flex items-center gap-2">
-              <span className="text-stone-400">Handed Over:</span>
+              <span className="text-stone-300 font-bold">Handing Over:</span>
               <div className="flex items-center bg-[#100E0C] border border-[#3D332C] rounded-lg px-2.5 py-1">
                 <span className="text-stone-500 mr-1 font-bold">₹</span>
                 <input
                   type="number"
                   value={shivaHandedOver}
                   onChange={(e) => setShivaHandedOver(e.target.value)}
+                  placeholder={String(shivaStats.cashCollected)}
                   className="w-24 bg-transparent text-white font-black focus:outline-none text-xs"
                 />
               </div>

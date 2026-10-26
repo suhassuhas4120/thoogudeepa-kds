@@ -44,13 +44,18 @@ export default function CustomerScreen6({ params }: { params: { seatId: string }
       try {
         confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } });
       } catch (e) {}
+      setTimeout(() => {
+        router.push(`/seat/${seatId}/bill`);
+      }, 1000);
     };
 
     socket.on('seat:vacated', handleVacate);
+    socket.on('payment:completed', handleVacate);
     return () => {
       socket.off('seat:vacated', handleVacate);
+      socket.off('payment:completed', handleVacate);
     };
-  }, [socket]);
+  }, [socket, seatId, router]);
 
   const handleSimulateSelfPay = async () => {
     try {
@@ -68,6 +73,9 @@ export default function CustomerScreen6({ params }: { params: { seatId: string }
       try {
         confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
       } catch (e) {}
+      setTimeout(() => {
+        router.push(`/seat/${seatId}/bill`);
+      }, 1000);
     } catch (e) {
       console.error(e);
     }

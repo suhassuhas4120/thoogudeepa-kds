@@ -140,8 +140,14 @@ export async function POST(req: NextRequest) {
       };
 
       emitToMultipleRooms(
-        [targetWaiterRoom, 'room:manager', 'room:global', seatRoom, 'room:kitchen'],
+        [targetWaiterRoom, 'room:manager', 'room:global', seatRoom, `room:seat:${seat.id}` as SocketRoom, 'room:kitchen'],
         'seat:vacated',
+        payload
+      );
+
+      emitToMultipleRooms(
+        [targetWaiterRoom, 'room:manager', 'room:global', seatRoom, `room:seat:${seat.id}` as SocketRoom],
+        'payment:completed',
         payload
       );
 
