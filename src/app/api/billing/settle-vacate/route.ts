@@ -110,9 +110,23 @@ export async function POST(req: NextRequest) {
       });
       const itemsSummary = itemsSummaryArray.join(', ') || 'Standard Dine-in';
 
-      // 2. Generate Invoice Number
-      const count = await prisma.masterSalesRecord.count();
-      const billNumber = `INV-${101 + count}`;
+      // 2. Generate Safe Unique Invoice Number
+      const allRecords = await prisma.masterSalesRecord.findMany({
+        select: { billNumber: true },
+      });
+      let maxNum = 100;
+      allRecords.forEach((r) => {
+        const match = r.billNumber.match(/INV-(\d+)/i);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (!isNaN(num) && num > maxNum) maxNum = num;
+        }
+      });
+      let nextNum = maxNum + 1;
+      while (await prisma.masterSalesRecord.findUnique({ where: { billNumber: `INV-${nextNum}` } })) {
+        nextNum++;
+      }
+      const billNumber = `INV-${nextNum}`;
 
       const initialPlacedTime = session.orderTickets[0]?.placedAt
         ? new Date(session.orderTickets[0].placedAt).toLocaleTimeString('en-IN', {
@@ -184,13 +198,13 @@ export async function POST(req: NextRequest) {
       };
 
       emitToMultipleRooms(
-        [targetWaiterRoom, 'room:manager', 'room:global', seatRoom, `room:seat:${seat.id}` as SocketRoom, 'room:kitchen'],
+        ['room:waiter:zoneA', 'room:waiter:zoneB', 'room:waiter:all', 'room:manager', 'room:global', seatRoom, `room:seat:${seat.id}` as SocketRoom, 'room:kitchen'],
         'seat:vacated',
         payload
       );
 
       emitToMultipleRooms(
-        [targetWaiterRoom, 'room:manager', 'room:global', seatRoom, `room:seat:${seat.id}` as SocketRoom],
+        ['room:waiter:zoneA', 'room:waiter:zoneB', 'room:waiter:all', 'room:manager', 'room:global', seatRoom, `room:seat:${seat.id}` as SocketRoom, 'room:kitchen'],
         'payment:completed',
         payload
       );

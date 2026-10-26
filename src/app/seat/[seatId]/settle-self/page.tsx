@@ -32,6 +32,9 @@ export default function CustomerScreen6({ params }: { params: { seatId: string }
           setCustomerName(sess.customerName || '-');
           setGrandTotalDue(sess.grandTotal || 0);
           setDiscountAmount(sess.discountAmount || 0);
+          if (sess.paymentStatus === 'PAID' || sess.status === 'COMPLETED') {
+            setIsConfirmed(true);
+          }
         }
       });
   }, [seatId]);
@@ -279,19 +282,30 @@ export default function CustomerScreen6({ params }: { params: { seatId: string }
         </div>
       </div>
 
-      {/* Bottom Button */}
+      {/* Bottom Button: View Tax Invoice (Only enabled after payment is confirmed) */}
       <div className="pt-4">
-        <Link
-          href={`/seat/${seatId}/bill`}
-          className={`w-full py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-xl transition active:scale-98 ${
-            isOrange
-              ? 'bg-[#8A4228] hover:bg-[#71351F] text-[#FFFCF7]'
-              : 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 border border-white/20'
-          }`}
-        >
-          <span>View Tax Invoice</span>
-          <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-        </Link>
+        {isConfirmed ? (
+          <Link
+            href={`/seat/${seatId}/bill`}
+            className={`w-full py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-xl transition active:scale-98 ${
+              isOrange
+                ? 'bg-[#8A4228] hover:bg-[#71351F] text-[#FFFCF7]'
+                : 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 border border-white/20'
+            }`}
+          >
+            <span>View Tax Invoice</span>
+            <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+          </Link>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="w-full py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 bg-[#1C1815] text-stone-500 border border-[#2C2520] cursor-not-allowed select-none opacity-60"
+          >
+            <span>View Tax Invoice</span>
+            <ArrowRight className="w-4 h-4 stroke-[2.5] opacity-50" />
+          </button>
+        )}
       </div>
     </div>
   );

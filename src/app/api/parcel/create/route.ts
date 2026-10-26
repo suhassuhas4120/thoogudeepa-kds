@@ -92,9 +92,23 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // 4. Create Master Sales Record
-      const masterCount = await prisma.masterSalesRecord.count();
-      const billNumber = `INV-${101 + masterCount}`;
+      // 4. Create Master Sales Record with safe unique invoice #
+      const allRecords = await prisma.masterSalesRecord.findMany({
+        select: { billNumber: true },
+      });
+      let maxNum = 100;
+      allRecords.forEach((r) => {
+        const match = r.billNumber.match(/INV-(\d+)/i);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (!isNaN(num) && num > maxNum) maxNum = num;
+        }
+      });
+      let nextNum = maxNum + 1;
+      while (await prisma.masterSalesRecord.findUnique({ where: { billNumber: `INV-${nextNum}` } })) {
+        nextNum++;
+      }
+      const billNumber = `INV-${nextNum}`;
 
       const masterRecord = await prisma.masterSalesRecord.create({
         data: {

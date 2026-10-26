@@ -122,11 +122,20 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
     if (!socket) return;
     const handleUpdate = () => fetchSeatDetails();
 
+    const handleVacated = (data: any) => {
+      if (!data?.seatId || data.seatId === seatId) {
+        playSuccessChime();
+        router.push('/waiter/shiva/floor');
+      }
+    };
+
     socket.on('order:item_status_changed', handleUpdate);
     socket.on('service:requested', handleUpdate);
     socket.on('service:resolved', handleUpdate);
     socket.on('payment:lock_changed', handleUpdate);
     socket.on('seat:updated', handleUpdate);
+    socket.on('seat:vacated', handleVacated);
+    socket.on('payment:completed', handleVacated);
 
     return () => {
       socket.off('order:item_status_changed', handleUpdate);
@@ -134,8 +143,10 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
       socket.off('service:resolved', handleUpdate);
       socket.off('payment:lock_changed', handleUpdate);
       socket.off('seat:updated', handleUpdate);
+      socket.off('seat:vacated', handleVacated);
+      socket.off('payment:completed', handleVacated);
     };
-  }, [socket]);
+  }, [socket, seatId, router]);
 
   // Mark dish as Served
   const handleMarkServed = async (orderItemId: string) => {

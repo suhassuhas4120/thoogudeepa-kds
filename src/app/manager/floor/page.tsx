@@ -95,6 +95,7 @@ export default function ManagerFloorScreen() {
     socket.on('order:placed', handleUpdate);
     socket.on('order:item_status_changed', handleUpdate);
     socket.on('seat:vacated', handleUpdate);
+    socket.on('payment:completed', handleUpdate);
     socket.on('service:requested', handleUpdate);
 
     return () => {
@@ -102,6 +103,7 @@ export default function ManagerFloorScreen() {
       socket.off('order:placed', handleUpdate);
       socket.off('order:item_status_changed', handleUpdate);
       socket.off('seat:vacated', handleUpdate);
+      socket.off('payment:completed', handleUpdate);
       socket.off('service:requested', handleUpdate);
     };
   }, [socket]);

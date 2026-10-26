@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Check, CheckCircle2, Banknote, Smartphone } from 'lucide-react';
 import { playSuccessChime } from '@/lib/audio-synth';
+import { useSocketRoom } from '@/lib/useSocket';
 
 export default function WaiterSuhasSettleScreen({ params }: { params: { id: string } }) {
   const router = useRouter();
   const seatId = parseInt(params.id, 10);
+  const socket = useSocketRoom('room:waiter:zoneA');
 
   const [ticketNumber, setTicketNumber] = useState('101');
   const [subtotal, setSubtotal] = useState(0);
@@ -42,6 +44,23 @@ export default function WaiterSuhasSettleScreen({ params }: { params: { id: stri
   useEffect(() => {
     fetchSession();
   }, [seatId]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleVacated = (data: any) => {
+      if (!data?.seatId || data.seatId === seatId) {
+        playSuccessChime();
+        router.push('/waiter/suhas/floor');
+      }
+    };
+    socket.on('seat:vacated', handleVacated);
+    socket.on('payment:completed', handleVacated);
+
+    return () => {
+      socket.off('seat:vacated', handleVacated);
+      socket.off('payment:completed', handleVacated);
+    };
+  }, [socket, seatId, router]);
 
   const handleSelectWaiterPaymentMode = async (mode: 'CASH' | 'UPI') => {
     setPreferredMode(mode);
