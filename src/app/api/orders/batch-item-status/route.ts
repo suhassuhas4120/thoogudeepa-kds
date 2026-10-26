@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
           ? 'placed'
           : status === 'ready'
           ? { in: ['placed', 'preparing'] }
-          : { in: ['ready', 'preparing'] };
+          : { not: 'cancelled' };
 
       await prisma.orderItem.updateMany({
         where: {

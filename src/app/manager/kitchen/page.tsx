@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, AlertTriangle, EyeOff, X, Check, Clock } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, EyeOff, X, Check, Clock, PackageCheck, Phone, User, FileText } from 'lucide-react';
 import { useSocketRoom } from '@/lib/useSocket';
 import { playKitchenBell } from '@/lib/audio-synth';
 import ManagerTopNav from '@/components/ManagerTopNav';
@@ -14,6 +14,7 @@ interface OrderItem {
   unitPrice: number;
   status: 'placed' | 'preparing' | 'ready' | 'served' | 'cancelled';
   notes?: string;
+  specialNotes?: string;
 }
 
 interface Ticket {
@@ -22,11 +23,14 @@ interface Ticket {
   orderType: string;
   seatId?: number;
   customerName?: string;
+  customerPhone?: string;
   status: string;
   placedAtTime?: string;
   placedAt?: string;
   createdAt?: string;
   waiterName?: string;
+  specialNotes?: string;
+  totalAmount?: number;
   items: OrderItem[];
 }
 
@@ -44,9 +48,10 @@ export default function ManagerKitchenMonitorScreen() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem86[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'COOKING' | 'READY' | 'COMPLETED'>('ALL');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'PARCELS' | 'COOKING' | 'READY' | 'COMPLETED' | 'ALL_ORDERS'>('ALL');
   const [show86Drawer, setShow86Drawer] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [updatingTicketId, setUpdatingTicketId] = useState<string | null>(null);
 
   const fetchKdsData = async () => {
     try {
@@ -121,14 +126,75 @@ export default function ManagerKitchenMonitorScreen() {
     }
   };
 
+  // Check helpers
+  const isTicketDone = (ticket: Ticket) => {
+    if (ticket.status === 'COMPLETED') return true;
+    const items = ticket.items || [];
+    return items.length > 0 && items.every((i) => i.status === 'served' || i.status === 'cancelled');
+  };
 
+  const isTicketParcel = (ticket: Ticket) => {
+    return (
+      (ticket.orderType || '').toUpperCase().includes('PARCEL') ||
+      (ticket.orderType || '').toUpperCase().includes('TAKE') ||
+      ticket.ticketNumber?.startsWith('P')
+    );
+  };
+
+  // Mark parcel order done
+  const handleMarkParcelDone = async (ticket: Ticket) => {
+    try {
+      setUpdatingTicketId(ticket.id);
+
+      // Optimistic update
+      setTickets((prev) =>
+        prev.map((t) => {
+          if (t.id === ticket.id) {
+            return {
+              ...t,
+              status: 'COMPLETED',
+              items: t.items.map((i) => ({ ...i, status: 'served' })),
+            };
+          }
+          return t;
+        })
+      );
+
+      if (selectedTicket && selectedTicket.id === ticket.id) {
+        setSelectedTicket({
+          ...selectedTicket,
+          status: 'COMPLETED',
+          items: selectedTicket.items.map((i) => ({ ...i, status: 'served' })),
+        });
+      }
+
+      const res = await fetch('/api/orders/batch-item-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ticketId: ticket.id,
+          status: 'served',
+        }),
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        console.error('Failed to mark parcel done:', data.error);
+        fetchKdsData();
+      }
+    } catch (err) {
+      console.error('Error marking parcel done:', err);
+      fetchKdsData();
+    } finally {
+      setUpdatingTicketId(null);
+    }
+  };
 
   // Compute status summary of ticket
   const getTicketStatusBadge = (ticket: Ticket) => {
     const items = ticket.items || [];
-    if (items.length === 0) return { label: '⚪ Placed', color: 'text-stone-400 bg-stone-800' };
-    if (items.every((i) => i.status === 'served')) {
-      return { label: '✔️ Done', color: 'text-stone-400 bg-stone-800/60' };
+    if (isTicketDone(ticket)) {
+      return { label: '✔️ Done', color: 'text-stone-400 bg-stone-800/80 border border-stone-700/50' };
     }
     if (items.some((i) => i.status === 'ready')) {
       return { label: '🟢 Ready', color: 'text-emerald-400 bg-emerald-950/60 border border-emerald-500/40' };
@@ -139,17 +205,27 @@ export default function ManagerKitchenMonitorScreen() {
     return { label: '⚪ Placed', color: 'text-stone-300 bg-stone-800' };
   };
 
-  // Filter tickets
-  const filteredTickets = tickets.filter((t) => {
-    const items = t.items || [];
-    const isCompleted = items.length > 0 && items.every((i) => i.status === 'served' || i.status === 'cancelled');
-    const isReady = items.some((i) => i.status === 'ready');
-    const isCooking = items.some((i) => i.status === 'preparing' || i.status === 'placed') && !isReady;
+  // Filter calculations
+  const activeCount = tickets.filter((t) => !isTicketDone(t)).length;
+  const parcelCount = tickets.filter((t) => isTicketParcel(t)).length;
+  const cookingCount = tickets.filter((t) => !isTicketDone(t) && t.items?.some((i) => i.status === 'preparing' || i.status === 'placed') && !t.items?.some((i) => i.status === 'ready')).length;
+  const readyCount = tickets.filter((t) => !isTicketDone(t) && t.items?.some((i) => i.status === 'ready')).length;
+  const completedCount = tickets.filter((t) => isTicketDone(t)).length;
+  const totalCount = tickets.length;
 
+  const filteredTickets = tickets.filter((t) => {
+    const done = isTicketDone(t);
+    const items = t.items || [];
+    const isReady = !done && items.some((i) => i.status === 'ready');
+    const isCooking = !done && items.some((i) => i.status === 'preparing' || i.status === 'placed') && !isReady;
+    const isParcel = isTicketParcel(t);
+
+    if (activeFilter === 'PARCELS') return isParcel;
     if (activeFilter === 'COOKING') return isCooking;
     if (activeFilter === 'READY') return isReady;
-    if (activeFilter === 'COMPLETED') return isCompleted;
-    return !isCompleted; // ALL active orders
+    if (activeFilter === 'COMPLETED') return done;
+    if (activeFilter === 'ALL_ORDERS') return true;
+    return !done; // default 'ALL' is all active tickets
   });
 
   const soldOutCount = menuItems.filter((i) => !i.isAvailable).length;
@@ -175,15 +251,15 @@ export default function ManagerKitchenMonitorScreen() {
         }
       />
 
-      {/* Subheader Title Bar */}
+      {/* Subheader Title Bar & Filters */}
       <div className="bg-[#141210] border-b border-[#2C2520] px-6 py-2.5 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-xs md:text-sm font-black text-[#D08A52] tracking-wider uppercase">
-          KITCHEN MONITOR & ACTIVE TICKETS
+          KITCHEN MONITOR & MASTER ORDERS ({totalCount})
         </h1>
 
         {/* Filters */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-stone-400 mr-1">Filters:</span>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-xs font-bold text-stone-400 mr-1">Filter:</span>
 
           <button
             type="button"
@@ -194,7 +270,19 @@ export default function ManagerKitchenMonitorScreen() {
                 : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
             }`}
           >
-            [ All Active ({tickets.filter((t) => !t.items?.every((i) => i.status === 'served')).length}) ]
+            [ All Active ({activeCount}) ]
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveFilter('PARCELS')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+              activeFilter === 'PARCELS'
+                ? 'bg-amber-600 text-white shadow-sm'
+                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+            }`}
+          >
+            [ 📦 Parcels ({parcelCount}) ]
           </button>
 
           <button
@@ -206,7 +294,7 @@ export default function ManagerKitchenMonitorScreen() {
                 : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
             }`}
           >
-            [ Cooking ({tickets.filter((t) => t.items?.some((i) => i.status === 'preparing' || i.status === 'placed')).length}) ]
+            [ Cooking ({cookingCount}) ]
           </button>
 
           <button
@@ -218,7 +306,7 @@ export default function ManagerKitchenMonitorScreen() {
                 : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
             }`}
           >
-            [ Ready ({tickets.filter((t) => t.items?.some((i) => i.status === 'ready')).length}) ]
+            [ Ready ({readyCount}) ]
           </button>
 
           <button
@@ -230,13 +318,25 @@ export default function ManagerKitchenMonitorScreen() {
                 : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
             }`}
           >
-            [ Completed Today ({tickets.filter((t) => t.items?.length > 0 && t.items.every((i) => i.status === 'served')).length}) ]
+            [ Completed ({completedCount}) ]
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveFilter('ALL_ORDERS')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+              activeFilter === 'ALL_ORDERS'
+                ? 'bg-[#503E36] text-white shadow-sm'
+                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+            }`}
+          >
+            [ All 50 History ({totalCount}) ]
           </button>
         </div>
       </div>
 
       {/* ────────────────────────────────────────────────────────────────── */}
-      {/* MASTER TICKETS TABLE MATCHING ASCII EXACT COLUMNS                  */}
+      {/* MASTER TICKETS TABLE                                               */}
       {/* ────────────────────────────────────────────────────────────────── */}
       <div className="flex-1 p-6 overflow-x-auto">
         <div className="bg-[#181513] border border-[#2C2520] rounded-2xl overflow-hidden shadow-xl">
@@ -244,10 +344,10 @@ export default function ManagerKitchenMonitorScreen() {
             <thead>
               <tr className="bg-[#13110F] border-b border-[#2C2520] text-stone-400 font-bold uppercase tracking-wider text-[11px]">
                 <th className="py-3 px-4">TICKET</th>
-                <th className="py-3 px-3">SEAT</th>
-                <th className="py-3 px-4">SERVER</th>
-                <th className="py-3 px-4">ITEMS</th>
-                <th className="py-3 px-4">ORDER TIME</th>
+                <th className="py-3 px-3">TYPE / SEAT</th>
+                <th className="py-3 px-4">SERVER / DESK</th>
+                <th className="py-3 px-4">ITEMS ORDERED</th>
+                <th className="py-3 px-4">TIME</th>
                 <th className="py-3 px-3">STATUS</th>
                 <th className="py-3 px-4 text-right">ACTIONS</th>
               </tr>
@@ -265,12 +365,10 @@ export default function ManagerKitchenMonitorScreen() {
                     .map((i) => `${i.itemName} x${i.quantity}`)
                     .join(', ');
                   const statusBadge = getTicketStatusBadge(ticket);
-                  const isTakeaway =
-                    (ticket.orderType || '').toUpperCase().includes('TAKE') ||
-                    (ticket.orderType || '').toUpperCase().includes('PARCEL') ||
-                    ticket.ticketNumber?.startsWith('P');
-                  const seatDisplay = isTakeaway ? '📦 Parcel' : `S${ticket.seatId || '1'}`;
-                  const serverName = isTakeaway
+                  const isParcel = isTicketParcel(ticket);
+                  const isDone = isTicketDone(ticket);
+                  const seatDisplay = isParcel ? '📦 Parcel' : `S${ticket.seatId || '1'}`;
+                  const serverName = isParcel
                     ? 'Manager Desk'
                     : ticket.waiterName || (ticket.seatId && ticket.seatId <= 8 ? 'Suhas' : 'Shiva');
 
@@ -280,7 +378,11 @@ export default function ManagerKitchenMonitorScreen() {
                         #{ticket.ticketNumber}
                       </td>
                       <td className="py-3 px-3 font-bold text-white">
-                        {seatDisplay}
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                          isParcel ? 'bg-amber-950/60 text-amber-300 border border-amber-500/30' : 'bg-stone-800 text-stone-200'
+                        }`}>
+                          {seatDisplay}
+                        </span>
                       </td>
                       <td className="py-3 px-4 text-stone-300 font-medium">
                         {serverName}
@@ -297,13 +399,28 @@ export default function ManagerKitchenMonitorScreen() {
                         </span>
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedTicket(ticket)}
-                          className="px-3 py-1 rounded-lg bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs transition active:scale-95 shadow-sm"
-                        >
-                          [ Details ]
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedTicket(ticket)}
+                            className="px-3 py-1.5 rounded-lg bg-[#221D1A] hover:bg-[#2C2520] text-stone-200 hover:text-white font-bold text-xs border border-[#3A302A] transition active:scale-95 shadow-sm"
+                          >
+                            Details
+                          </button>
+
+                          {/* Dedicated Parcel "Mark Done" action button strictly for parcel orders */}
+                          {isParcel && !isDone && (
+                            <button
+                              type="button"
+                              disabled={updatingTicketId === ticket.id}
+                              onClick={() => handleMarkParcelDone(ticket)}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition active:scale-95 shadow-md flex items-center gap-1.5 disabled:opacity-50"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>{updatingTicketId === ticket.id ? 'Done...' : 'Mark Done'}</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -317,57 +434,154 @@ export default function ManagerKitchenMonitorScreen() {
       {/* ────────────────────────────────────────────────────────────────── */}
       {/* TICKET DETAILS MODAL                                               */}
       {/* ────────────────────────────────────────────────────────────────── */}
-      {selectedTicket && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#181513] border border-[#2C2520] rounded-3xl max-w-md w-full p-6 shadow-2xl">
-            <div className="flex justify-between items-start pb-3 border-b border-[#2C2520] mb-4">
-              <div>
-                <h3 className="font-black text-base text-white">
-                  Ticket #{selectedTicket.ticketNumber} • {selectedTicket.orderType === 'TAKEAWAY' ? 'Takeaway' : `Seat ${selectedTicket.seatId}`}
-                </h3>
-                <p className="text-xs text-stone-400 mt-0.5">
-                  Placed: {selectedTicket.placedAtTime || '12:20 PM'} • Server: {selectedTicket.waiterName || 'Staff'}
-                </p>
-              </div>
-              <button
-                onClick={() => setSelectedTicket(null)}
-                className="p-1 rounded-lg text-stone-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {selectedTicket && (() => {
+        const isParcel = isTicketParcel(selectedTicket);
+        const isDone = isTicketDone(selectedTicket);
+        const totalCalculated = (selectedTicket.items || []).reduce(
+          (sum, i) => sum + (i.unitPrice || 0) * (i.quantity || 1),
+          0
+        );
 
-            <div className="space-y-2 mb-6 max-h-[45vh] overflow-y-auto pr-1">
-              {selectedTicket.items?.map((item) => (
-                <div
-                  key={item.id}
-                  className="p-3 bg-[#221D1A] border border-[#2C2520] rounded-xl flex justify-between items-center text-xs"
-                >
-                  <div>
-                    <span className="font-bold text-white block">
-                      {item.quantity}x {item.itemName}
-                    </span>
-                    <span className="text-[10px] text-stone-400 block capitalize">
-                      Status: {item.status}
+        return (
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+            <div className="bg-[#181513] border border-[#2C2520] rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+              {/* Header */}
+              <div className="flex justify-between items-start pb-4 border-b border-[#2C2520] mb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-black text-lg text-white">
+                      Ticket #{selectedTicket.ticketNumber}
+                    </h3>
+                    <span className={`px-2 py-0.5 rounded text-[11px] font-black uppercase ${
+                      isParcel
+                        ? 'bg-amber-950/80 text-amber-300 border border-amber-500/40'
+                        : 'bg-[#2A2420] text-stone-300 border border-[#3A302A]'
+                    }`}>
+                      {isParcel ? '📦 Parcel / Takeaway' : `Dine-In • S${selectedTicket.seatId || '1'}`}
                     </span>
                   </div>
-                  <span className="font-mono font-bold text-[#D08A52]">
-                    ₹{(item.unitPrice * item.quantity).toFixed(2)}
-                  </span>
+                  <p className="text-xs text-stone-400 mt-1 flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Placed: <strong className="text-stone-200">{selectedTicket.placedAtTime || '12:20 PM'}</strong></span>
+                    <span>•</span>
+                    <span>Server: <strong className="text-stone-200">{isParcel ? 'Manager Desk' : (selectedTicket.waiterName || 'Staff')}</strong></span>
+                  </p>
                 </div>
-              ))}
-            </div>
+                <button
+                  onClick={() => setSelectedTicket(null)}
+                  className="p-1.5 rounded-lg text-stone-400 hover:text-white bg-[#221D1A] border border-[#2C2520]"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-            <button
-              type="button"
-              onClick={() => setSelectedTicket(null)}
-              className="w-full py-3 bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs rounded-xl transition"
-            >
-              Close Details
-            </button>
+              {/* Parcel Details Section */}
+              {isParcel && (
+                <div className="mb-4 p-3.5 bg-[#201B18] border border-amber-900/30 rounded-2xl space-y-2 text-xs">
+                  <div className="flex items-center justify-between text-stone-300">
+                    <div className="flex items-center gap-1.5 font-bold">
+                      <User className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Customer:</span>
+                    </div>
+                    <span className="font-black text-white">{selectedTicket.customerName || 'Takeaway Guest'}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-stone-300">
+                    <div className="flex items-center gap-1.5 font-bold">
+                      <Phone className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Contact Phone:</span>
+                    </div>
+                    <span className="font-mono font-bold text-amber-300">{selectedTicket.customerPhone || 'Not provided'}</span>
+                  </div>
+
+                  <div className="flex items-start justify-between text-stone-300 pt-1 border-t border-[#2C2520]">
+                    <div className="flex items-center gap-1.5 font-bold">
+                      <FileText className="w-3.5 h-3.5 text-stone-400" />
+                      <span>Packaging Instructions:</span>
+                    </div>
+                    <span className="text-stone-300 text-right font-medium max-w-[220px]">
+                      {selectedTicket.specialNotes || 'PACKAGING REQUIRED (TAKEAWAY)'}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Items List */}
+              <div className="mb-4">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block mb-2">
+                  Items In This Order ({selectedTicket.items?.length || 0}):
+                </span>
+                <div className="space-y-2 max-h-[35vh] overflow-y-auto pr-1">
+                  {selectedTicket.items?.map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-3 bg-[#221D1A] border border-[#2C2520] rounded-xl flex justify-between items-center text-xs"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-black text-white text-sm">
+                            {item.quantity}x
+                          </span>
+                          <span className="font-bold text-stone-200">
+                            {item.itemName}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-stone-400 block capitalize mt-0.5">
+                          Status: <strong className={item.status === 'served' ? 'text-emerald-400' : 'text-amber-400'}>{item.status}</strong>
+                        </span>
+                      </div>
+                      <span className="font-mono font-black text-amber-400 text-sm">
+                        ₹{(item.unitPrice * item.quantity).toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Total Amount Summary */}
+              <div className="p-3 bg-[#13110F] border border-[#2C2520] rounded-xl flex justify-between items-center mb-6">
+                <span className="text-xs font-bold text-stone-400">Order Subtotal:</span>
+                <span className="font-mono font-black text-base text-amber-400">
+                  ₹{totalCalculated.toFixed(2)}
+                </span>
+              </div>
+
+              {/* Modal Action Buttons */}
+              <div className="flex items-center gap-3">
+                {/* Dedicated Mark Parcel Done button */}
+                {isParcel && !isDone && (
+                  <button
+                    type="button"
+                    disabled={updatingTicketId === selectedTicket.id}
+                    onClick={() => handleMarkParcelDone(selectedTicket)}
+                    className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 active:scale-95"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>{updatingTicketId === selectedTicket.id ? 'Marking Done...' : '✓ Mark Parcel Done & Handed Over'}</span>
+                  </button>
+                )}
+
+                {isParcel && isDone && (
+                  <div className="flex-1 py-3 px-4 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold text-xs rounded-xl flex items-center justify-center gap-2">
+                    <Check className="w-4 h-4 text-emerald-400" />
+                    <span>Parcel Order Completed & Handed Over</span>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedTicket(null)}
+                  className={`py-3 px-5 bg-[#221D1A] hover:bg-[#2C2520] text-stone-300 hover:text-white font-bold text-xs rounded-xl border border-[#2C2520] transition active:scale-95 ${
+                    !isParcel ? 'w-full' : ''
+                  }`}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ────────────────────────────────────────────────────────────────── */}
       {/* 86 SOLD OUT ITEMS SLIDE-OVER DRAWER                                */}
