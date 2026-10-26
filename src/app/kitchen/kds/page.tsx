@@ -47,7 +47,7 @@ export default function KitchenKdsBoard() {
 
   // Fetch initial tickets and 86 items
   const fetchTickets = () => {
-    fetch('/api/kitchen/tickets')
+    fetch(`/api/kitchen/tickets?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.data)) {
@@ -70,7 +70,7 @@ export default function KitchenKdsBoard() {
   };
 
   const fetchMenu = () => {
-    fetch('/api/menu')
+    fetch(`/api/menu?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -139,8 +139,19 @@ export default function KitchenKdsBoard() {
     };
   }, [socket]);
 
-  // Update item status
+  // Update item status with Optimistic UI transition
   const handleItemStatus = async (orderItemId: string, status: string) => {
+    // 1. Instant Optimistic UI Update
+    setTickets((prev) =>
+      prev.map((t) => ({
+        ...t,
+        items: t.items.map((i) =>
+          i.id === orderItemId ? { ...i, status: status as any } : i
+        ),
+      }))
+    );
+
+    // 2. Server mutation
     try {
       await fetch(`/api/orders/${orderItemId}/item-status`, {
         method: 'POST',
@@ -150,19 +161,50 @@ export default function KitchenKdsBoard() {
       fetchTickets();
     } catch (e) {
       console.error(e);
+      fetchTickets();
     }
   };
 
-  // Batch update all items in ticket
-  const handleBatchStatus = async (ticket: Ticket, targetStatus: 'preparing' | 'ready') => {
-    try {
-      const pendingItems = ticket.items.filter((it) =>
-        targetStatus === 'preparing' ? it.status === 'placed' : it.status === 'preparing'
-      );
+  // Batch update all items in ticket with Optimistic UI transition
+  const handleBatchStatus = async (ticket: Ticket, targetStatus: 'preparing' | 'ready' | 'served') => {
+    const targetItemIds = new Set(
+      ticket.items
+        .filter((it) => {
+          if (targetStatus === 'preparing') return it.status === 'placed';
+          if (targetStatus === 'ready') return it.status === 'placed' || it.status === 'preparing';
+          if (targetStatus === 'served') return it.status === 'ready' || it.status === 'preparing';
+          return true;
+        })
+        .map((it) => it.id)
+    );
 
+    if (targetItemIds.size === 0) return;
+
+    // 1. Instant Optimistic UI Update
+    setTickets((prev) =>
+      prev.map((t) => {
+        if (t.id !== ticket.id) return t;
+        const mappedStatus =
+          targetStatus === 'preparing'
+            ? 'COOKING'
+            : targetStatus === 'ready'
+            ? 'READY'
+            : 'COMPLETED';
+        return {
+          ...t,
+          status: mappedStatus as any,
+          items: t.items.map((it) =>
+            targetItemIds.has(it.id) ? { ...it, status: targetStatus as any } : it
+          ),
+        };
+      })
+    );
+
+    // 2. Server mutation
+    try {
       await Promise.all(
-        pendingItems.map((it) =>
-          fetch(`/api/orders/${it.id}/item-status`, {
+        Array.from(targetItemIds).map((id) =>
+          fetch(`/api/orders/${id}/item-status`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: targetStatus }),
@@ -172,6 +214,7 @@ export default function KitchenKdsBoard() {
       fetchTickets();
     } catch (e) {
       console.error(e);
+      fetchTickets();
     }
   };
 
@@ -558,6 +601,16 @@ export default function KitchenKdsBoard() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Clear / Mark Served Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleBatchStatus(ticket, 'served')}
+                      className="w-full mt-3 py-2 rounded-xl bg-slate-800 hover:bg-emerald-900/60 border border-slate-700 hover:border-emerald-500/50 text-slate-300 hover:text-emerald-300 font-bold text-xs tracking-wider transition flex items-center justify-center gap-1.5 active:scale-98"
+                    >
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Mark Picked Up / Delivered</span>
+                    </button>
                   </div>
                 );
               })

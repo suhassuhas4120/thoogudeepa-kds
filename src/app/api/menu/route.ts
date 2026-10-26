@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma, ensureWalMode } from '@/lib/db';
 import { emitToMultipleRooms } from '@/lib/socket-emitter';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     await ensureWalMode();

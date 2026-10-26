@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma, ensureWalMode } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     await ensureWalMode();
@@ -40,10 +43,17 @@ export async function GET() {
       })),
     }));
 
-    return NextResponse.json({
-      success: true,
-      data: formattedTickets,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        data: formattedTickets,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        },
+      }
+    );
   } catch (error) {
     console.error('Fetch kitchen tickets error:', error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });

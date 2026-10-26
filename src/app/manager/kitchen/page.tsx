@@ -51,8 +51,8 @@ export default function ManagerKitchenMonitorScreen() {
   const fetchKdsData = async () => {
     try {
       const [ticketsRes, menuRes] = await Promise.all([
-        fetch('/api/kitchen/tickets'),
-        fetch('/api/menu'),
+        fetch(`/api/kitchen/tickets?t=${Date.now()}`, { cache: 'no-store' }),
+        fetch(`/api/menu?t=${Date.now()}`, { cache: 'no-store' }),
       ]);
       const ticketsData = await ticketsRes.json();
       const menuData = await menuRes.json();
