@@ -44,9 +44,11 @@ export default function KitchenKdsBoard() {
   const [show86Drawer, setShow86Drawer] = useState(false);
   const [loading, setLoading] = useState(true);
   const prevTicketCountRef = React.useRef<number | null>(null);
+  const isMutatingRef = React.useRef(false);
 
   // Fetch initial tickets and 86 items
-  const fetchTickets = () => {
+  const fetchTickets = (force = false) => {
+    if (isMutatingRef.current && !force) return;
     fetch(`/api/kitchen/tickets?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
@@ -81,10 +83,10 @@ export default function KitchenKdsBoard() {
 
   useEffect(() => {
     unlockAudio();
-    fetchTickets();
+    fetchTickets(true);
     fetchMenu();
 
-    // 3-second high-reliability background polling backup
+    // 3-second background polling backup (skipped during active mutations to prevent flicker)
     const interval = setInterval(() => {
       fetchTickets();
     }, 3000);
@@ -92,15 +94,15 @@ export default function KitchenKdsBoard() {
     // Instant re-fetch on window focus / tab visibility
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        fetchTickets();
+        fetchTickets(true);
       }
     };
-    window.addEventListener('focus', fetchTickets);
+    window.addEventListener('focus', () => fetchTickets(true));
     window.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener('focus', fetchTickets);
+      window.removeEventListener('focus', () => fetchTickets(true));
       window.removeEventListener('visibilitychange', handleVisibility);
     };
   }, []);
@@ -111,7 +113,7 @@ export default function KitchenKdsBoard() {
 
     const handleNewOrder = () => {
       playKitchenBell();
-      fetchTickets();
+      fetchTickets(true);
     };
 
     const handleItemStatusChanged = () => {
@@ -119,7 +121,7 @@ export default function KitchenKdsBoard() {
     };
 
     const handleSeatVacated = () => {
-      fetchTickets();
+      fetchTickets(true);
     };
 
     socket.on('order:placed', handleNewOrder);
@@ -127,7 +129,7 @@ export default function KitchenKdsBoard() {
     socket.on('seat:vacated', handleSeatVacated);
     socket.on('menu:item_86_toggled', fetchMenu);
     socket.on('menu:updated', fetchMenu);
-    socket.on('connect', fetchTickets);
+    socket.on('connect', () => fetchTickets(true));
 
     return () => {
       socket.off('order:placed', handleNewOrder);
@@ -135,12 +137,14 @@ export default function KitchenKdsBoard() {
       socket.off('seat:vacated', handleSeatVacated);
       socket.off('menu:item_86_toggled', fetchMenu);
       socket.off('menu:updated', fetchMenu);
-      socket.off('connect', fetchTickets);
+      socket.off('connect', () => fetchTickets(true));
     };
   }, [socket]);
 
   // Update item status with Optimistic UI transition
   const handleItemStatus = async (orderItemId: string, status: string) => {
+    isMutatingRef.current = true;
+
     // 1. Instant Optimistic UI Update
     setTickets((prev) =>
       prev.map((t) => ({
@@ -158,63 +162,48 @@ export default function KitchenKdsBoard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       });
-      fetchTickets();
     } catch (e) {
       console.error(e);
-      fetchTickets();
+    } finally {
+      isMutatingRef.current = false;
+      fetchTickets(true);
     }
   };
 
-  // Batch update all items in ticket with Optimistic UI transition
-  const handleBatchStatus = async (ticket: Ticket, targetStatus: 'preparing' | 'ready' | 'served') => {
-    const targetItemIds = new Set(
-      ticket.items
-        .filter((it) => {
-          if (targetStatus === 'preparing') return it.status === 'placed';
-          if (targetStatus === 'ready') return it.status === 'placed' || it.status === 'preparing';
-          if (targetStatus === 'served') return it.status === 'ready' || it.status === 'preparing';
-          return true;
-        })
-        .map((it) => it.id)
-    );
+  // Batch update all items in ticket atomically in a single request
+  const handleBatchStatus = async (ticket: Ticket, targetStatus: 'preparing' | 'ready') => {
+    isMutatingRef.current = true;
 
-    if (targetItemIds.size === 0) return;
-
-    // 1. Instant Optimistic UI Update
+    // 1. Instant Optimistic UI Update (entire ticket slides to next column instantly)
     setTickets((prev) =>
       prev.map((t) => {
         if (t.id !== ticket.id) return t;
-        const mappedStatus =
-          targetStatus === 'preparing'
-            ? 'COOKING'
-            : targetStatus === 'ready'
-            ? 'READY'
-            : 'COMPLETED';
+        const mappedStatus = targetStatus === 'preparing' ? 'COOKING' : 'READY';
         return {
           ...t,
           status: mappedStatus as any,
-          items: t.items.map((it) =>
-            targetItemIds.has(it.id) ? { ...it, status: targetStatus as any } : it
-          ),
+          items: t.items.map((it) => ({
+            ...it,
+            status: targetStatus === 'preparing'
+              ? (it.status === 'placed' ? 'preparing' : it.status)
+              : (it.status !== 'cancelled' ? 'ready' : it.status),
+          })),
         };
       })
     );
 
-    // 2. Server mutation
+    // 2. Single Atomic Server Mutation
     try {
-      await Promise.all(
-        Array.from(targetItemIds).map((id) =>
-          fetch(`/api/orders/${id}/item-status`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: targetStatus }),
-          })
-        )
-      );
-      fetchTickets();
+      await fetch('/api/orders/batch-item-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticketId: ticket.id, status: targetStatus }),
+      });
     } catch (e) {
       console.error(e);
-      fetchTickets();
+    } finally {
+      isMutatingRef.current = false;
+      fetchTickets(true);
     }
   };
 
@@ -601,16 +590,6 @@ export default function KitchenKdsBoard() {
                         </div>
                       ))}
                     </div>
-
-                    {/* Clear / Mark Served Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleBatchStatus(ticket, 'served')}
-                      className="w-full mt-3 py-2 rounded-xl bg-slate-800 hover:bg-emerald-900/60 border border-slate-700 hover:border-emerald-500/50 text-slate-300 hover:text-emerald-300 font-bold text-xs tracking-wider transition flex items-center justify-center gap-1.5 active:scale-98"
-                    >
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Mark Picked Up / Delivered</span>
-                    </button>
                   </div>
                 );
               })
