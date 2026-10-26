@@ -62,6 +62,18 @@ export default function WaiterShivaFloorScreen() {
   useEffect(() => {
     unlockAudio();
     fetchFloor();
+    const interval = setInterval(fetchFloor, 3000);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') fetchFloor();
+    };
+    window.addEventListener('focus', fetchFloor);
+    window.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', fetchFloor);
+      window.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [viewAllSeats]);
 
   // Real-time synchronization

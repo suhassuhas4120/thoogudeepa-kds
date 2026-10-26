@@ -43,13 +43,22 @@ export default function KitchenKdsBoard() {
   const [menuItems, setMenuItems] = useState<MenuItem86[]>([]);
   const [show86Drawer, setShow86Drawer] = useState(false);
   const [loading, setLoading] = useState(true);
+  const prevTicketCountRef = React.useRef<number | null>(null);
 
   // Fetch initial tickets and 86 items
   const fetchTickets = () => {
     fetch('/api/kitchen/tickets')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
+        if (data.success && Array.isArray(data.data)) {
+          // If new tickets arrived, ring the kitchen bell
+          if (
+            prevTicketCountRef.current !== null &&
+            data.data.length > prevTicketCountRef.current
+          ) {
+            playKitchenBell();
+          }
+          prevTicketCountRef.current = data.data.length;
           setTickets(data.data);
         }
         setLoading(false);
@@ -74,6 +83,26 @@ export default function KitchenKdsBoard() {
     unlockAudio();
     fetchTickets();
     fetchMenu();
+
+    // 3-second high-reliability background polling backup
+    const interval = setInterval(() => {
+      fetchTickets();
+    }, 3000);
+
+    // Instant re-fetch on window focus / tab visibility
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchTickets();
+      }
+    };
+    window.addEventListener('focus', fetchTickets);
+    window.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', fetchTickets);
+      window.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []);
 
   // Real-time synchronization
@@ -96,11 +125,17 @@ export default function KitchenKdsBoard() {
     socket.on('order:placed', handleNewOrder);
     socket.on('order:item_status_changed', handleItemStatusChanged);
     socket.on('seat:vacated', handleSeatVacated);
+    socket.on('menu:item_86_toggled', fetchMenu);
+    socket.on('menu:updated', fetchMenu);
+    socket.on('connect', fetchTickets);
 
     return () => {
       socket.off('order:placed', handleNewOrder);
       socket.off('order:item_status_changed', handleItemStatusChanged);
       socket.off('seat:vacated', handleSeatVacated);
+      socket.off('menu:item_86_toggled', fetchMenu);
+      socket.off('menu:updated', fetchMenu);
+      socket.off('connect', fetchTickets);
     };
   }, [socket]);
 

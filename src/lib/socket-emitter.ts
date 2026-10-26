@@ -17,6 +17,9 @@ export type SocketRoom =
 export function emitToRoom(room: SocketRoom, event: string, payload: unknown) {
   if (global.io) {
     global.io.to(room).emit(event, payload);
+    console.log(`[SocketEmitter] Broadcast "${event}" to ${room}`);
+  } else {
+    console.warn(`[SocketEmitter] Warning: global.io is undefined when emitting "${event}" to ${room}`);
   }
 }
 
@@ -25,5 +28,8 @@ export function emitToMultipleRooms(rooms: SocketRoom[], event: string, payload:
     rooms.forEach((room) => {
       global.io?.to(room).emit(event, payload);
     });
+    console.log(`[SocketEmitter] Broadcast "${event}" to [${rooms.join(', ')}]`);
+  } else {
+    console.warn(`[SocketEmitter] Warning: global.io is undefined when emitting "${event}" to [${rooms.join(', ')}]`);
   }
 }

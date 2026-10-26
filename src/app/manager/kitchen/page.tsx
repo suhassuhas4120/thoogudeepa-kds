@@ -72,8 +72,18 @@ export default function ManagerKitchenMonitorScreen() {
 
   useEffect(() => {
     fetchKdsData();
-    const interval = setInterval(fetchKdsData, 10000); // Polling backup
-    return () => clearInterval(interval);
+    const interval = setInterval(fetchKdsData, 3000); // 3-second rapid background polling backup
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') fetchKdsData();
+    };
+    window.addEventListener('focus', fetchKdsData);
+    window.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', fetchKdsData);
+      window.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []);
 
   useEffect(() => {
