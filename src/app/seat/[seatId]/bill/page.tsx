@@ -8,6 +8,7 @@ import { useCustomerTheme } from '@/lib/useCustomerTheme';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import CustomerBottomNav from '@/components/CustomerBottomNav';
 import { useSocketRoom } from '@/lib/useSocket';
+import { getDeviceHeaders } from '@/lib/client-device';
 
 interface OrderItem {
   id: string;
@@ -34,7 +35,7 @@ export default function CustomerScreen7({ params }: { params: { seatId: string }
   const [paymentStatus, setPaymentStatus] = useState<string>('PAID');
 
   const fetchBillData = useCallback(() => {
-    fetch(`/api/seats/${seatId}`)
+    fetch(`/api/seats/${seatId}?includeCompleted=true`, { headers: getDeviceHeaders() })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {

@@ -9,6 +9,8 @@ import { playSuccessChime } from '@/lib/audio-synth';
 import confetti from 'canvas-confetti';
 import { useCustomerTheme } from '@/lib/useCustomerTheme';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { getDeviceHeaders } from '@/lib/client-device';
+import SeatLockScreen from '@/components/SeatLockScreen';
 
 export default function CustomerScreen6({ params }: { params: { seatId: string } }) {
   const router = useRouter();
@@ -22,11 +24,36 @@ export default function CustomerScreen6({ params }: { params: { seatId: string }
   const [discountAmount, setDiscountAmount] = useState(0);
   const [rating, setRating] = useState(5);
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [lockState, setLockState] = useState<{
+    type: 'OCCUPIED' | 'ACTIVE_ELSEWHERE';
+    seatNumber?: number;
+    activeSeatNumber?: number;
+    activeSeatId?: number;
+    message?: string;
+  } | null>(null);
 
   useEffect(() => {
-    fetch(`/api/seats/${seatId}`)
+    fetch(`/api/seats/${seatId}`, { headers: getDeviceHeaders() })
       .then((res) => res.json())
       .then((data) => {
+        if (!data.success) {
+          if (data.error === 'SEAT_OCCUPIED') {
+            setLockState({
+              type: 'OCCUPIED',
+              seatNumber: data.seatNumber || seatId,
+            });
+            return;
+          }
+          if (data.error === 'ACTIVE_ORDER_ELSEWHERE') {
+            setLockState({
+              type: 'ACTIVE_ELSEWHERE',
+              activeSeatNumber: data.activeSeatNumber,
+              activeSeatId: data.activeSeatId,
+              message: data.message,
+            });
+            return;
+          }
+        }
         if (data.success && data.data?.activeSession) {
           const sess = data.data.activeSession;
           setCustomerName(sess.customerName || '-');
@@ -92,6 +119,19 @@ export default function CustomerScreen6({ params }: { params: { seatId: string }
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
     upiIntentUri
   )}`;
+
+  if (lockState) {
+    return (
+      <SeatLockScreen
+        type={lockState.type}
+        seatNumber={lockState.seatNumber}
+        activeSeatNumber={lockState.activeSeatNumber}
+        activeSeatId={lockState.activeSeatId}
+        message={lockState.message}
+        onRefresh={() => window.location.reload()}
+      />
+    );
+  }
 
   return (
     <div

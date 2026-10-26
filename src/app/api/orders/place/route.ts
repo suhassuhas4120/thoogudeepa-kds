@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, ensureWalMode, sqliteWriteQueue } from '@/lib/db';
 import { emitToMultipleRooms, SocketRoom } from '@/lib/socket-emitter';
+import {
+  isStaffRequest,
+  extractDeviceToken,
+  attachDeviceTokenCookie,
+} from '@/lib/device-lock';
 
 export async function POST(req: NextRequest) {
   try {
     await ensureWalMode();
+    const isStaff = isStaffRequest(req);
+    const { token: deviceToken } = extractDeviceToken(req);
     const body = await req.json();
     const { seatId, sessionId, items, specialNotes, promoCode, idempotencyKey } = body;
 
@@ -39,6 +46,53 @@ export async function POST(req: NextRequest) {
         return { status: 404, payload: { success: false, error: 'Seat not found' } };
       }
 
+      // If customer request, enforce device lock & seat lock
+      if (!isStaff) {
+        // 1. Device check: does this device have an active unpaid order elsewhere?
+        const activeElsewhere = await prisma.diningSession.findFirst({
+          where: {
+            deviceToken: deviceToken,
+            status: 'ACTIVE',
+            seatId: { not: seat.id },
+            OR: [
+              { orderTickets: { some: {} } },
+              { grandTotal: { gt: 0 } },
+              { seat: { status: { in: ['OCCUPIED', 'BILL_REQUESTED'] } } },
+            ],
+          },
+          include: { seat: true },
+        });
+
+        if (activeElsewhere) {
+          return {
+            status: 403,
+            payload: {
+              success: false,
+              error: 'ACTIVE_ORDER_ELSEWHERE',
+              message: `You already have an active order at Seat ${activeElsewhere.seat.seatNumber}. Please complete payment before dining at another seat.`,
+              activeSeatId: activeElsewhere.seatId,
+              activeSeatNumber: activeElsewhere.seat.seatNumber,
+            },
+          };
+        }
+
+        // 2. Seat check: is this seat occupied by another device?
+        const existingActiveSession = seat.sessions[0];
+        if (existingActiveSession) {
+          if (existingActiveSession.deviceToken && existingActiveSession.deviceToken !== deviceToken) {
+            return {
+              status: 403,
+              payload: {
+                success: false,
+                error: 'SEAT_OCCUPIED',
+                message: 'Sorry, this seat is occupied',
+                seatNumber: seat.seatNumber,
+              },
+            };
+          }
+        }
+      }
+
       let session = sessionId
         ? await prisma.diningSession.findUnique({ where: { id: sessionId } })
         : seat.sessions[0];
@@ -49,7 +103,14 @@ export async function POST(req: NextRequest) {
             seatId: seat.id,
             customerName: seat.currentGuestName || '-',
             status: 'ACTIVE',
+            deviceToken: !isStaff ? deviceToken : null,
           },
+        });
+      } else if (!session.deviceToken && !isStaff) {
+        // Bind deviceToken to this active session
+        session = await prisma.diningSession.update({
+          where: { id: session.id },
+          data: { deviceToken },
         });
       }
 
@@ -233,7 +294,8 @@ export async function POST(req: NextRequest) {
       return { status: 200, payload: responsePayload };
     });
 
-    return NextResponse.json(result.payload, { status: result.status });
+    const response = NextResponse.json(result.payload, { status: result.status });
+    return attachDeviceTokenCookie(response, deviceToken);
   } catch (error) {
     console.error('Place order error:', error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });

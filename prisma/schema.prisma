@@ -60,6 +60,7 @@ model DiningSession {
   paymentMethod       String?         // "CASH" | "UPI" | "CARD"
   paymentPreferred    String?         // "CASH" | "UPI" | "CARD"
   paymentLockState    String          @default("UNLOCKED") // "UNLOCKED" | "LOCKED_WAITER" | "LOCKED_SELF"
+  deviceToken         String?         // Unique device identifier for locking seat to 1 device
 
   seat                DiningSeat      @relation(fields: [seatId], references: [id])
   orderTickets        OrderTicket[]

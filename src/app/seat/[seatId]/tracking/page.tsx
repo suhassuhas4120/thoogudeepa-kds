@@ -9,6 +9,8 @@ import { playSuccessChime } from '@/lib/audio-synth';
 import { useCustomerTheme } from '@/lib/useCustomerTheme';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import CustomerBottomNav from '@/components/CustomerBottomNav';
+import { getDeviceHeaders } from '@/lib/client-device';
+import SeatLockScreen from '@/components/SeatLockScreen';
 
 interface OrderItem {
   id: string;
@@ -42,11 +44,38 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
 
   const [session, setSession] = useState<ActiveSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [seatLockState, setSeatLockState] = useState<{
+    type: 'OCCUPIED' | 'ACTIVE_ELSEWHERE';
+    seatNumber?: number;
+    activeSeatNumber?: number;
+    activeSeatId?: number;
+    message?: string;
+  } | null>(null);
 
   const fetchState = () => {
-    fetch(`/api/seats/${seatId}`)
+    fetch(`/api/seats/${seatId}`, { headers: getDeviceHeaders() })
       .then((res) => res.json())
       .then((data) => {
+        if (!data.success) {
+          if (data.error === 'SEAT_OCCUPIED') {
+            setSeatLockState({
+              type: 'OCCUPIED',
+              seatNumber: data.seatNumber || seatId,
+            });
+            setLoading(false);
+            return;
+          }
+          if (data.error === 'ACTIVE_ORDER_ELSEWHERE') {
+            setSeatLockState({
+              type: 'ACTIVE_ELSEWHERE',
+              activeSeatNumber: data.activeSeatNumber,
+              activeSeatId: data.activeSeatId,
+              message: data.message,
+            });
+            setLoading(false);
+            return;
+          }
+        }
         if (data.success && data.data?.activeSession) {
           setSession(data.data.activeSession);
         }
@@ -215,6 +244,19 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
         return status;
     }
   };
+
+  if (seatLockState) {
+    return (
+      <SeatLockScreen
+        type={seatLockState.type}
+        seatNumber={seatLockState.seatNumber}
+        activeSeatNumber={seatLockState.activeSeatNumber}
+        activeSeatId={seatLockState.activeSeatId}
+        message={seatLockState.message}
+        onRefresh={() => window.location.reload()}
+      />
+    );
+  }
 
   return (
     <div

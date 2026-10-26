@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import { useCustomerTheme } from '@/lib/useCustomerTheme';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { getDeviceHeaders } from '@/lib/client-device';
+import SeatLockScreen from '@/components/SeatLockScreen';
 
 export default function CustomerScreen1({ params }: { params: { seatId: string } }) {
   const router = useRouter();
@@ -14,17 +16,44 @@ export default function CustomerScreen1({ params }: { params: { seatId: string }
 
   const [customerName, setCustomerName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [lockState, setLockState] = useState<{
+    type: 'OCCUPIED' | 'ACTIVE_ELSEWHERE';
+    seatNumber?: number;
+    activeSeatNumber?: number;
+    activeSeatId?: number;
+    message?: string;
+  } | null>(null);
 
   useEffect(() => {
-    fetch(`/api/seats/${seatId}`)
+    fetch(`/api/seats/${seatId}`, {
+      headers: getDeviceHeaders(),
+    })
       .then((res) => res.json())
       .then((data) => {
+        if (!data.success) {
+          if (data.error === 'SEAT_OCCUPIED') {
+            setLockState({
+              type: 'OCCUPIED',
+              seatNumber: data.seatNumber || seatId,
+            });
+            return;
+          }
+          if (data.error === 'ACTIVE_ORDER_ELSEWHERE') {
+            setLockState({
+              type: 'ACTIVE_ELSEWHERE',
+              activeSeatNumber: data.activeSeatNumber,
+              activeSeatId: data.activeSeatId,
+              message: data.message,
+            });
+            return;
+          }
+        }
         if (data.success && data.data?.activeSession) {
           const session = data.data.activeSession;
           if (session.customerName && session.customerName !== '-') {
             setCustomerName(session.customerName);
           }
-          if (session.orderTickets && session.orderTickets.length > 0) {
+          if (session.status === 'ACTIVE' && session.orderTickets && session.orderTickets.length > 0) {
             router.push(`/seat/${seatId}/tracking`);
           }
         }
@@ -35,22 +64,56 @@ export default function CustomerScreen1({ params }: { params: { seatId: string }
   const handleEnterMenu = async () => {
     setLoading(true);
     try {
-      await fetch(`/api/seats/${seatId}/init-session`, {
+      const res = await fetch(`/api/seats/${seatId}/init-session`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getDeviceHeaders() },
         body: JSON.stringify({ customerName }),
       });
+      const data = await res.json();
+      if (!data.success) {
+        if (data.error === 'SEAT_OCCUPIED') {
+          setLockState({
+            type: 'OCCUPIED',
+            seatNumber: data.seatNumber || seatId,
+          });
+          return;
+        }
+        if (data.error === 'ACTIVE_ORDER_ELSEWHERE') {
+          setLockState({
+            type: 'ACTIVE_ELSEWHERE',
+            activeSeatNumber: data.activeSeatNumber,
+            activeSeatId: data.activeSeatId,
+            message: data.message,
+          });
+          return;
+        }
+        alert(data.error || 'Failed to start session');
+        return;
+      }
       if (typeof window !== 'undefined') {
         localStorage.setItem(`customer_name_seat_${seatId}`, customerName.trim() || '-');
       }
       router.push(`/seat/${seatId}/menu`);
     } catch (err) {
       console.error(err);
-      router.push(`/seat/${seatId}/menu`);
+      alert('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (lockState) {
+    return (
+      <SeatLockScreen
+        type={lockState.type}
+        seatNumber={lockState.seatNumber}
+        activeSeatNumber={lockState.activeSeatNumber}
+        activeSeatId={lockState.activeSeatId}
+        message={lockState.message}
+        onRefresh={() => window.location.reload()}
+      />
+    );
+  }
 
   return (
     <div
