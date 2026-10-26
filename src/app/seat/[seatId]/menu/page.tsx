@@ -7,6 +7,7 @@ import { Search, Bell, Plus, Minus, ArrowRight, Check, Tag } from 'lucide-react'
 import { useSocketRoom } from '@/lib/useSocket';
 import { useCustomerTheme } from '@/lib/useCustomerTheme';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import CustomerBottomNav from '@/components/CustomerBottomNav';
 
 interface MenuItem {
   id: string;
@@ -494,12 +495,12 @@ export default function CustomerScreen2({ params }: { params: { seatId: string }
         })}
       </div>
 
-      {/* Sticky Bottom Cart Bar */}
+      {/* Sticky Bottom Cart Bar (positioned above the bottom navigation) */}
       {totalQty > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 p-4 max-w-md mx-auto">
+        <div className="fixed bottom-[68px] left-0 right-0 z-40 px-4 pb-1 max-w-md mx-auto">
           <Link
             href={`/seat/${seatId}/cart`}
-            className={`w-full py-3.5 px-5 rounded-2xl font-black text-sm flex items-center justify-between shadow-2xl transition active:scale-98 ${
+            className={`w-full py-3 px-5 rounded-2xl font-black text-xs flex items-center justify-between shadow-2xl transition active:scale-98 ${
               isOrange
                 ? 'bg-[#8A4228] hover:bg-[#71351F] text-[#FFFCF7] shadow-[#8A4228]/30'
                 : 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 border border-white/20'
@@ -507,7 +508,7 @@ export default function CustomerScreen2({ params }: { params: { seatId: string }
           >
             <div className="flex items-center gap-2">
               <span
-                className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black ${
+                className={`w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-black ${
                   isOrange ? 'bg-[#FFFCF7] text-[#8A4228]' : 'bg-slate-950 text-amber-400'
                 }`}
               >
@@ -522,6 +523,9 @@ export default function CustomerScreen2({ params }: { params: { seatId: string }
           </Link>
         </div>
       )}
+
+      {/* Customer Persistent Bottom Navigation Dock */}
+      <CustomerBottomNav seatId={seatId} activeTab="menu" cartCountOverride={totalQty} />
     </div>
   );
 }

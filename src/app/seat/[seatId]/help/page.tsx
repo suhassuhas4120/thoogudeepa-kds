@@ -7,6 +7,7 @@ import { useSocketRoom } from '@/lib/useSocket';
 import { playServiceChime } from '@/lib/audio-synth';
 import { useCustomerTheme } from '@/lib/useCustomerTheme';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import CustomerBottomNav from '@/components/CustomerBottomNav';
 
 interface ServiceItem {
   id: string;
@@ -135,7 +136,7 @@ export default function CustomerScreen8({ params }: { params: { seatId: string }
 
   return (
     <div
-      className={`min-h-screen flex flex-col justify-between p-4 max-w-md mx-auto font-sans select-none relative transition-colors duration-300 ${
+      className={`min-h-screen flex flex-col justify-between p-4 pb-24 max-w-md mx-auto font-sans select-none relative transition-colors duration-300 ${
         isOrange ? 'bg-[#FFFCF7] text-[#5B5049]' : 'bg-gradient-to-b from-[#04120d] via-[#081e16] to-[#04110c] text-white'
       }`}
     >
@@ -290,7 +291,7 @@ export default function CustomerScreen8({ params }: { params: { seatId: string }
       </div>
 
       {/* Bottom Action Button */}
-      <div className="pt-4">
+      <div className="pt-4 pb-2">
         <button
           type="button"
           onClick={handleSendRequest}
@@ -305,6 +306,9 @@ export default function CustomerScreen8({ params }: { params: { seatId: string }
           <span>{loading ? 'Alerting Waiter...' : `Alert ${assignedWaiter} for ${selectedType}`}</span>
         </button>
       </div>
+
+      {/* Customer Persistent Bottom Navigation Dock */}
+      <CustomerBottomNav seatId={seatId} activeTab="menu" />
     </div>
   );
 }

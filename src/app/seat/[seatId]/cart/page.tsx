@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Bell, Plus, Minus, Trash2, ArrowRight, UtensilsCrossed, Utensils } from 'lucide-react';
 import { useCustomerTheme } from '@/lib/useCustomerTheme';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import CustomerBottomNav from '@/components/CustomerBottomNav';
 
 interface MenuItem {
   id: string;
@@ -129,7 +130,7 @@ export default function CustomerScreen3({ params }: { params: { seatId: string }
 
   return (
     <div
-      className={`min-h-screen flex flex-col pb-32 max-w-md mx-auto font-sans select-none relative transition-colors duration-300 ${
+      className={`min-h-screen flex flex-col pb-44 max-w-md mx-auto font-sans select-none relative transition-colors duration-300 ${
         isOrange ? 'bg-[#FFFCF7] text-[#5B5049]' : 'bg-gradient-to-b from-[#04120d] via-[#081e16] to-[#04110c] text-white'
       }`}
     >
@@ -431,33 +432,36 @@ export default function CustomerScreen3({ params }: { params: { seatId: string }
         </div>
       )}
 
-      {/* Bottom Sticky Button */}
+      {/* Bottom Sticky Place Order Button */}
       {cartEntries.length > 0 && (
         <div
-          className={`fixed bottom-0 left-0 right-0 z-40 p-4 max-w-md mx-auto border-t transition ${
+          className={`fixed bottom-[68px] left-0 right-0 z-40 px-4 pb-1 max-w-md mx-auto transition ${
             isOrange
-              ? 'bg-[#FFFCF7]/95 backdrop-blur-md border-[#E8D5C3]'
-              : 'bg-[#051a13]/95 backdrop-blur-md border-emerald-500/20'
+              ? 'bg-[#FFFCF7]/95 backdrop-blur-md'
+              : 'bg-[#051a13]/95 backdrop-blur-md'
           }`}
         >
           <button
             type="button"
             onClick={handlePlaceOrder}
             disabled={loading}
-            className={`w-full py-4 rounded-2xl active:scale-95 font-black text-sm flex items-center justify-between px-5 shadow-2xl transition select-none ${
+            className={`w-full py-3.5 rounded-2xl active:scale-95 font-black text-xs flex items-center justify-between px-5 shadow-2xl transition select-none ${
               isOrange
                 ? 'bg-[#8A4228] hover:bg-[#71351F] text-[#FFFCF7] shadow-[#8A4228]/25'
                 : 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 border border-white/20 shadow-black/80'
             }`}
           >
             <span>{loading ? 'Sending to Kitchen...' : 'Confirm & Place Order'}</span>
-            <div className="flex items-center gap-1.5 font-black text-base">
+            <div className="flex items-center gap-1.5 font-black text-sm">
               <span>₹{grandTotal.toFixed(0)}</span>
               <ArrowRight className="w-4 h-4 stroke-[2.5]" />
             </div>
           </button>
         </div>
       )}
+
+      {/* Customer Persistent Bottom Navigation Dock */}
+      <CustomerBottomNav seatId={seatId} activeTab="cart" cartCountOverride={totalItemsCount} />
     </div>
   );
 }

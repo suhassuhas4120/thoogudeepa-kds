@@ -6,6 +6,7 @@ import { Download, ArrowLeft } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { useCustomerTheme } from '@/lib/useCustomerTheme';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import CustomerBottomNav from '@/components/CustomerBottomNav';
 
 interface OrderItem {
   id: string;
@@ -129,7 +130,7 @@ export default function CustomerScreen7({ params }: { params: { seatId: string }
 
   return (
     <div
-      className={`min-h-screen flex flex-col justify-between p-4 max-w-md mx-auto font-sans select-none relative transition-colors duration-300 ${
+      className={`min-h-screen flex flex-col justify-between p-4 pb-24 max-w-md mx-auto font-sans select-none relative transition-colors duration-300 ${
         isOrange ? 'bg-[#FFFCF7] text-[#5B5049]' : 'bg-gradient-to-b from-[#04120d] via-[#081e16] to-[#04110c] text-white'
       }`}
     >
@@ -271,6 +272,9 @@ export default function CustomerScreen7({ params }: { params: { seatId: string }
           <span>DOWNLOAD BILL (PDF)</span>
         </button>
       </div>
+
+      {/* Customer Persistent Bottom Navigation Dock */}
+      <CustomerBottomNav seatId={seatId} activeTab="bill" />
     </div>
   );
 }

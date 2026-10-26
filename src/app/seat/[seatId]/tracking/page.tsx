@@ -8,6 +8,7 @@ import { useSocketRoom } from '@/lib/useSocket';
 import { playSuccessChime } from '@/lib/audio-synth';
 import { useCustomerTheme } from '@/lib/useCustomerTheme';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import CustomerBottomNav from '@/components/CustomerBottomNav';
 
 interface OrderItem {
   id: string;
@@ -217,7 +218,7 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
 
   return (
     <div
-      className={`min-h-screen flex flex-col pb-32 max-w-md mx-auto font-sans select-none relative transition-colors duration-300 ${
+      className={`min-h-screen flex flex-col pb-44 max-w-md mx-auto font-sans select-none relative transition-colors duration-300 ${
         isOrange ? 'bg-[#FFFCF7] text-[#5B5049]' : 'bg-gradient-to-b from-[#04120d] via-[#081e16] to-[#04110c] text-white'
       }`}
     >
@@ -431,20 +432,20 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
         </Link>
       </div>
 
-      {/* Bottom Payment Actions with Mutual Exclusivity Lock */}
+      {/* Bottom Payment Actions with Mutual Exclusivity Lock (positioned above the dock) */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-40 p-4 max-w-md mx-auto border-t shadow-2xl transition ${
+        className={`fixed bottom-[68px] left-0 right-0 z-40 px-4 pb-1 max-w-md mx-auto transition ${
           isOrange
-            ? 'bg-[#FFFCF7]/95 backdrop-blur-md border-[#E8D5C3]'
-            : 'bg-[#051a13]/95 backdrop-blur-md border-emerald-500/20'
+            ? 'bg-[#FFFCF7]/95 backdrop-blur-md'
+            : 'bg-[#051a13]/95 backdrop-blur-md'
         }`}
       >
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2.5">
           {/* 1. Pay via Waiter Button */}
           <button
             type="button"
             onClick={() => handleSelectPayMode('LOCKED_WAITER')}
-            className={`py-3.5 px-3 rounded-2xl font-black text-xs transition flex items-center justify-center gap-1.5 select-none shadow-sm active:scale-98 ${
+            className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 select-none shadow-sm active:scale-98 ${
               lockState === 'LOCKED_WAITER'
                 ? isOrange
                   ? 'bg-[#8A4228] text-[#FFFCF7] ring-2 ring-[#D08A52]'
@@ -461,7 +462,7 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
           <button
             type="button"
             onClick={() => handleSelectPayMode('LOCKED_SELF')}
-            className={`py-3.5 px-3 rounded-2xl font-black text-xs transition flex items-center justify-center gap-1.5 select-none shadow-sm active:scale-98 ${
+            className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 select-none shadow-sm active:scale-98 ${
               lockState === 'LOCKED_SELF'
                 ? isOrange
                   ? 'bg-[#8A4228] text-[#FFFCF7] ring-2 ring-[#D08A52]'
@@ -475,6 +476,9 @@ export default function CustomerScreen4({ params }: { params: { seatId: string }
           </button>
         </div>
       </div>
+
+      {/* Customer Persistent Bottom Navigation Dock */}
+      <CustomerBottomNav seatId={seatId} activeTab="tracking" hasActiveOrder={allItems.length > 0} />
     </div>
   );
 }
