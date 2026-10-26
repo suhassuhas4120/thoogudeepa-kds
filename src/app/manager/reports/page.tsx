@@ -16,6 +16,7 @@ import * as XLSX from 'xlsx';
 
 interface TransactionRow {
   billNumber: string;
+  date: string;
   orderType: string;
   seatNumberOrToken: string;
   customerName: string;
@@ -51,6 +52,7 @@ const DEFAULT_ITEM_PERFORMANCE: ItemPerformanceRow[] = [
 const DEFAULT_TRANSACTIONS: TransactionRow[] = [
   {
     billNumber: 'INV-101',
+    date: '25-10-2026',
     orderType: 'Dine-in',
     seatNumberOrToken: 'S1',
     customerName: 'Rahul',
@@ -66,6 +68,7 @@ const DEFAULT_TRANSACTIONS: TransactionRow[] = [
   },
   {
     billNumber: 'INV-102',
+    date: '25-10-2026',
     orderType: 'Dine-in',
     seatNumberOrToken: 'S3',
     customerName: 'Priya',
@@ -81,6 +84,7 @@ const DEFAULT_TRANSACTIONS: TransactionRow[] = [
   },
   {
     billNumber: 'INV-103',
+    date: '25-10-2026',
     orderType: 'Takeaway',
     seatNumberOrToken: 'P-48',
     customerName: 'Ramesh',
@@ -96,6 +100,7 @@ const DEFAULT_TRANSACTIONS: TransactionRow[] = [
   },
   {
     billNumber: 'INV-104',
+    date: '25-10-2026',
     orderType: 'Dine-in',
     seatNumberOrToken: 'S10',
     customerName: 'Arun',
@@ -111,6 +116,7 @@ const DEFAULT_TRANSACTIONS: TransactionRow[] = [
   },
   {
     billNumber: 'INV-105',
+    date: '25-10-2026',
     orderType: 'Takeaway',
     seatNumberOrToken: 'P-49',
     customerName: 'Sneha',
@@ -140,6 +146,7 @@ export default function MasterSalesReportPage() {
         if (data.success && data.data?.records && data.data.records.length > 0) {
           const mapped: TransactionRow[] = data.data.records.map((r: any) => ({
             billNumber: r.billNumber,
+            date: r.date || '25-10-2026',
             orderType: r.orderType,
             seatNumberOrToken: r.seatNumberOrToken || (r.seatId ? `S${r.seatId}` : 'P-Desk'),
             customerName: r.customerName || '-',
@@ -232,9 +239,10 @@ export default function MasterSalesReportPage() {
     const txData = [
       [
         'BILL #',
+        'DATE',
         'TYPE',
         'SEAT',
-        'GUEST',
+        'CUSTOMER NAME',
         'SERVER',
         'ITEMS SUMMARY',
         'PLACED',
@@ -247,6 +255,7 @@ export default function MasterSalesReportPage() {
       ],
       ...transactions.map((t) => [
         t.billNumber,
+        t.date,
         t.orderType,
         t.seatNumberOrToken,
         t.customerName,
@@ -330,18 +339,19 @@ export default function MasterSalesReportPage() {
     doc.rect(14, y, 269, 6, 'F');
     doc.setTextColor(255, 255, 255);
     doc.text('BILL #', 16, y + 4.2);
-    doc.text('TYPE', 32, y + 4.2);
-    doc.text('SEAT', 48, y + 4.2);
-    doc.text('GUEST', 60, y + 4.2);
-    doc.text('SERVER', 78, y + 4.2);
-    doc.text('ITEMS SUMMARY', 96, y + 4.2);
-    doc.text('PLACED', 165, y + 4.2);
-    doc.text('SETTLED', 182, y + 4.2);
-    doc.text('SUBTOT', 200, y + 4.2);
-    doc.text('GST 5%', 218, y + 4.2);
-    doc.text('GRAND TOT', 236, y + 4.2);
-    doc.text('MODE', 256, y + 4.2);
-    doc.text('STATUS', 270, y + 4.2);
+    doc.text('DATE', 32, y + 4.2);
+    doc.text('TYPE', 48, y + 4.2);
+    doc.text('SEAT', 62, y + 4.2);
+    doc.text('CUSTOMER NAME', 74, y + 4.2);
+    doc.text('SERVER', 106, y + 4.2);
+    doc.text('ITEMS SUMMARY', 122, y + 4.2);
+    doc.text('PLACED', 180, y + 4.2);
+    doc.text('SETTLED', 195, y + 4.2);
+    doc.text('SUBTOT', 210, y + 4.2);
+    doc.text('GST 5%', 225, y + 4.2);
+    doc.text('GRAND TOT', 242, y + 4.2);
+    doc.text('MODE', 260, y + 4.2);
+    doc.text('STATUS', 272, y + 4.2);
 
     doc.setTextColor(0, 0, 0);
     doc.setFont('helvetica', 'normal');
@@ -349,18 +359,19 @@ export default function MasterSalesReportPage() {
 
     transactions.forEach((t) => {
       doc.text(t.billNumber, 16, y + 4.2);
-      doc.text(t.orderType, 32, y + 4.2);
-      doc.text(t.seatNumberOrToken, 48, y + 4.2);
-      doc.text(t.customerName, 60, y + 4.2);
-      doc.text(t.serverName, 78, y + 4.2);
-      doc.text(t.itemsSummary.substring(0, 38), 96, y + 4.2);
-      doc.text(t.placedAt, 165, y + 4.2);
-      doc.text(t.settledAt, 182, y + 4.2);
-      doc.text(`Rs. ${t.subtotal.toFixed(0)}`, 200, y + 4.2);
-      doc.text(`Rs. ${t.gst5Percent.toFixed(0)}`, 218, y + 4.2);
-      doc.text(`Rs. ${t.grandTotal.toFixed(0)}`, 236, y + 4.2);
-      doc.text(t.paymentMode, 256, y + 4.2);
-      doc.text(t.paymentStatus, 270, y + 4.2);
+      doc.text(t.date, 32, y + 4.2);
+      doc.text(t.orderType, 48, y + 4.2);
+      doc.text(t.seatNumberOrToken, 62, y + 4.2);
+      doc.text(t.customerName, 74, y + 4.2);
+      doc.text(t.serverName, 106, y + 4.2);
+      doc.text(t.itemsSummary.substring(0, 30), 122, y + 4.2);
+      doc.text(t.placedAt, 180, y + 4.2);
+      doc.text(t.settledAt, 195, y + 4.2);
+      doc.text(`Rs. ${t.subtotal.toFixed(0)}`, 210, y + 4.2);
+      doc.text(`Rs. ${t.gst5Percent.toFixed(0)}`, 225, y + 4.2);
+      doc.text(`Rs. ${t.grandTotal.toFixed(0)}`, 242, y + 4.2);
+      doc.text(t.paymentMode, 260, y + 4.2);
+      doc.text(t.paymentStatus, 272, y + 4.2);
       y += 5;
     });
 
@@ -542,9 +553,10 @@ export default function MasterSalesReportPage() {
               <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-bold uppercase text-[10px]">
                 <tr>
                   <th className="p-2.5 border-r border-slate-800">BILL #</th>
+                  <th className="p-2.5 border-r border-slate-800">DATE</th>
                   <th className="p-2.5 border-r border-slate-800">TYPE</th>
                   <th className="p-2.5 border-r border-slate-800">SEAT</th>
-                  <th className="p-2.5 border-r border-slate-800">GUEST</th>
+                  <th className="p-2.5 border-r border-slate-800">CUSTOMER NAME</th>
                   <th className="p-2.5 border-r border-slate-800">SERVER</th>
                   <th className="p-2.5 border-r border-slate-800">ITEMS SUMMARY</th>
                   <th className="p-2.5 border-r border-slate-800">PLACED</th>
@@ -559,8 +571,11 @@ export default function MasterSalesReportPage() {
               <tbody className="divide-y divide-slate-800 font-mono text-[11px]">
                 {filtered.map((t, idx) => (
                   <tr key={idx} className="hover:bg-slate-800/50 transition-colors">
-                    <td className="p-2.5 font-bold text-amber-400 border-r border-slate-800">
+                    <td className="p-2.5 font-bold text-amber-400 border-r border-slate-800 whitespace-nowrap">
                       {t.billNumber}
+                    </td>
+                    <td className="p-2.5 text-slate-400 border-r border-slate-800 whitespace-nowrap">
+                      {t.date}
                     </td>
                     <td className="p-2.5 font-sans border-r border-slate-800">
                       <span
@@ -576,7 +591,7 @@ export default function MasterSalesReportPage() {
                     <td className="p-2.5 font-bold text-white border-r border-slate-800">
                       {t.seatNumberOrToken}
                     </td>
-                    <td className="p-2.5 font-sans text-slate-200 border-r border-slate-800">
+                    <td className="p-2.5 font-sans font-bold text-slate-100 border-r border-slate-800 whitespace-nowrap">
                       {t.customerName}
                     </td>
                     <td className="p-2.5 font-sans text-slate-300 border-r border-slate-800">
