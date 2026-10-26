@@ -13,12 +13,10 @@ export default function ManagerShiftAuditScreen() {
   // Waiter 1 (Suhas) handover states
   const [suhasHandingOver, setSuhasHandingOver] = useState('');
   const [suhasHandedOver, setSuhasHandedOver] = useState<number>(0);
-  const [suhasSubmitted, setSuhasSubmitted] = useState<boolean>(false);
 
   // Waiter 2 (Shiva) handover states
   const [shivaHandingOver, setShivaHandingOver] = useState('');
   const [shivaHandedOver, setShivaHandedOver] = useState<number>(0);
-  const [shivaSubmitted, setShivaSubmitted] = useState<boolean>(false);
 
   // Real-time calculated live states
   const [suhasStats, setSuhasStats] = useState({
@@ -41,6 +39,25 @@ export default function ManagerShiftAuditScreen() {
     upiCollected: 0,
     cashCollected: 0,
   });
+
+  // Load saved handovers for today on mount
+  useEffect(() => {
+    try {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const year = now.getFullYear();
+      const todayDbStr = `${day}-${String(now.getMonth() + 1).padStart(2, '0')}-${year}`;
+
+      const savedSuhas = localStorage.getItem(`shift_suhas_handed_${todayDbStr}`);
+      if (savedSuhas !== null) {
+        setSuhasHandedOver(parseFloat(savedSuhas) || 0);
+      }
+      const savedShiva = localStorage.getItem(`shift_shiva_handed_${todayDbStr}`);
+      if (savedShiva !== null) {
+        setShivaHandedOver(parseFloat(savedShiva) || 0);
+      }
+    } catch (e) {}
+  }, []);
 
   const fetchShiftData = () => {
     const now = new Date();
@@ -91,12 +108,6 @@ export default function ManagerShiftAuditScreen() {
           setSuhasStats({ tablesCount: sTables, totalBilled: sBilled, upiCollected: sUpi, cashCollected: sCash });
           setShivaStats({ tablesCount: shTables, totalBilled: shBilled, upiCollected: shUpi, cashCollected: shCash });
           setParcelStats({ tablesCount: pTables, totalBilled: pBilled, upiCollected: pUpi, cashCollected: pCash });
-
-          setSuhasHandedOver((prev) => (suhasSubmitted ? prev : sCash));
-          setSuhasHandingOver((prev) => (prev !== '' && suhasSubmitted ? prev : (sCash > 0 ? String(sCash) : '0')));
-
-          setShivaHandedOver((prev) => (shivaSubmitted ? prev : shCash));
-          setShivaHandingOver((prev) => (prev !== '' && shivaSubmitted ? prev : (shCash > 0 ? String(shCash) : '0')));
         }
       })
       .catch(console.error);
@@ -104,16 +115,68 @@ export default function ManagerShiftAuditScreen() {
 
   const handleSuhasSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const val = parseFloat(suhasHandingOver) || 0;
-    setSuhasHandedOver(val);
-    setSuhasSubmitted(true);
+    const val = parseFloat(suhasHandingOver);
+    if (isNaN(val) || val <= 0) return;
+
+    // Add up each entry cumulatively into overall handed over
+    const newTotal = Math.round((suhasHandedOver + val) * 100) / 100;
+    setSuhasHandedOver(newTotal);
+    setSuhasHandingOver('');
+
+    try {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const year = now.getFullYear();
+      const todayDbStr = `${day}-${String(now.getMonth() + 1).padStart(2, '0')}-${year}`;
+      localStorage.setItem(`shift_suhas_handed_${todayDbStr}`, String(newTotal));
+    } catch (e) {}
+  };
+
+  const handleResetSuhas = () => {
+    if (window.confirm('Reset Suhas handed over cash to ₹0.00?')) {
+      setSuhasHandedOver(0);
+      setSuhasHandingOver('');
+      try {
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const year = now.getFullYear();
+        const todayDbStr = `${day}-${String(now.getMonth() + 1).padStart(2, '0')}-${year}`;
+        localStorage.removeItem(`shift_suhas_handed_${todayDbStr}`);
+      } catch (e) {}
+    }
   };
 
   const handleShivaSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const val = parseFloat(shivaHandingOver) || 0;
-    setShivaHandedOver(val);
-    setShivaSubmitted(true);
+    const val = parseFloat(shivaHandingOver);
+    if (isNaN(val) || val <= 0) return;
+
+    // Add up each entry cumulatively into overall handed over
+    const newTotal = Math.round((shivaHandedOver + val) * 100) / 100;
+    setShivaHandedOver(newTotal);
+    setShivaHandingOver('');
+
+    try {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const year = now.getFullYear();
+      const todayDbStr = `${day}-${String(now.getMonth() + 1).padStart(2, '0')}-${year}`;
+      localStorage.setItem(`shift_shiva_handed_${todayDbStr}`, String(newTotal));
+    } catch (e) {}
+  };
+
+  const handleResetShiva = () => {
+    if (window.confirm('Reset Shiva handed over cash to ₹0.00?')) {
+      setShivaHandedOver(0);
+      setShivaHandingOver('');
+      try {
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const year = now.getFullYear();
+        const todayDbStr = `${day}-${String(now.getMonth() + 1).padStart(2, '0')}-${year}`;
+        localStorage.removeItem(`shift_shiva_handed_${todayDbStr}`);
+      } catch (e) {}
+    }
   };
 
   useEffect(() => {
@@ -136,7 +199,7 @@ export default function ManagerShiftAuditScreen() {
         socket.off('order:placed', fetchShiftData);
       }
     };
-  }, [socket, suhasSubmitted, shivaSubmitted]);
+  }, [socket]);
 
   // Balance Math: Remaining = Cash Collected - Handed Over
   const suhasBalance = Math.round((suhasStats.cashCollected - suhasHandedOver) * 100) / 100;
@@ -196,24 +259,40 @@ export default function ManagerShiftAuditScreen() {
 
             {/* 2. Handing Over Input Section with Submit Button */}
             <div className="space-y-1">
-              <span className="text-stone-300 font-bold block uppercase text-[10px] tracking-wider">
-                📥 2. Handing Over
-              </span>
+              <div className="flex justify-between items-center">
+                <span className="text-stone-300 font-bold block uppercase text-[10px] tracking-wider">
+                  📥 2. Handing Over
+                </span>
+                {suhasBalance > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSuhasHandingOver(String(suhasBalance))}
+                    className="text-[10px] font-bold text-amber-400 hover:text-amber-300 hover:underline"
+                  >
+                    + Fill All (₹{suhasBalance.toFixed(2)})
+                  </button>
+                )}
+              </div>
               <form onSubmit={handleSuhasSubmit} className="flex items-center gap-1.5">
-                <div className="flex items-center bg-[#100E0C] border border-[#3D332C] rounded-lg px-2 py-1.5 flex-1 focus-within:border-amber-400 transition">
+                <div className="flex items-center bg-[#100E0C] border border-[#3D332C] rounded-lg px-2.5 py-1.5 flex-1 focus-within:border-amber-400 transition">
                   <span className="text-stone-500 mr-1 font-bold text-xs">₹</span>
                   <input
                     type="number"
                     step="any"
                     value={suhasHandingOver}
                     onChange={(e) => setSuhasHandingOver(e.target.value)}
-                    placeholder={String(suhasStats.cashCollected)}
-                    className="w-full bg-transparent text-white font-black focus:outline-none text-xs font-mono"
+                    placeholder="Enter cash (₹)"
+                    className="w-full bg-transparent text-white font-black focus:outline-none text-xs font-mono placeholder-stone-600"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition active:scale-95 shadow-sm whitespace-nowrap"
+                  disabled={!suhasHandingOver || parseFloat(suhasHandingOver) <= 0}
+                  className={`px-3 py-1.5 rounded-lg font-black text-xs transition active:scale-95 shadow-sm whitespace-nowrap ${
+                    suhasHandingOver && parseFloat(suhasHandingOver) > 0
+                      ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer'
+                      : 'bg-[#2A2420] text-stone-500 cursor-not-allowed'
+                  }`}
                 >
                   Submit
                 </button>
@@ -222,15 +301,26 @@ export default function ManagerShiftAuditScreen() {
 
             {/* 3. Handed Over */}
             <div className="space-y-1">
-              <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
-                🤝 3. Handed Over
-              </span>
+              <div className="flex justify-between items-center">
+                <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
+                  🤝 3. Handed Over
+                </span>
+                {suhasHandedOver > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleResetSuhas}
+                    className="text-[10px] text-stone-500 hover:text-rose-400 underline"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
               <div className="flex items-baseline gap-1.5">
                 <span className="font-black text-emerald-400 text-base font-mono">
                   ₹{suhasHandedOver.toFixed(2)}
                 </span>
-                <span className="text-[10px] text-stone-500">
-                  (Target: ₹{suhasStats.cashCollected.toFixed(2)})
+                <span className="text-[10px] text-stone-500 font-mono">
+                  / ₹{suhasStats.cashCollected.toFixed(2)}
                 </span>
               </div>
             </div>
@@ -300,24 +390,40 @@ export default function ManagerShiftAuditScreen() {
 
             {/* 2. Handing Over Input Section with Submit Button */}
             <div className="space-y-1">
-              <span className="text-stone-300 font-bold block uppercase text-[10px] tracking-wider">
-                📥 2. Handing Over
-              </span>
+              <div className="flex justify-between items-center">
+                <span className="text-stone-300 font-bold block uppercase text-[10px] tracking-wider">
+                  📥 2. Handing Over
+                </span>
+                {shivaBalance > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShivaHandingOver(String(shivaBalance))}
+                    className="text-[10px] font-bold text-amber-400 hover:text-amber-300 hover:underline"
+                  >
+                    + Fill All (₹{shivaBalance.toFixed(2)})
+                  </button>
+                )}
+              </div>
               <form onSubmit={handleShivaSubmit} className="flex items-center gap-1.5">
-                <div className="flex items-center bg-[#100E0C] border border-[#3D332C] rounded-lg px-2 py-1.5 flex-1 focus-within:border-amber-400 transition">
+                <div className="flex items-center bg-[#100E0C] border border-[#3D332C] rounded-lg px-2.5 py-1.5 flex-1 focus-within:border-amber-400 transition">
                   <span className="text-stone-500 mr-1 font-bold text-xs">₹</span>
                   <input
                     type="number"
                     step="any"
                     value={shivaHandingOver}
                     onChange={(e) => setShivaHandingOver(e.target.value)}
-                    placeholder={String(shivaStats.cashCollected)}
-                    className="w-full bg-transparent text-white font-black focus:outline-none text-xs font-mono"
+                    placeholder="Enter cash (₹)"
+                    className="w-full bg-transparent text-white font-black focus:outline-none text-xs font-mono placeholder-stone-600"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition active:scale-95 shadow-sm whitespace-nowrap"
+                  disabled={!shivaHandingOver || parseFloat(shivaHandingOver) <= 0}
+                  className={`px-3 py-1.5 rounded-lg font-black text-xs transition active:scale-95 shadow-sm whitespace-nowrap ${
+                    shivaHandingOver && parseFloat(shivaHandingOver) > 0
+                      ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer'
+                      : 'bg-[#2A2420] text-stone-500 cursor-not-allowed'
+                  }`}
                 >
                   Submit
                 </button>
@@ -326,15 +432,26 @@ export default function ManagerShiftAuditScreen() {
 
             {/* 3. Handed Over */}
             <div className="space-y-1">
-              <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
-                🤝 3. Handed Over
-              </span>
+              <div className="flex justify-between items-center">
+                <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
+                  🤝 3. Handed Over
+                </span>
+                {shivaHandedOver > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleResetShiva}
+                    className="text-[10px] text-stone-500 hover:text-rose-400 underline"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
               <div className="flex items-baseline gap-1.5">
                 <span className="font-black text-emerald-400 text-base font-mono">
                   ₹{shivaHandedOver.toFixed(2)}
                 </span>
-                <span className="text-[10px] text-stone-500">
-                  (Target: ₹{shivaStats.cashCollected.toFixed(2)})
+                <span className="text-[10px] text-stone-500 font-mono">
+                  / ₹{shivaStats.cashCollected.toFixed(2)}
                 </span>
               </div>
             </div>
