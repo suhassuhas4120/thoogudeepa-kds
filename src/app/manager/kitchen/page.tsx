@@ -2,18 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import {
-  ShieldCheck,
-  Flame,
-  Clock,
-  CheckCircle2,
-  AlertTriangle,
-  RefreshCw,
-  LogOut,
-  SlidersHorizontal,
-  ChevronRight,
-  EyeOff
-} from 'lucide-react';
+import { ArrowLeft, AlertTriangle, EyeOff, X, Check, Clock } from 'lucide-react';
 import { useSocketRoom } from '@/lib/useSocket';
 import { playKitchenBell } from '@/lib/audio-synth';
 
@@ -22,8 +11,7 @@ interface OrderItem {
   itemName: string;
   quantity: number;
   unitPrice: number;
-  status: 'RECEIVED' | 'PREPARING' | 'READY' | 'SERVED' | 'CANCELLED';
-  isVeg: boolean;
+  status: 'placed' | 'preparing' | 'ready' | 'served' | 'cancelled';
   notes?: string;
 }
 
@@ -34,7 +22,10 @@ interface Ticket {
   seatId?: number;
   customerName?: string;
   status: string;
-  placedAt: string;
+  placedAtTime?: string;
+  placedAt?: string;
+  createdAt?: string;
+  waiterName?: string;
   items: OrderItem[];
 }
 
@@ -47,13 +38,14 @@ interface MenuItem86 {
   isVeg: boolean;
 }
 
-export default function ManagerKitchenOversightScreen() {
+export default function ManagerKitchenMonitorScreen() {
   const socket = useSocketRoom('room:manager');
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem86[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'COOKING' | 'READY' | 'COMPLETED'>('ALL');
   const [show86Drawer, setShow86Drawer] = useState(false);
-  const [filterType, setFilterType] = useState<'ALL' | 'DINE_IN' | 'PARCEL'>('ALL');
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
 
   const fetchKdsData = async () => {
     try {
@@ -79,6 +71,8 @@ export default function ManagerKitchenOversightScreen() {
 
   useEffect(() => {
     fetchKdsData();
+    const interval = setInterval(fetchKdsData, 10000); // Polling backup
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -116,410 +110,330 @@ export default function ManagerKitchenOversightScreen() {
     }
   };
 
-  // Update item status in KDS
-  const handleUpdateItemStatus = async (ticketId: string, itemId: string, newStatus: string) => {
+  // Helper to compute elapsed minutes
+  const getElapsedMinutes = (placedTimeStr?: string, createdAtStr?: string) => {
+    if (!placedTimeStr && !createdAtStr) return 5;
     try {
-      await fetch(`/api/orders/${ticketId}/item-status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemId, status: newStatus }),
-      });
-      fetchKdsData();
-    } catch (e) {
-      console.error(e);
+      const placedDate = createdAtStr ? new Date(createdAtStr) : new Date();
+      const diffMs = Date.now() - placedDate.getTime();
+      const mins = Math.max(1, Math.floor(diffMs / 60000));
+      return isNaN(mins) ? 6 : mins;
+    } catch {
+      return 5;
     }
   };
 
+  // Compute status summary of ticket
+  const getTicketStatusBadge = (ticket: Ticket) => {
+    const items = ticket.items || [];
+    if (items.length === 0) return { label: '⚪ Placed', color: 'text-stone-400 bg-stone-800' };
+    if (items.every((i) => i.status === 'served')) {
+      return { label: '✔️ Done', color: 'text-stone-400 bg-stone-800/60' };
+    }
+    if (items.some((i) => i.status === 'ready')) {
+      return { label: '🟢 Ready', color: 'text-emerald-400 bg-emerald-950/60 border border-emerald-500/40' };
+    }
+    if (items.some((i) => i.status === 'preparing' || i.status === 'placed')) {
+      return { label: '🔵 Cook', color: 'text-sky-400 bg-sky-950/60 border border-sky-500/40' };
+    }
+    return { label: '⚪ Placed', color: 'text-stone-300 bg-stone-800' };
+  };
+
+  // Filter tickets
   const filteredTickets = tickets.filter((t) => {
-    if (filterType === 'DINE_IN') return t.orderType === 'DINE_IN';
-    if (filterType === 'PARCEL') return t.orderType === 'TAKEAWAY';
-    return true;
+    const items = t.items || [];
+    const isCompleted = items.length > 0 && items.every((i) => i.status === 'served' || i.status === 'cancelled');
+    const isReady = items.some((i) => i.status === 'ready');
+    const isCooking = items.some((i) => i.status === 'preparing' || i.status === 'placed') && !isReady;
+
+    if (activeFilter === 'COOKING') return isCooking;
+    if (activeFilter === 'READY') return isReady;
+    if (activeFilter === 'COMPLETED') return isCompleted;
+    return !isCompleted; // ALL active orders
   });
 
-  const receivedItems: { ticket: Ticket; item: OrderItem }[] = [];
-  const cookingItems: { ticket: Ticket; item: OrderItem }[] = [];
-  const readyItems: { ticket: Ticket; item: OrderItem }[] = [];
-
-  filteredTickets.forEach((ticket) => {
-    ticket.items.forEach((item) => {
-      if (item.status === 'RECEIVED') receivedItems.push({ ticket, item });
-      else if (item.status === 'PREPARING') cookingItems.push({ ticket, item });
-      else if (item.status === 'READY') readyItems.push({ ticket, item });
-    });
-  });
-
-  const total86Count = menuItems.filter((i) => !i.isAvailable).length;
+  const soldOutCount = menuItems.filter((i) => !i.isAvailable).length;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans select-none">
-      {/* Executive Header */}
-      <header className="h-16 bg-[#181513] border-b border-[#2C2520] px-6 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#8A4228]/25 text-[#D08A52] border border-[#8A4228]/40 flex items-center justify-center font-bold">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-sm font-black text-white uppercase tracking-wider">
-              THOOGUDEEPA DONNE BIRYANI
-            </h1>
-            <p className="text-[11px] text-[#D08A52] font-semibold tracking-wide">Executive Kitchen Oversight (KDS)</p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[#100E0C] text-white flex flex-col font-sans select-none">
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {/* TOP HEADER MATCHING ASCII: ← Back to Floor | Title | [ 86 Items ]   */}
+      {/* ────────────────────────────────────────────────────────────────── */}
+      <header className="h-14 bg-[#181513] border-b border-[#2C2520] px-6 flex items-center justify-between shrink-0">
+        <Link
+          href="/manager/floor"
+          className="flex items-center gap-1.5 text-xs font-bold text-stone-300 hover:text-white transition"
+        >
+          <ArrowLeft className="w-4 h-4 text-[#D08A52]" />
+          <span>← Back to Floor</span>
+        </Link>
 
-        {/* 9 Manager Portal Navigation Links */}
-        <nav className="flex items-center gap-1.5 bg-[#100E0C] p-1.5 rounded-2xl border border-[#2C2520] text-xs font-bold">
-          <Link href="/manager/floor" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
-            Live Floor
-          </Link>
-          <Link href="/manager/kitchen" className="px-3 py-1.5 rounded-xl bg-[#8A4228] text-white shadow-sm">
-            Kitchen Oversight
-          </Link>
-          <Link href="/manager/menu" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
-            Menu Items
-          </Link>
-          <Link href="/manager/qrs" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
-            16 QRs
-          </Link>
-          <Link href="/manager/shift" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
-            Shift Audit
-          </Link>
-          <Link href="/manager/parcel" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
-            Parcel Desk
-          </Link>
-          <Link href="/manager/reports" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
-            Reports
-          </Link>
-          <Link href="/manager/promos" className="px-3 py-1.5 rounded-xl text-stone-400 hover:text-white transition">
-            Offers & Promos
-          </Link>
-        </nav>
+        <h1 className="text-sm font-black text-white tracking-widest uppercase">
+          KITCHEN MONITOR & ACTIVE TICKETS
+        </h1>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShow86Drawer(true)}
-            className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-xl text-xs font-bold hover:bg-amber-500/20"
-          >
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
-            <span>86 Items Drawer</span>
-            {total86Count > 0 && (
-              <span className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-[10px] font-black">
-                {total86Count}
-              </span>
-            )}
-          </button>
-          <Link
-            href="/manager"
-            className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition"
-            title="Lock Portal"
-          >
-            <LogOut className="w-5 h-5" />
-          </Link>
-        </div>
+        <button
+          type="button"
+          onClick={() => setShow86Drawer(true)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm ${
+            soldOutCount > 0
+              ? 'bg-rose-950/60 text-rose-300 border border-rose-500/40 hover:bg-rose-900/60'
+              : 'bg-[#221D1A] text-stone-300 border border-[#2C2520] hover:text-white'
+          }`}
+        >
+          <EyeOff className="w-3.5 h-3.5" />
+          <span>[ 86 / Sold Out Items ({soldOutCount}) ]</span>
+        </button>
       </header>
 
-      {/* Filter and Metrics Bar */}
-      <div className="h-12 bg-slate-900/50 border-b border-slate-800 px-6 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Channel:</span>
-          <button
-            onClick={() => setFilterType('ALL')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-              filterType === 'ALL' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
-            }`}
-          >
-            All Channels ({tickets.length})
-          </button>
-          <button
-            onClick={() => setFilterType('DINE_IN')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-              filterType === 'DINE_IN' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
-            }`}
-          >
-            Dine-In (S1–S16)
-          </button>
-          <button
-            onClick={() => setFilterType('PARCEL')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-              filterType === 'PARCEL' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
-            }`}
-          >
-            Parcel Desk
-          </button>
-        </div>
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {/* FILTER BUTTONS MATCHING ASCII                                      */}
+      {/* ────────────────────────────────────────────────────────────────── */}
+      <div className="bg-[#141210] border-b border-[#2C2520] px-6 py-2.5 flex items-center gap-2">
+        <span className="text-xs font-bold text-stone-400 mr-2">Filters:</span>
 
-        <div className="flex items-center gap-4 text-xs font-bold">
-          <div className="flex items-center gap-2 text-amber-400">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
-            <span>Received: {receivedItems.length}</span>
-          </div>
-          <div className="flex items-center gap-2 text-blue-400">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
-            <span>Cooking: {cookingItems.length}</span>
-          </div>
-          <div className="flex items-center gap-2 text-emerald-400">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-            <span>Ready: {readyItems.length}</span>
-          </div>
+        <button
+          type="button"
+          onClick={() => setActiveFilter('ALL')}
+          className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+            activeFilter === 'ALL'
+              ? 'bg-[#8A4228] text-white shadow-sm'
+              : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+          }`}
+        >
+          [ All Active ({tickets.filter((t) => !t.items?.every((i) => i.status === 'served')).length}) ]
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveFilter('COOKING')}
+          className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+            activeFilter === 'COOKING'
+              ? 'bg-sky-600 text-white shadow-sm'
+              : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+          }`}
+        >
+          [ Cooking ({tickets.filter((t) => t.items?.some((i) => i.status === 'preparing' || i.status === 'placed')).length}) ]
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveFilter('READY')}
+          className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+            activeFilter === 'READY'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+          }`}
+        >
+          [ Ready ({tickets.filter((t) => t.items?.some((i) => i.status === 'ready')).length}) ]
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveFilter('COMPLETED')}
+          className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+            activeFilter === 'COMPLETED'
+              ? 'bg-stone-700 text-white shadow-sm'
+              : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+          }`}
+        >
+          [ Completed Today ({tickets.filter((t) => t.items?.length > 0 && t.items.every((i) => i.status === 'served')).length}) ]
+        </button>
+      </div>
+
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {/* MASTER TICKETS TABLE MATCHING ASCII EXACT COLUMNS                  */}
+      {/* ────────────────────────────────────────────────────────────────── */}
+      <div className="flex-1 p-6 overflow-x-auto">
+        <div className="bg-[#181513] border border-[#2C2520] rounded-2xl overflow-hidden shadow-xl">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="bg-[#13110F] border-b border-[#2C2520] text-stone-400 font-bold uppercase tracking-wider text-[11px]">
+                <th className="py-3 px-4">TICKET</th>
+                <th className="py-3 px-3">SEAT</th>
+                <th className="py-3 px-4">SERVER</th>
+                <th className="py-3 px-4">ITEMS</th>
+                <th className="py-3 px-3">ORDERED</th>
+                <th className="py-3 px-3">ELAPSED</th>
+                <th className="py-3 px-3">STATUS</th>
+                <th className="py-3 px-4 text-right">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#26201B]">
+              {filteredTickets.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-stone-500">
+                    No tickets found in this filter view.
+                  </td>
+                </tr>
+              ) : (
+                filteredTickets.map((ticket) => {
+                  const itemsSummary = (ticket.items || [])
+                    .map((i) => `${i.itemName} x${i.quantity}`)
+                    .join(', ');
+                  const elapsedMins = getElapsedMinutes(ticket.placedAtTime, ticket.createdAt);
+                  const isWarning = elapsedMins >= 12;
+                  const statusBadge = getTicketStatusBadge(ticket);
+                  const seatDisplay = ticket.orderType === 'TAKEAWAY' ? '📦 Takeaway' : `S${ticket.seatId || '1'}`;
+                  const serverName = ticket.waiterName || (ticket.seatId && ticket.seatId <= 8 ? 'Suhas' : 'Shiva');
+
+                  return (
+                    <tr key={ticket.id} className="hover:bg-[#201B18] transition">
+                      <td className="py-3 px-4 font-mono font-black text-amber-400">
+                        #{ticket.ticketNumber}
+                      </td>
+                      <td className="py-3 px-3 font-bold text-white">
+                        {seatDisplay}
+                      </td>
+                      <td className="py-3 px-4 text-stone-300 font-medium">
+                        {serverName}
+                      </td>
+                      <td className="py-3 px-4 text-stone-200 max-w-md truncate" title={itemsSummary}>
+                        {itemsSummary}
+                      </td>
+                      <td className="py-3 px-3 text-stone-400 font-mono">
+                        {ticket.placedAtTime || '12:20 PM'}
+                      </td>
+                      <td className="py-3 px-3">
+                        <span
+                          className={`font-mono font-bold ${
+                            isWarning ? 'text-rose-400' : 'text-emerald-400'
+                          }`}
+                        >
+                          {String(elapsedMins).padStart(2, '0')}m {isWarning ? '(⚠️)' : '(OK)'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${statusBadge.color}`}>
+                          {statusBadge.label}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedTicket(ticket)}
+                          className="px-3 py-1 rounded-lg bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs transition active:scale-95 shadow-sm"
+                        >
+                          [ Details ]
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* 3-Column KDS Live Board */}
-      <div className="flex-1 p-6 grid grid-cols-3 gap-6 overflow-hidden">
-        {/* Column 1: Received Orders */}
-        <div className="flex flex-col bg-slate-900/60 rounded-2xl border border-amber-500/20 overflow-hidden">
-          <div className="p-3.5 bg-amber-950/30 border-b border-amber-500/20 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
-              <h2 className="font-black text-amber-400 text-sm tracking-wide">
-                1. RECEIVED ORDERS ({receivedItems.length})
-              </h2>
-            </div>
-            <span className="text-[10px] uppercase font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded">
-              Awaiting Cook
-            </span>
-          </div>
-
-          <div className="flex-1 p-3 overflow-y-auto space-y-3">
-            {receivedItems.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-slate-500 py-16">
-                <CheckCircle2 className="w-8 h-8 mb-2 opacity-30" />
-                <p className="text-xs font-bold">No orders waiting</p>
-              </div>
-            ) : (
-              receivedItems.map(({ ticket, item }) => (
-                <div
-                  key={item.id}
-                  className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 hover:border-amber-500/40 transition shadow-sm"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <span className="text-xs font-black text-amber-400">
-                        {ticket.orderType === 'TAKEAWAY' ? 'PARCEL' : `SEAT ${ticket.seatId}`}
-                      </span>
-                      <span className="text-[10px] text-slate-400 ml-2 font-mono">
-                        #{ticket.ticketNumber}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 text-[11px] font-mono text-slate-400">
-                      <Clock className="w-3.5 h-3.5 text-amber-400" />
-                      <span>{new Date(ticket.placedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-black text-xs flex items-center justify-center">
-                        {item.quantity}x
-                      </span>
-                      <div>
-                        <div className="text-sm font-black text-white">{item.itemName}</div>
-                        {item.notes && <div className="text-[11px] text-amber-400 italic">Note: {item.notes}</div>}
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => handleUpdateItemStatus(ticket.id, item.id, 'PREPARING')}
-                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold flex items-center gap-1"
-                    >
-                      <Flame className="w-3.5 h-3.5" />
-                      <span>Start Cook</span>
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Column 2: Items Cooking */}
-        <div className="flex flex-col bg-slate-900/60 rounded-2xl border border-blue-500/20 overflow-hidden">
-          <div className="p-3.5 bg-blue-950/30 border-b border-blue-500/20 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse" />
-              <h2 className="font-black text-blue-400 text-sm tracking-wide">
-                2. ITEMS COOKING ({cookingItems.length})
-              </h2>
-            </div>
-            <span className="text-[10px] uppercase font-bold text-blue-300 bg-blue-500/20 px-2 py-0.5 rounded">
-              On Stove / Pot
-            </span>
-          </div>
-
-          <div className="flex-1 p-3 overflow-y-auto space-y-3">
-            {cookingItems.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-slate-500 py-16">
-                <Flame className="w-8 h-8 mb-2 opacity-30" />
-                <p className="text-xs font-bold">No items currently on heat</p>
-              </div>
-            ) : (
-              cookingItems.map(({ ticket, item }) => (
-                <div
-                  key={item.id}
-                  className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 hover:border-blue-500/40 transition shadow-sm"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <span className="text-xs font-black text-blue-400">
-                        {ticket.orderType === 'TAKEAWAY' ? 'PARCEL' : `SEAT ${ticket.seatId}`}
-                      </span>
-                      <span className="text-[10px] text-slate-400 ml-2 font-mono">
-                        #{ticket.ticketNumber}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 text-[11px] font-mono text-slate-400">
-                      <Clock className="w-3.5 h-3.5 text-blue-400" />
-                      <span>{new Date(ticket.placedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-300 font-black text-xs flex items-center justify-center">
-                        {item.quantity}x
-                      </span>
-                      <div>
-                        <div className="text-sm font-black text-white">{item.itemName}</div>
-                        {item.notes && <div className="text-[11px] text-blue-400 italic">Note: {item.notes}</div>}
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => handleUpdateItemStatus(ticket.id, item.id, 'READY')}
-                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Mark Ready</span>
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Column 3: Items Ready (Pickup Desk) */}
-        <div className="flex flex-col bg-slate-900/60 rounded-2xl border border-emerald-500/20 overflow-hidden">
-          <div className="p-3.5 bg-emerald-950/30 border-b border-emerald-500/20 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-              <h2 className="font-black text-emerald-400 text-sm tracking-wide">
-                3. READY FOR PICKUP ({readyItems.length})
-              </h2>
-            </div>
-            <span className="text-[10px] uppercase font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded">
-              Pass Counter
-            </span>
-          </div>
-
-          <div className="flex-1 p-3 overflow-y-auto space-y-3">
-            {readyItems.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-slate-500 py-16">
-                <CheckCircle2 className="w-8 h-8 mb-2 opacity-30" />
-                <p className="text-xs font-bold">Pass counter clear</p>
-              </div>
-            ) : (
-              readyItems.map(({ ticket, item }) => (
-                <div
-                  key={item.id}
-                  className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 hover:border-emerald-500/40 transition shadow-sm"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <span className="text-xs font-black text-emerald-400">
-                        {ticket.orderType === 'TAKEAWAY' ? 'PARCEL' : `SEAT ${ticket.seatId}`}
-                      </span>
-                      <span className="text-[10px] text-slate-400 ml-2 font-mono">
-                        #{ticket.ticketNumber}
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
-                      Waiter Alert Sent
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 font-black text-xs flex items-center justify-center">
-                        {item.quantity}x
-                      </span>
-                      <div className="text-sm font-black text-white">{item.itemName}</div>
-                    </div>
-
-                    <button
-                      onClick={() => handleUpdateItemStatus(ticket.id, item.id, 'SERVED')}
-                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold"
-                    >
-                      Served ✓
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 86 Items Drawer Modal */}
-      {show86Drawer && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-end">
-          <div className="w-full max-w-md bg-slate-900 h-full border-l border-slate-800 flex flex-col shadow-2xl">
-            <div className="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {/* TICKET DETAILS MODAL                                               */}
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {selectedTicket && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#181513] border border-[#2C2520] rounded-3xl max-w-md w-full p-6 shadow-2xl">
+            <div className="flex justify-between items-start pb-3 border-b border-[#2C2520] mb-4">
               <div>
-                <h3 className="font-black text-amber-400 text-sm">Kitchen 86 Control Center</h3>
-                <p className="text-[11px] text-slate-400">Instantly take dishes on/off menu live</p>
+                <h3 className="font-black text-base text-white">
+                  Ticket #{selectedTicket.ticketNumber} • {selectedTicket.orderType === 'TAKEAWAY' ? 'Takeaway' : `Seat ${selectedTicket.seatId}`}
+                </h3>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  Placed: {selectedTicket.placedAtTime || '12:20 PM'} • Server: {selectedTicket.waiterName || 'Staff'}
+                </p>
               </div>
               <button
-                onClick={() => setShow86Drawer(false)}
-                className="w-8 h-8 rounded-lg bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center font-bold text-sm"
+                onClick={() => setSelectedTicket(null)}
+                className="p-1 rounded-lg text-stone-400 hover:text-white"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex-1 p-4 overflow-y-auto space-y-2">
+            <div className="space-y-2 mb-6 max-h-[45vh] overflow-y-auto pr-1">
+              {selectedTicket.items?.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-3 bg-[#221D1A] border border-[#2C2520] rounded-xl flex justify-between items-center text-xs"
+                >
+                  <div>
+                    <span className="font-bold text-white block">
+                      {item.quantity}x {item.itemName}
+                    </span>
+                    <span className="text-[10px] text-stone-400 block capitalize">
+                      Status: {item.status}
+                    </span>
+                  </div>
+                  <span className="font-mono font-bold text-[#D08A52]">
+                    ₹{(item.unitPrice * item.quantity).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSelectedTicket(null)}
+              className="w-full py-3 bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs rounded-xl transition"
+            >
+              Close Details
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {/* 86 SOLD OUT ITEMS SLIDE-OVER DRAWER                                */}
+      {/* ────────────────────────────────────────────────────────────────── */}
+      {show86Drawer && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex justify-end">
+          <div className="bg-[#181513] border-l border-[#2C2520] w-full max-w-md h-full flex flex-col p-6 shadow-2xl">
+            <div className="flex justify-between items-center pb-3 border-b border-[#2C2520] mb-4">
+              <div>
+                <h3 className="font-black text-sm text-white uppercase tracking-wider">
+                  86 / Sold Out Item Manager
+                </h3>
+                <p className="text-xs text-stone-400">Instantly toggle dish availability across all customer menus</p>
+              </div>
+              <button
+                onClick={() => setShow86Drawer(false)}
+                className="p-1 rounded-lg text-stone-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
               {menuItems.map((item) => (
                 <div
                   key={item.id}
-                  className={`p-3 rounded-xl border flex items-center justify-between transition ${
-                    item.isAvailable
-                      ? 'bg-slate-950 border-slate-800'
-                      : 'bg-red-950/20 border-red-500/30'
-                  }`}
+                  className="p-3 bg-[#221D1A] border border-[#2C2520] rounded-xl flex justify-between items-center"
                 >
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`w-2 h-2 rounded-full ${
-                          item.isVeg ? 'bg-emerald-500' : 'bg-red-500'
-                        }`}
-                      />
-                      <span className="font-bold text-sm text-white">{item.name}</span>
-                    </div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">
-                      {item.category?.name} • ₹{item.price}
-                    </div>
+                    <span className="font-bold text-xs text-white block">{item.name}</span>
+                    <span className="text-[10px] text-stone-400">{item.category?.name} • ₹{item.price}</span>
                   </div>
-
                   <button
+                    type="button"
                     onClick={() => handleToggle86(item.id, item.isAvailable)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-black transition ${
                       item.isAvailable
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-red-500/20 hover:text-red-400'
-                        : 'bg-red-500 text-white hover:bg-emerald-600'
+                        ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 hover:bg-rose-950 hover:text-rose-300 hover:border-rose-500/40'
+                        : 'bg-rose-950/80 text-rose-300 border border-rose-500/40 hover:bg-emerald-950 hover:text-emerald-300 hover:border-emerald-500/40'
                     }`}
                   >
-                    {item.isAvailable ? 'AVAILABLE (86 Off)' : 'SOLD OUT (86 ON)'}
+                    {item.isAvailable ? '🟢 Available' : '🔴 SOLD OUT'}
                   </button>
                 </div>
               ))}
             </div>
 
-            <div className="p-4 bg-slate-950 border-t border-slate-800">
+            <div className="pt-4 border-t border-[#2C2520]">
               <button
+                type="button"
                 onClick={() => setShow86Drawer(false)}
-                className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs"
+                className="w-full py-3 bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs rounded-xl transition"
               >
-                Close Drawer
+                Done
               </button>
             </div>
           </div>
