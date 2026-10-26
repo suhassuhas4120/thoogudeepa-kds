@@ -2,25 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, DollarSign, CheckCircle2, AlertCircle, Printer, Lock } from 'lucide-react';
-
-interface StaffRow {
-  name: string;
-  zone: string;
-  tablesCount: number;
-  totalBilled: number;
-  upiCollected: number;
-  cashCollected: number;
-  handedOver: string;
-}
+import { ArrowLeft, CheckCircle2, AlertCircle, Printer, Lock, Store } from 'lucide-react';
 
 export default function ManagerShiftAuditScreen() {
-  const [dateStr, setDateStr] = useState('25-10-2026');
+  const [dateStr, setDateStr] = useState('25-Oct-2026');
   const [suhasHandedOver, setSuhasHandedOver] = useState('3450');
   const [shivaHandedOver, setShivaHandedOver] = useState('2800');
-  const [parcelHandedOver, setParcelHandedOver] = useState('4200');
 
-  // Hardcoded initial verified records or fetched from MasterSalesRecord
+  // Initial verified records or live from database
   const [suhasStats, setSuhasStats] = useState({
     tablesCount: 22,
     totalBilled: 10240,
@@ -44,7 +33,10 @@ export default function ManagerShiftAuditScreen() {
 
   useEffect(() => {
     const now = new Date();
-    setDateStr(now.toLocaleDateString('en-GB').replace(/\//g, '-'));
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = now.toLocaleString('en-US', { month: 'short' });
+    const year = now.getFullYear();
+    setDateStr(`${day}-${month}-${year}`);
 
     // Fetch live totals from /api/reports/master-sales
     fetch('/api/reports/master-sales')
@@ -81,7 +73,6 @@ export default function ManagerShiftAuditScreen() {
             setParcelStats({ tablesCount: pTables, totalBilled: pBilled, upiCollected: pUpi, cashCollected: pCash });
             setSuhasHandedOver(String(sCash));
             setShivaHandedOver(String(shCash));
-            setParcelHandedOver(String(pCash));
           }
         }
       })
@@ -91,28 +82,27 @@ export default function ManagerShiftAuditScreen() {
   // Balance Math
   const suhasBalance = suhasStats.cashCollected - (parseFloat(suhasHandedOver) || 0);
   const shivaBalance = shivaStats.cashCollected - (parseFloat(shivaHandedOver) || 0);
-  const parcelBalance = parcelStats.cashCollected - (parseFloat(parcelHandedOver) || 0);
 
-  const totalCashCollected = suhasStats.cashCollected + shivaStats.cashCollected + parcelStats.cashCollected;
-  const totalHandedOver =
+  // Total cash in register = Waiters' Handed Over cash + Parcel cash (directly collected at manager counter)
+  const totalCashInDrawer =
     (parseFloat(suhasHandedOver) || 0) +
     (parseFloat(shivaHandedOver) || 0) +
-    (parseFloat(parcelHandedOver) || 0);
+    parcelStats.cashCollected;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans select-none p-6 max-w-4xl mx-auto">
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans select-none p-6 md:p-8 max-w-5xl mx-auto">
       {/* Top Header */}
       <header className="flex items-center justify-between pb-5 border-b border-slate-800">
         <div className="flex items-center gap-3">
           <Link
             href="/manager/floor"
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white"
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to Floor</span>
+            <span>← Back to Floor</span>
           </Link>
           <div className="h-4 w-px bg-slate-700" />
-          <h1 className="text-sm font-black text-white uppercase tracking-wider">
+          <h1 className="text-sm md:text-base font-black text-white uppercase tracking-wider">
             STAFF SHIFT AUDIT & CASH RECONCILIATION
           </h1>
         </div>
@@ -123,39 +113,40 @@ export default function ManagerShiftAuditScreen() {
       </header>
 
       {/* Main Audit Sections */}
-      <div className="py-6 space-y-6 flex-1">
+      <div className="py-6 space-y-5 flex-1">
         {/* 1. SUHAS SECTION */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl">
-          <div className="flex justify-between items-center pb-2 border-b border-slate-800 mb-3">
-            <h2 className="font-black text-sm text-blue-400 uppercase tracking-wider">
-              🤵 WAITER 1: SUHAS (Zone A: Seats 1 - 8)
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <div className="flex justify-between items-center pb-2.5 border-b border-slate-800 mb-3">
+            <h2 className="font-black text-sm text-blue-400 uppercase tracking-wider flex items-center gap-2">
+              <span>🤵 WAITER 1: SUHAS</span>
+              <span className="text-xs text-slate-400 font-normal">(Zone A: Seats 1 - 8)</span>
             </h2>
             <span className="text-xs text-slate-400">
-              Seats Served: <strong className="text-white">{suhasStats.tablesCount}</strong>
+              Total Seats Served: <strong className="text-white">{suhasStats.tablesCount}</strong>
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-slate-300 mb-3">
-            <span>Total Billed: <strong>₹{suhasStats.totalBilled.toFixed(2)}</strong></span>
-            <span>📱 UPI / Online: <strong>₹{suhasStats.upiCollected.toFixed(2)}</strong></span>
+          <div className="flex items-center justify-between text-xs text-slate-300 mb-3 font-medium">
+            <span>• Total Billed: <strong className="text-white">₹{suhasStats.totalBilled.toFixed(2)}</strong></span>
+            <span>• 📱 UPI / Online: <strong className="text-white">₹{suhasStats.upiCollected.toFixed(2)}</strong></span>
           </div>
 
-          {/* Inline Cash Row (As specifically requested in update 4!) */}
-          <div className="p-3.5 rounded-2xl bg-slate-800/90 border border-slate-700 flex flex-wrap items-center justify-between gap-4 text-xs">
+          {/* Inline Cash Row */}
+          <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 flex flex-wrap items-center justify-between gap-4 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-400">💵 Cash Collected:</span>
+              <span className="text-slate-400">• 💵 Cash Collected:</span>
               <span className="font-black text-amber-400 text-sm">₹{suhasStats.cashCollected.toFixed(2)}</span>
             </div>
 
             <div className="flex items-center gap-2">
               <span className="text-slate-400">Handed Over:</span>
-              <div className="flex items-center bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1">
-                <span className="text-slate-500 mr-1">₹</span>
+              <div className="flex items-center bg-slate-900 border border-slate-600 rounded-lg px-2.5 py-1">
+                <span className="text-slate-500 mr-1 font-bold">₹</span>
                 <input
                   type="number"
                   value={suhasHandedOver}
                   onChange={(e) => setSuhasHandedOver(e.target.value)}
-                  className="w-20 bg-transparent text-white font-bold focus:outline-none text-xs"
+                  className="w-24 bg-transparent text-white font-black focus:outline-none text-xs"
                 />
               </div>
             </div>
@@ -163,50 +154,52 @@ export default function ManagerShiftAuditScreen() {
             <div className="flex items-center gap-1.5">
               <span className="text-slate-400">Remaining Balance:</span>
               <span
-                className={`font-black px-2 py-0.5 rounded-md text-xs ${
+                className={`font-black px-2.5 py-1 rounded-md text-xs flex items-center gap-1 ${
                   suhasBalance === 0
                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                     : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                 }`}
               >
-                ₹{Math.abs(suhasBalance).toFixed(2)} {suhasBalance === 0 ? '(Balanced)' : '(Due)'}
+                {suhasBalance === 0 ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                <span>₹{Math.abs(suhasBalance).toFixed(2)} {suhasBalance === 0 ? '(Balanced)' : '(Due)'}</span>
               </span>
             </div>
           </div>
         </div>
 
         {/* 2. SHIVA SECTION */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl">
-          <div className="flex justify-between items-center pb-2 border-b border-slate-800 mb-3">
-            <h2 className="font-black text-sm text-cyan-400 uppercase tracking-wider">
-              🤵 WAITER 2: SHIVA (Zone B: Seats 9 - 16)
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <div className="flex justify-between items-center pb-2.5 border-b border-slate-800 mb-3">
+            <h2 className="font-black text-sm text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <span>🤵 WAITER 2: SHIVA</span>
+              <span className="text-xs text-slate-400 font-normal">(Zone B: Seats 9 - 16)</span>
             </h2>
             <span className="text-xs text-slate-400">
-              Seats Served: <strong className="text-white">{shivaStats.tablesCount}</strong>
+              Total Seats Served: <strong className="text-white">{shivaStats.tablesCount}</strong>
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-slate-300 mb-3">
-            <span>Total Billed: <strong>₹{shivaStats.totalBilled.toFixed(2)}</strong></span>
-            <span>📱 UPI / Online: <strong>₹{shivaStats.upiCollected.toFixed(2)}</strong></span>
+          <div className="flex items-center justify-between text-xs text-slate-300 mb-3 font-medium">
+            <span>• Total Billed: <strong className="text-white">₹{shivaStats.totalBilled.toFixed(2)}</strong></span>
+            <span>• 📱 UPI / Online: <strong className="text-white">₹{shivaStats.upiCollected.toFixed(2)}</strong></span>
           </div>
 
           {/* Inline Cash Row */}
-          <div className="p-3.5 rounded-2xl bg-slate-800/90 border border-slate-700 flex flex-wrap items-center justify-between gap-4 text-xs">
+          <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 flex flex-wrap items-center justify-between gap-4 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-400">💵 Cash Collected:</span>
+              <span className="text-slate-400">• 💵 Cash Collected:</span>
               <span className="font-black text-amber-400 text-sm">₹{shivaStats.cashCollected.toFixed(2)}</span>
             </div>
 
             <div className="flex items-center gap-2">
               <span className="text-slate-400">Handed Over:</span>
-              <div className="flex items-center bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1">
-                <span className="text-slate-500 mr-1">₹</span>
+              <div className="flex items-center bg-slate-900 border border-slate-600 rounded-lg px-2.5 py-1">
+                <span className="text-slate-500 mr-1 font-bold">₹</span>
                 <input
                   type="number"
                   value={shivaHandedOver}
                   onChange={(e) => setShivaHandedOver(e.target.value)}
-                  className="w-20 bg-transparent text-white font-bold focus:outline-none text-xs"
+                  className="w-24 bg-transparent text-white font-black focus:outline-none text-xs"
                 />
               </div>
             </div>
@@ -214,94 +207,93 @@ export default function ManagerShiftAuditScreen() {
             <div className="flex items-center gap-1.5">
               <span className="text-slate-400">Remaining Balance:</span>
               <span
-                className={`font-black px-2 py-0.5 rounded-md text-xs ${
+                className={`font-black px-2.5 py-1 rounded-md text-xs flex items-center gap-1 ${
                   shivaBalance === 0
                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                     : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                 }`}
               >
-                ₹{Math.abs(shivaBalance).toFixed(2)} {shivaBalance === 0 ? '(Balanced)' : '(Due)'}
+                {shivaBalance === 0 ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                <span>₹{Math.abs(shivaBalance).toFixed(2)} {shivaBalance === 0 ? '(Balanced)' : '(Due)'}</span>
               </span>
             </div>
           </div>
         </div>
 
-        {/* 3. PARCEL DESK SECTION */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl">
-          <div className="flex justify-between items-center pb-2 border-b border-slate-800 mb-3">
-            <h2 className="font-black text-sm text-amber-400 uppercase tracking-wider">
-              📦 PARCEL / TAKEAWAY DESK (Manager Counter)
+        {/* 3. PARCEL DESK SECTION (Manager Counter - Directly into Drawer) */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <div className="flex justify-between items-center pb-2.5 border-b border-slate-800 mb-3">
+            <h2 className="font-black text-sm text-amber-400 uppercase tracking-wider flex items-center gap-2">
+              <span>📦 PARCEL / TAKEAWAY DESK</span>
+              <span className="text-xs text-amber-300/80 font-normal">(Manager Counter)</span>
             </h2>
             <span className="text-xs text-slate-400">
-              Orders: <strong className="text-white">{parcelStats.tablesCount}</strong>
+              Total Parcels: <strong className="text-white">{parcelStats.tablesCount}</strong>
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-slate-300 mb-3">
-            <span>Total Billed: <strong>₹{parcelStats.totalBilled.toFixed(2)}</strong></span>
-            <span>📱 UPI / Online: <strong>₹{parcelStats.upiCollected.toFixed(2)}</strong></span>
+          <div className="flex items-center justify-between text-xs text-slate-300 mb-3 font-medium">
+            <span>• Total Billed: <strong className="text-white">₹{parcelStats.totalBilled.toFixed(2)}</strong></span>
+            <span>• 📱 UPI / Online: <strong className="text-white">₹{parcelStats.upiCollected.toFixed(2)}</strong></span>
           </div>
 
-          {/* Inline Cash Row */}
-          <div className="p-3.5 rounded-2xl bg-slate-800/90 border border-slate-700 flex flex-wrap items-center justify-between gap-4 text-xs">
+          {/* Parcel Cash Row: NO HANDOVER REQUIRED - Manager directly receives into register */}
+          <div className="p-3.5 rounded-xl bg-slate-800/80 border border-amber-500/30 flex flex-wrap items-center justify-between gap-4 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-400">💵 Cash Collected:</span>
+              <span className="text-slate-300 font-bold">• 💵 Cash Collected:</span>
               <span className="font-black text-amber-400 text-sm">₹{parcelStats.cashCollected.toFixed(2)}</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-slate-400">Handed Over:</span>
-              <div className="flex items-center bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1">
-                <span className="text-slate-500 mr-1">₹</span>
-                <input
-                  type="number"
-                  value={parcelHandedOver}
-                  onChange={(e) => setParcelHandedOver(e.target.value)}
-                  className="w-20 bg-transparent text-white font-bold focus:outline-none text-xs"
-                />
-              </div>
+              <span className="px-3 py-1 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 font-semibold flex items-center gap-1.5 text-xs">
+                <Store className="w-3.5 h-3.5 text-amber-400" />
+                <span>Directly at Manager Counter — No Handover Required</span>
+              </span>
             </div>
 
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-400">Remaining Balance:</span>
-              <span
-                className={`font-black px-2 py-0.5 rounded-md text-xs ${
-                  parcelBalance === 0
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                }`}
-              >
-                ₹{Math.abs(parcelBalance).toFixed(2)} {parcelBalance === 0 ? '(Balanced)' : '(Due)'}
+              <span className="px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-black flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>🟢 Direct into Drawer</span>
               </span>
             </div>
           </div>
         </div>
 
         {/* Total Cash In Drawer Bar */}
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex justify-between items-center">
-          <span className="font-black text-sm text-white">💰 TOTAL CASH IN DRAWER:</span>
-          <span className="text-xl font-black text-amber-400">₹{totalHandedOver.toFixed(2)}</span>
+        <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-amber-600/15 border-2 border-amber-500/40 flex flex-wrap justify-between items-center shadow-lg gap-3">
+          <div>
+            <span className="font-black text-sm md:text-base text-white tracking-wide flex items-center gap-2">
+              <span>💰 TOTAL CASH IN DRAWER:</span>
+            </span>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              (Suhas Handed: ₹{(parseFloat(suhasHandedOver) || 0).toFixed(2)} + Shiva Handed: ₹{(parseFloat(shivaHandedOver) || 0).toFixed(2)} + Parcel Direct: ₹{parcelStats.cashCollected.toFixed(2)})
+            </p>
+          </div>
+          <span className="text-2xl md:text-3xl font-black text-amber-400">
+            ₹{totalCashInDrawer.toFixed(2)}
+          </span>
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="pt-4 grid grid-cols-2 gap-4 border-t border-slate-800">
+      <div className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-800">
         <button
           type="button"
-          onClick={() => alert(`Shift reconciled successfully! Total cash recorded: ₹${totalHandedOver.toFixed(2)}`)}
-          className="py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-xl shadow-emerald-600/20 active:scale-98"
+          onClick={() => alert(`Shift reconciled successfully! Total cash verified in drawer: ₹${totalCashInDrawer.toFixed(2)}`)}
+          className="py-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-emerald-600/20 active:scale-98 transition-all"
         >
           <Lock className="w-4 h-4" />
-          <span>CLOSE SHIFT & VERIFY CASH IN DRAWER</span>
+          <span>🔒 CLOSE SHIFT & VERIFY CASH IN DRAWER</span>
         </button>
 
         <button
           type="button"
           onClick={() => window.print()}
-          className="py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs flex items-center justify-center gap-2 border border-slate-700 active:scale-98"
+          className="py-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs md:text-sm flex items-center justify-center gap-2 border border-slate-700 active:scale-98 transition-all"
         >
           <Printer className="w-4 h-4" />
-          <span>PRINT STAFF SHIFT SUMMARY</span>
+          <span>📄 PRINT STAFF SHIFT SUMMARY</span>
         </button>
       </div>
     </div>
