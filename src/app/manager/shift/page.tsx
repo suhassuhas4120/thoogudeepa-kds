@@ -118,6 +118,12 @@ export default function ManagerShiftAuditScreen() {
     const val = parseFloat(suhasHandingOver);
     if (isNaN(val) || val <= 0) return;
 
+    // RULE: It should NOT allow adding more amount than remaining amount in handing over
+    if (val > suhasBalance) {
+      alert(`Cannot hand over ₹${val.toFixed(2)}. Amount cannot exceed remaining cash due (₹${Math.max(0, suhasBalance).toFixed(2)}).`);
+      return;
+    }
+
     // Add up each entry cumulatively into overall handed over
     const newTotal = Math.round((suhasHandedOver + val) * 100) / 100;
     setSuhasHandedOver(newTotal);
@@ -129,6 +135,18 @@ export default function ManagerShiftAuditScreen() {
       const year = now.getFullYear();
       const todayDbStr = `${day}-${String(now.getMonth() + 1).padStart(2, '0')}-${year}`;
       localStorage.setItem(`shift_suhas_handed_${todayDbStr}`, String(newTotal));
+    } catch (e) {}
+  };
+
+  const handleFixSuhasExact = () => {
+    setSuhasHandedOver(suhasStats.cashCollected);
+    setSuhasHandingOver('');
+    try {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const year = now.getFullYear();
+      const todayDbStr = `${day}-${String(now.getMonth() + 1).padStart(2, '0')}-${year}`;
+      localStorage.setItem(`shift_suhas_handed_${todayDbStr}`, String(suhasStats.cashCollected));
     } catch (e) {}
   };
 
@@ -151,6 +169,12 @@ export default function ManagerShiftAuditScreen() {
     const val = parseFloat(shivaHandingOver);
     if (isNaN(val) || val <= 0) return;
 
+    // RULE: It should NOT allow adding more amount than remaining amount in handing over
+    if (val > shivaBalance) {
+      alert(`Cannot hand over ₹${val.toFixed(2)}. Amount cannot exceed remaining cash due (₹${Math.max(0, shivaBalance).toFixed(2)}).`);
+      return;
+    }
+
     // Add up each entry cumulatively into overall handed over
     const newTotal = Math.round((shivaHandedOver + val) * 100) / 100;
     setShivaHandedOver(newTotal);
@@ -162,6 +186,18 @@ export default function ManagerShiftAuditScreen() {
       const year = now.getFullYear();
       const todayDbStr = `${day}-${String(now.getMonth() + 1).padStart(2, '0')}-${year}`;
       localStorage.setItem(`shift_shiva_handed_${todayDbStr}`, String(newTotal));
+    } catch (e) {}
+  };
+
+  const handleFixShivaExact = () => {
+    setShivaHandedOver(shivaStats.cashCollected);
+    setShivaHandingOver('');
+    try {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const year = now.getFullYear();
+      const todayDbStr = `${day}-${String(now.getMonth() + 1).padStart(2, '0')}-${year}`;
+      localStorage.setItem(`shift_shiva_handed_${todayDbStr}`, String(shivaStats.cashCollected));
     } catch (e) {}
   };
 
@@ -269,7 +305,7 @@ export default function ManagerShiftAuditScreen() {
                     onClick={() => setSuhasHandingOver(String(suhasBalance))}
                     className="text-[10px] font-bold text-amber-400 hover:text-amber-300 hover:underline"
                   >
-                    + Fill All (₹{suhasBalance.toFixed(2)})
+                    + Fill Remaining (₹{suhasBalance.toFixed(2)})
                   </button>
                 )}
               </div>
@@ -279,24 +315,40 @@ export default function ManagerShiftAuditScreen() {
                   <input
                     type="number"
                     step="any"
+                    min="1"
+                    max={Math.max(0, suhasBalance)}
                     value={suhasHandingOver}
                     onChange={(e) => setSuhasHandingOver(e.target.value)}
-                    placeholder="Enter cash (₹)"
-                    className="w-full bg-transparent text-white font-black focus:outline-none text-xs font-mono placeholder-stone-600"
+                    placeholder={suhasBalance > 0 ? "Enter cash (₹)" : "Fully Handed Over"}
+                    disabled={suhasBalance <= 0}
+                    className="w-full bg-transparent text-white font-black focus:outline-none text-xs font-mono placeholder-stone-600 disabled:text-stone-600"
                   />
                 </div>
                 <button
                   type="submit"
-                  disabled={!suhasHandingOver || parseFloat(suhasHandingOver) <= 0}
+                  disabled={
+                    !suhasHandingOver ||
+                    parseFloat(suhasHandingOver) <= 0 ||
+                    parseFloat(suhasHandingOver) > suhasBalance ||
+                    suhasBalance <= 0
+                  }
                   className={`px-3 py-1.5 rounded-lg font-black text-xs transition active:scale-95 shadow-sm whitespace-nowrap ${
-                    suhasHandingOver && parseFloat(suhasHandingOver) > 0
+                    suhasHandingOver &&
+                    parseFloat(suhasHandingOver) > 0 &&
+                    parseFloat(suhasHandingOver) <= suhasBalance &&
+                    suhasBalance > 0
                       ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer'
-                      : 'bg-[#2A2420] text-stone-500 cursor-not-allowed'
+                      : 'bg-[#2A2420] text-stone-500 cursor-not-allowed opacity-60'
                   }`}
                 >
                   Submit
                 </button>
               </form>
+              {suhasHandingOver && parseFloat(suhasHandingOver) > suhasBalance && (
+                <span className="text-[10px] text-rose-400 font-bold block pt-0.5">
+                  ⚠️ Cannot exceed remaining cash due (₹{Math.max(0, suhasBalance).toFixed(2)})
+                </span>
+              )}
             </div>
 
             {/* 3. Handed Over */}
@@ -305,15 +357,26 @@ export default function ManagerShiftAuditScreen() {
                 <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
                   🤝 3. Handed Over
                 </span>
-                {suhasHandedOver > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleResetSuhas}
-                    className="text-[10px] text-stone-500 hover:text-rose-400 underline"
-                  >
-                    Reset
-                  </button>
-                )}
+                <div className="flex items-center gap-1.5">
+                  {suhasBalance < 0 && (
+                    <button
+                      type="button"
+                      onClick={handleFixSuhasExact}
+                      className="text-[10px] text-amber-400 hover:text-amber-300 underline font-bold"
+                    >
+                      Fix to Exact
+                    </button>
+                  )}
+                  {suhasHandedOver > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleResetSuhas}
+                      className="text-[10px] text-stone-500 hover:text-rose-400 underline"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="flex items-baseline gap-1.5">
                 <span className="font-black text-emerald-400 text-base font-mono">
@@ -400,7 +463,7 @@ export default function ManagerShiftAuditScreen() {
                     onClick={() => setShivaHandingOver(String(shivaBalance))}
                     className="text-[10px] font-bold text-amber-400 hover:text-amber-300 hover:underline"
                   >
-                    + Fill All (₹{shivaBalance.toFixed(2)})
+                    + Fill Remaining (₹{shivaBalance.toFixed(2)})
                   </button>
                 )}
               </div>
@@ -410,24 +473,40 @@ export default function ManagerShiftAuditScreen() {
                   <input
                     type="number"
                     step="any"
+                    min="1"
+                    max={Math.max(0, shivaBalance)}
                     value={shivaHandingOver}
                     onChange={(e) => setShivaHandingOver(e.target.value)}
-                    placeholder="Enter cash (₹)"
-                    className="w-full bg-transparent text-white font-black focus:outline-none text-xs font-mono placeholder-stone-600"
+                    placeholder={shivaBalance > 0 ? "Enter cash (₹)" : "Fully Handed Over"}
+                    disabled={shivaBalance <= 0}
+                    className="w-full bg-transparent text-white font-black focus:outline-none text-xs font-mono placeholder-stone-600 disabled:text-stone-600"
                   />
                 </div>
                 <button
                   type="submit"
-                  disabled={!shivaHandingOver || parseFloat(shivaHandingOver) <= 0}
+                  disabled={
+                    !shivaHandingOver ||
+                    parseFloat(shivaHandingOver) <= 0 ||
+                    parseFloat(shivaHandingOver) > shivaBalance ||
+                    shivaBalance <= 0
+                  }
                   className={`px-3 py-1.5 rounded-lg font-black text-xs transition active:scale-95 shadow-sm whitespace-nowrap ${
-                    shivaHandingOver && parseFloat(shivaHandingOver) > 0
+                    shivaHandingOver &&
+                    parseFloat(shivaHandingOver) > 0 &&
+                    parseFloat(shivaHandingOver) <= shivaBalance &&
+                    shivaBalance > 0
                       ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer'
-                      : 'bg-[#2A2420] text-stone-500 cursor-not-allowed'
+                      : 'bg-[#2A2420] text-stone-500 cursor-not-allowed opacity-60'
                   }`}
                 >
                   Submit
                 </button>
               </form>
+              {shivaHandingOver && parseFloat(shivaHandingOver) > shivaBalance && (
+                <span className="text-[10px] text-rose-400 font-bold block pt-0.5">
+                  ⚠️ Cannot exceed remaining cash due (₹{Math.max(0, shivaBalance).toFixed(2)})
+                </span>
+              )}
             </div>
 
             {/* 3. Handed Over */}
@@ -436,15 +515,26 @@ export default function ManagerShiftAuditScreen() {
                 <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
                   🤝 3. Handed Over
                 </span>
-                {shivaHandedOver > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleResetShiva}
-                    className="text-[10px] text-stone-500 hover:text-rose-400 underline"
-                  >
-                    Reset
-                  </button>
-                )}
+                <div className="flex items-center gap-1.5">
+                  {shivaBalance < 0 && (
+                    <button
+                      type="button"
+                      onClick={handleFixShivaExact}
+                      className="text-[10px] text-amber-400 hover:text-amber-300 underline font-bold"
+                    >
+                      Fix to Exact
+                    </button>
+                  )}
+                  {shivaHandedOver > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleResetShiva}
+                      className="text-[10px] text-stone-500 hover:text-rose-400 underline"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="flex items-baseline gap-1.5">
                 <span className="font-black text-emerald-400 text-base font-mono">
