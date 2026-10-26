@@ -81,7 +81,7 @@ export default function CustomerScreen6({ params }: { params: { seatId: string }
     }
   };
 
-  const finalAmount = Math.max(0, grandTotalDue - discountAmount);
+  const finalAmount = grandTotalDue;
   const upiIntentUri = `upi://pay?pa=thoogudeepabiryani@upi&pn=Thoogudeepa+Donne+Biryani&am=${finalAmount.toFixed(
     2
   )}&cu=INR`;

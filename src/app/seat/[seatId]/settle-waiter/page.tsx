@@ -124,6 +124,9 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
       if (data.success) {
         setDiscountAmount(data.data.discountAmount);
         setAppliedPromo(data.data.appliedPromoCode);
+        if (data.data.grandTotal !== undefined) {
+          setGrandTotalDue(data.data.grandTotal);
+        }
         setPromoMessage(`Coupon applied: ₹${data.data.discountAmount.toFixed(0)} discount.`);
       } else {
         setPromoMessage(data.error || 'Invalid coupon code');
@@ -153,7 +156,8 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
     }
   };
 
-  const totalAmountToBePaid = Math.max(0, grandTotalDue - discountAmount);
+  const originalBillAmount = grandTotalDue + discountAmount;
+  const totalAmountToBePaid = grandTotalDue;
 
   return (
     <div
@@ -210,7 +214,7 @@ export default function CustomerScreen5({ params }: { params: { seatId: string }
               Pay via Waiter Assistance
             </span>
             <h2 className={`text-2xl font-black mt-0.5 ${isOrange ? 'text-[#5B5049]' : 'text-white'}`}>
-              Bill Amount: <span className={isOrange ? 'text-[#8A4228]' : 'text-amber-400'}>₹{grandTotalDue.toFixed(2)}</span>
+              Bill Amount: <span className={isOrange ? 'text-[#8A4228]' : 'text-amber-400'}>₹{originalBillAmount.toFixed(2)}</span>
             </h2>
           </div>
 
