@@ -8,34 +8,14 @@ export async function GET() {
   try {
     await ensureWalMode();
 
-    // 1. Fetch all active tickets (RECEIVED, COOKING, READY)
-    const activeTickets = await prisma.orderTicket.findMany({
-      where: {
-        status: { in: ['RECEIVED', 'COOKING', 'READY'] },
-      },
+    // Fetch all recent order tickets (active + completed, guaranteeing at least the last 50-100 orders)
+    const allTickets = await prisma.orderTicket.findMany({
       include: {
         items: true,
       },
       orderBy: { placedAt: 'desc' },
+      take: 100,
     });
-
-    // 2. Fetch completed tickets so total returned is at least the last 50 orders
-    const neededCompleted = Math.max(50 - activeTickets.length, 50);
-    const completedTickets = await prisma.orderTicket.findMany({
-      where: {
-        status: 'COMPLETED',
-      },
-      include: {
-        items: true,
-      },
-      orderBy: { placedAt: 'desc' },
-      take: neededCompleted,
-    });
-
-    // Merge and sort in descending order of placedAt (newest first)
-    const allTickets = [...activeTickets, ...completedTickets].sort(
-      (a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime()
-    );
 
     const formattedTickets = allTickets.map((t) => {
       let totalAmount = 0;

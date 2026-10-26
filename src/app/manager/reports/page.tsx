@@ -3,16 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  ArrowLeft,
   FileSpreadsheet,
   FileText,
   Calendar,
   ChevronDown,
   Download,
   Search,
+  RefreshCw,
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
+import { useSocketRoom } from '@/lib/useSocket';
 import ManagerTopNav from '@/components/ManagerTopNav';
 
 interface TransactionRow {
@@ -21,6 +22,7 @@ interface TransactionRow {
   orderType: string;
   seatNumberOrToken: string;
   customerName: string;
+  customerPhone?: string;
   serverName: string;
   itemsSummary: string;
   placedAt: string;
@@ -41,136 +43,54 @@ interface ItemPerformanceRow {
   contributionPercent: number;
 }
 
-const DEFAULT_ITEM_PERFORMANCE: ItemPerformanceRow[] = [
-  { dishName: 'Chicken Donne Biryani', category: 'Donne Biryani', qtySold: 48, unitPrice: 220, totalRevenue: 10560, contributionPercent: 38.0 },
-  { dishName: 'Mutton Donne Biryani', category: 'Donne Biryani', qtySold: 22, unitPrice: 310, totalRevenue: 6820, contributionPercent: 24.5 },
-  { dishName: 'Guntur Chicken Fry', category: 'Starters', qtySold: 31, unitPrice: 180, totalRevenue: 5580, contributionPercent: 20.1 },
-  { dishName: 'Chilli Chicken', category: 'Starters', qtySold: 14, unitPrice: 190, totalRevenue: 2660, contributionPercent: 9.6 },
-  { dishName: 'Parotta', category: 'Breads', qtySold: 45, unitPrice: 35, totalRevenue: 1575, contributionPercent: 5.7 },
-  { dishName: 'Thums Up 250ml', category: 'Beverages', qtySold: 32, unitPrice: 40, totalRevenue: 1280, contributionPercent: 4.6 },
-];
-
-const DEFAULT_TRANSACTIONS: TransactionRow[] = [
-  {
-    billNumber: 'INV-101',
-    date: '25-10-2026',
-    orderType: 'Dine-in',
-    seatNumberOrToken: 'S1',
-    customerName: 'Rahul',
-    serverName: 'Suhas',
-    itemsSummary: '1x Biryani, 2x Kabab',
-    placedAt: '12:20 PM',
-    settledAt: '12:48 PM',
-    subtotal: 552.0,
-    gst5Percent: 28.0,
-    grandTotal: 580.0,
-    paymentMode: 'Cash',
-    paymentStatus: 'PAID',
-  },
-  {
-    billNumber: 'INV-102',
-    date: '25-10-2026',
-    orderType: 'Dine-in',
-    seatNumberOrToken: 'S3',
-    customerName: 'Priya',
-    serverName: 'Suhas',
-    itemsSummary: '1x Biryani, 1x Fry, 2x P',
-    placedAt: '12:15 PM',
-    settledAt: '12:44 PM',
-    subtotal: 520.0,
-    gst5Percent: 26.0,
-    grandTotal: 546.0,
-    paymentMode: 'UPI',
-    paymentStatus: 'PAID',
-  },
-  {
-    billNumber: 'INV-103',
-    date: '25-10-2026',
-    orderType: 'Takeaway',
-    seatNumberOrToken: 'P-48',
-    customerName: 'Ramesh',
-    serverName: 'Manager',
-    itemsSummary: '2x Biryani, 1x Chilli',
-    placedAt: '12:35 PM',
-    settledAt: '12:41 PM',
-    subtotal: 680.0,
-    gst5Percent: 34.0,
-    grandTotal: 714.0,
-    paymentMode: 'Cash',
-    paymentStatus: 'PAID',
-  },
-  {
-    billNumber: 'INV-104',
-    date: '25-10-2026',
-    orderType: 'Dine-in',
-    seatNumberOrToken: 'S10',
-    customerName: 'Arun',
-    serverName: 'Shiva',
-    itemsSummary: '1x Biryani, 1x Chops',
-    placedAt: '12:22 PM',
-    settledAt: '12:50 PM',
-    subtotal: 590.0,
-    gst5Percent: 30.0,
-    grandTotal: 620.0,
-    paymentMode: 'UPI',
-    paymentStatus: 'PAID',
-  },
-  {
-    billNumber: 'INV-105',
-    date: '25-10-2026',
-    orderType: 'Takeaway',
-    seatNumberOrToken: 'P-49',
-    customerName: 'Sneha',
-    serverName: 'Manager',
-    itemsSummary: '1x Mutton Biryani',
-    placedAt: '12:40 PM',
-    settledAt: '12:45 PM',
-    subtotal: 310.0,
-    gst5Percent: 15.5,
-    grandTotal: 325.5,
-    paymentMode: 'UPI',
-    paymentStatus: 'PAID',
-  },
-];
-
 export default function MasterSalesReportPage() {
-  const [selectedDate, setSelectedDate] = useState('25-Oct-2026');
-  const [transactions, setTransactions] = useState<TransactionRow[]>(DEFAULT_TRANSACTIONS);
-  const [itemPerformance, setItemPerformance] = useState<ItemPerformanceRow[]>(DEFAULT_ITEM_PERFORMANCE);
-  const [searchTerm, setSearchTerm] = useState('');
+  const socket = useSocketRoom('room:manager');
 
-  // Fetch live from server API
-  useEffect(() => {
-    fetch('/api/reports/master-sales?date=25-10-2026')
+  const todayStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-'); // e.g. "26-10-2026"
+  const [selectedDate, setSelectedDate] = useState<string>('ALL'); // 'ALL' or date string
+  const [transactions, setTransactions] = useState<TransactionRow[]>([]);
+  const [itemPerformance, setItemPerformance] = useState<ItemPerformanceRow[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // Fetch real-time live data from database
+  const fetchReportsData = () => {
+    const url = `/api/reports/master-sales?date=${selectedDate}&t=${Date.now()}`;
+    fetch(url, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && data.data?.records && data.data.records.length > 0) {
+        if (data.success && Array.isArray(data.data?.records)) {
           const mapped: TransactionRow[] = data.data.records.map((r: any) => ({
             billNumber: r.billNumber,
-            date: r.date || '25-10-2026',
+            date: r.date || todayStr,
             orderType: r.orderType,
             seatNumberOrToken: r.seatNumberOrToken || (r.seatId ? `S${r.seatId}` : 'P-Desk'),
             customerName: r.customerName || '-',
+            customerPhone: r.customerPhone,
             serverName: r.serverName || 'Staff',
             itemsSummary: r.itemsSummary || 'Food items',
-            placedAt: r.placedAt || '12:00 PM',
-            settledAt: r.settledAt || '12:30 PM',
-            subtotal: r.subtotal,
-            gst5Percent: r.gst5Percent,
-            grandTotal: r.grandTotal,
-            paymentMode: r.paymentMode,
+            placedAt: r.placedAt || '—',
+            settledAt: r.settledAt || '—',
+            subtotal: Number(r.subtotal) || 0,
+            gst5Percent: Number(r.gst5Percent) || 0,
+            grandTotal: Number(r.grandTotal) || 0,
+            paymentMode: r.paymentMode || 'CASH',
             paymentStatus: r.paymentStatus || 'PAID',
           }));
           setTransactions(mapped);
         }
+        setLoading(false);
       })
-      .catch(console.error);
+      .catch((err) => {
+        console.error('Error fetching master sales report:', err);
+        setLoading(false);
+      });
 
-    // Fetch live items if available
-    fetch('/api/reports/item-wise')
+    // Fetch live item-wise sales
+    fetch(`/api/reports/item-wise?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && data.data?.report && data.data.report.length > 0) {
+        if (data.success && Array.isArray(data.data?.report)) {
           const mappedItems: ItemPerformanceRow[] = data.data.report.map((r: any) => ({
             dishName: r.name,
             category: r.categoryName,
@@ -183,9 +103,72 @@ export default function MasterSalesReportPage() {
         }
       })
       .catch(console.error);
-  }, []);
+  };
 
-  // Filtered transactions
+  useEffect(() => {
+    fetchReportsData();
+    const interval = setInterval(fetchReportsData, 3000);
+    const handleFocus = () => fetchReportsData();
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('visibilitychange', handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('visibilitychange', handleFocus);
+    };
+  }, [selectedDate]);
+
+  // Real-time Socket sync
+  useEffect(() => {
+    if (!socket) return;
+    socket.on('seat:vacated', fetchReportsData);
+    socket.on('order:placed', fetchReportsData);
+    socket.on('order:item_status_changed', fetchReportsData);
+    socket.on('payment:lock_changed', fetchReportsData);
+
+    return () => {
+      socket.off('seat:vacated', fetchReportsData);
+      socket.off('order:placed', fetchReportsData);
+      socket.off('order:item_status_changed', fetchReportsData);
+      socket.off('payment:lock_changed', fetchReportsData);
+    };
+  }, [socket, selectedDate]);
+
+  // Real, dynamic, 100% accurate financial computations
+  const grossFoodSales = transactions.reduce((acc, t) => acc + (t.subtotal || 0), 0);
+  const totalGst = transactions.reduce((acc, t) => acc + (t.gst5Percent || 0), 0);
+  const netDayRevenue = transactions.reduce((acc, t) => acc + (t.grandTotal || 0), 0);
+
+  const dineInSales = transactions
+    .filter((t) => (t.orderType || '').toLowerCase().includes('dine'))
+    .reduce((acc, t) => acc + (t.grandTotal || 0), 0);
+
+  const takeawaySales = transactions
+    .filter((t) => !(t.orderType || '').toLowerCase().includes('dine'))
+    .reduce((acc, t) => acc + (t.grandTotal || 0), 0);
+
+  const totalOrdersCompleted = transactions.length;
+  const dineInCount = transactions.filter((t) => (t.orderType || '').toLowerCase().includes('dine')).length;
+  const takeawayCount = totalOrdersCompleted - dineInCount;
+
+  const cashSales = transactions
+    .filter((t) => (t.paymentMode || '').toUpperCase().includes('CASH'))
+    .reduce((acc, t) => acc + (t.grandTotal || 0), 0);
+
+  const upiSales = transactions
+    .filter((t) => (t.paymentMode || '').toUpperCase().includes('UPI'))
+    .reduce((acc, t) => acc + (t.grandTotal || 0), 0);
+
+  const cardSales = transactions
+    .filter((t) => (t.paymentMode || '').toUpperCase().includes('CARD'))
+    .reduce((acc, t) => acc + (t.grandTotal || 0), 0);
+
+  const cashPct = netDayRevenue > 0 ? ((cashSales / netDayRevenue) * 100).toFixed(1) : '0.0';
+  const upiPct = netDayRevenue > 0 ? ((upiSales / netDayRevenue) * 100).toFixed(1) : '0.0';
+  const cardPct = netDayRevenue > 0 ? ((cardSales / netDayRevenue) * 100).toFixed(1) : '0.0';
+
+  // Search filter
   const filtered = transactions.filter((t) => {
     const q = searchTerm.toLowerCase();
     return (
@@ -198,25 +181,32 @@ export default function MasterSalesReportPage() {
     );
   });
 
-  // Export to Excel (.xlsx)
+  const displayFilterLabel =
+    selectedDate === 'ALL'
+      ? 'All Time (Cumulative)'
+      : selectedDate === todayStr
+      ? `Today (${todayStr})`
+      : selectedDate;
+
+  // Export to Excel (.xlsx) using REAL calculated data
   const handleExportExcel = () => {
     const wb = XLSX.utils.book_new();
 
     // Sheet 1: Financial Summary
     const summaryData = [
       ['THOOGUDEEPA DONNE BIRYANI MANE - MASTER FINANCIAL REPORT'],
-      ['Date:', selectedDate],
+      ['Report Period / Date:', displayFilterLabel],
       [],
       ['Metric', 'Amount (₹) / Details'],
-      ['Gross Food Sales', '₹26,450.00'],
-      ['Total GST (5%)', '₹1,322.50'],
-      ['Net Day Revenue', '₹27,790.00'],
-      ['Dine-in Sales (16 Seats)', '₹19,370.00'],
-      ['Takeaway / Parcel Sales', '₹8,420.00'],
-      ['Total Orders Completed', '60 (42 Dine-in, 18 Parcel)'],
-      ['Payment Split - Cash', '₹10,450 (37.6%)'],
-      ['Payment Split - UPI', '₹15,240 (54.8%)'],
-      ['Payment Split - Card POS', '₹2,100 (7.6%)'],
+      ['Gross Food Sales', `₹${grossFoodSales.toFixed(2)}`],
+      ['Total GST (5%)', `₹${totalGst.toFixed(2)}`],
+      ['Net Day Revenue', `₹${netDayRevenue.toFixed(2)}`],
+      ['Dine-in Sales (16 Seats)', `₹${dineInSales.toFixed(2)}`],
+      ['Takeaway / Parcel Sales', `₹${takeawaySales.toFixed(2)}`],
+      ['Total Orders Completed', `${totalOrdersCompleted} (${dineInCount} Dine-in, ${takeawayCount} Parcel)`],
+      ['Payment Split - Cash', `₹${cashSales.toFixed(2)} (${cashPct}%)`],
+      ['Payment Split - UPI', `₹${upiSales.toFixed(2)} (${upiPct}%)`],
+      ['Payment Split - Card POS', `₹${cardSales.toFixed(2)} (${cardPct}%)`],
     ];
     const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
     XLSX.utils.book_append_sheet(wb, wsSummary, 'Financial Summary');
@@ -241,25 +231,27 @@ export default function MasterSalesReportPage() {
       [
         'BILL #',
         'DATE',
-        'TYPE',
-        'SEAT',
+        'ORDER TYPE',
+        'SEAT / TOKEN',
         'CUSTOMER NAME',
-        'SERVER',
+        'PHONE',
+        'SERVER / CASHIER',
         'ITEMS SUMMARY',
-        'PLACED',
-        'SETTLED',
-        'SUBTOT (₹)',
+        'PLACED TIME',
+        'SETTLED TIME',
+        'SUBTOTAL (₹)',
         'GST 5% (₹)',
-        'GRAND TOT (₹)',
-        'MODE',
+        'GRAND TOTAL (₹)',
+        'PAYMENT MODE',
         'STATUS',
       ],
-      ...transactions.map((t) => [
+      ...filtered.map((t) => [
         t.billNumber,
         t.date,
         t.orderType,
         t.seatNumberOrToken,
         t.customerName,
+        t.customerPhone || '-',
         t.serverName,
         t.itemsSummary,
         t.placedAt,
@@ -272,12 +264,12 @@ export default function MasterSalesReportPage() {
       ]),
     ];
     const wsTx = XLSX.utils.aoa_to_sheet(txData);
-    XLSX.utils.book_append_sheet(wb, wsTx, 'Transaction Audit');
+    XLSX.utils.book_append_sheet(wb, wsTx, 'Detailed Audit');
 
-    XLSX.writeFile(wb, `Thoogudeepa_Master_Sales_Report_${selectedDate}.xlsx`);
+    XLSX.writeFile(wb, `Thoogudeepa_Sales_Report_${selectedDate}.xlsx`);
   };
 
-  // Export to PDF
+  // Export to PDF using REAL calculated data
   const handleExportPDF = () => {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
@@ -285,7 +277,7 @@ export default function MasterSalesReportPage() {
     doc.setFontSize(14);
     doc.text('THOOGUDEEPA DONNE BIRYANI MANE', 14, 15);
     doc.setFontSize(10);
-    doc.text(`MASTER FINANCIAL & DETAILED SALES REPORT — ${selectedDate}`, 14, 21);
+    doc.text(`MASTER FINANCIAL & DETAILED SALES REPORT — ${displayFilterLabel}`, 14, 21);
 
     // 1. Summary Box
     doc.setDrawColor(70, 70, 70);
@@ -293,9 +285,21 @@ export default function MasterSalesReportPage() {
     doc.rect(14, 25, 269, 22, 'F');
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.text('Gross Food Sales: Rs. 26,450.00   |   Total GST (5%): Rs. 1,322.50   |   Net Day Revenue: Rs. 27,790.00', 18, 31);
-    doc.text('Dine-in Sales (16 Seats): Rs. 19,370.00   |   Takeaway / Parcel Sales: Rs. 8,420.00   |   Total Orders: 60', 18, 37);
-    doc.text('Payment Split: Cash Rs. 10,450 (37.6%)  *  UPI Rs. 15,240 (54.8%)  *  Card POS Rs. 2,100 (7.6%)', 18, 43);
+    doc.text(
+      `Gross Food Sales: Rs. ${grossFoodSales.toFixed(2)}   |   Total GST (5%): Rs. ${totalGst.toFixed(2)}   |   Net Day Revenue: Rs. ${netDayRevenue.toFixed(2)}`,
+      18,
+      31
+    );
+    doc.text(
+      `Dine-in Sales (16 Seats): Rs. ${dineInSales.toFixed(2)}   |   Takeaway / Parcel Sales: Rs. ${takeawaySales.toFixed(2)}   |   Total Orders: ${totalOrdersCompleted}`,
+      18,
+      37
+    );
+    doc.text(
+      `Payment Split: Cash Rs. ${cashSales.toFixed(2)} (${cashPct}%)  *  UPI Rs. ${upiSales.toFixed(2)} (${upiPct}%)  *  Card POS Rs. ${cardSales.toFixed(2)} (${cardPct}%)`,
+      18,
+      43
+    );
 
     // 2. Items Table
     doc.setFont('helvetica', 'bold');
@@ -318,13 +322,13 @@ export default function MasterSalesReportPage() {
     doc.setFont('helvetica', 'normal');
     y += 6;
 
-    itemPerformance.forEach((i) => {
+    itemPerformance.slice(0, 15).forEach((i) => {
       doc.text(i.dishName, 16, y + 4.5);
       doc.text(i.category, 80, y + 4.5);
       doc.text(String(i.qtySold), 140, y + 4.5);
       doc.text(`Rs. ${i.unitPrice.toFixed(2)}`, 175, y + 4.5);
       doc.text(`Rs. ${i.totalRevenue.toFixed(2)}`, 215, y + 4.5);
-      doc.text(`${i.contributionPercent}%`, 255, y + 4.5);
+      doc.text(`${i.contributionPercent.toFixed(1)}%`, 255, y + 4.5);
       y += 5.5;
     });
 
@@ -332,7 +336,7 @@ export default function MasterSalesReportPage() {
     y += 6;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
-    doc.text('3. MASTER DETAILED TRANSACTION AUDIT (MAXIMUM COLUMNS)', 14, y);
+    doc.text('3. MASTER DETAILED TRANSACTION AUDIT', 14, y);
 
     y += 4;
     doc.setFontSize(6.5);
@@ -358,12 +362,12 @@ export default function MasterSalesReportPage() {
     doc.setFont('helvetica', 'normal');
     y += 6;
 
-    transactions.forEach((t) => {
+    filtered.slice(0, 20).forEach((t) => {
       doc.text(t.billNumber, 16, y + 4.2);
       doc.text(t.date, 32, y + 4.2);
       doc.text(t.orderType, 48, y + 4.2);
       doc.text(t.seatNumberOrToken, 62, y + 4.2);
-      doc.text(t.customerName, 74, y + 4.2);
+      doc.text(t.customerName.substring(0, 16), 74, y + 4.2);
       doc.text(t.serverName, 106, y + 4.2);
       doc.text(t.itemsSummary.substring(0, 30), 122, y + 4.2);
       doc.text(t.placedAt, 180, y + 4.2);
@@ -386,35 +390,48 @@ export default function MasterSalesReportPage() {
 
       {/* Subheader Bar with Title & Export Actions */}
       <div className="bg-[#141210] border-b border-[#2C2520] px-6 py-3 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xs md:text-sm font-black text-[#D08A52] uppercase tracking-wider font-sans">
-          MASTER FINANCIAL & DETAILED SALES REPORT
-        </h1>
+        <div>
+          <h1 className="text-xs md:text-sm font-black text-[#D08A52] uppercase tracking-wider font-sans">
+            MASTER FINANCIAL & DETAILED SALES REPORT
+          </h1>
+          <p className="text-[11px] text-stone-400 font-sans mt-0.5">
+            Real-time live audit • {transactions.length} total bills settled
+          </p>
+        </div>
 
         {/* Filter & Export Buttons */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#181513] border border-[#2C2520] rounded-lg text-amber-400 font-bold text-xs">
-            <span>Filter:</span>
-            <span className="text-white bg-[#100E0C] px-2 py-0.5 rounded border border-[#2C2520]">
-              Today: {selectedDate} ▾
-            </span>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Interactive Date Filter */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#181513] border border-[#2C2520] rounded-xl text-amber-400 font-bold text-xs">
+            <Calendar className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-stone-400 font-sans">Period:</span>
+            <select
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="bg-[#100E0C] text-white font-mono text-xs px-2 py-0.5 rounded border border-[#2C2520] focus:outline-none focus:border-[#8A4228] cursor-pointer"
+            >
+              <option value="ALL">All Time (Cumulative)</option>
+              <option value={todayStr}>Today ({todayStr})</option>
+              <option value="25-10-2026">Yesterday (25-10-2026)</option>
+            </select>
           </div>
 
           <button
             type="button"
             onClick={handleExportPDF}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold text-xs transition shadow active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold text-xs transition shadow active:scale-95"
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>📥 Download as PDF</span>
+            <span>PDF</span>
           </button>
 
           <button
             type="button"
             onClick={handleExportExcel}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs transition shadow active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs transition shadow active:scale-95"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span>📊 Download as Excel (.xlsx)</span>
+            <span>Excel (.xlsx)</span>
           </button>
         </div>
       </div>
@@ -422,66 +439,80 @@ export default function MasterSalesReportPage() {
       {/* Main Content Area */}
       <main className="p-6 space-y-6 flex-1 max-w-[1600px] w-full mx-auto">
         {/* 1. COMPLETE FINANCIAL SUMMARY BREAKDOWN */}
-        <section className="bg-[#181513] border border-[#2C2520] rounded-xl overflow-hidden shadow-xl">
-          <div className="bg-[#1C1815] px-4 py-2.5 border-b border-[#2C2520] font-bold text-amber-400 uppercase tracking-wider text-xs">
-            1. COMPLETE FINANCIAL SUMMARY BREAKDOWN
+        <section className="bg-[#181513] border border-[#2C2520] rounded-2xl overflow-hidden shadow-xl">
+          <div className="bg-[#1C1815] px-4 py-2.5 border-b border-[#2C2520] font-bold text-amber-400 uppercase tracking-wider text-xs flex justify-between items-center">
+            <span>1. COMPLETE FINANCIAL SUMMARY BREAKDOWN ({displayFilterLabel})</span>
+            <span className="text-[11px] text-emerald-400 font-mono font-bold flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              Live Real-Time
+            </span>
           </div>
-          <div className="p-4 space-y-3 font-sans text-xs">
-            {/* Row 1 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-3 border-b border-[#2C2520]">
-              <div>
-                <span className="text-stone-400">Gross Food Sales:</span>{' '}
-                <strong className="text-white text-sm font-mono">₹26,450.00</strong>
+          <div className="p-5 space-y-4 font-sans text-xs">
+            {/* Row 1: Gross, GST, Net */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b border-[#2C2520]">
+              <div className="p-3 bg-[#13110F] border border-[#26201B] rounded-xl">
+                <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Gross Food Sales:</span>
+                <strong className="text-white text-lg font-mono font-black mt-1 block">
+                  ₹{grossFoodSales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </strong>
               </div>
-              <div>
-                <span className="text-stone-400">Total GST (5%):</span>{' '}
-                <strong className="text-sky-400 text-sm font-mono">₹1,322.50</strong>
+              <div className="p-3 bg-[#13110F] border border-[#26201B] rounded-xl">
+                <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Total GST (5%):</span>
+                <strong className="text-sky-400 text-lg font-mono font-black mt-1 block">
+                  ₹{totalGst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </strong>
               </div>
-              <div>
-                <span className="text-stone-400">Net Day Revenue:</span>{' '}
-                <strong className="text-emerald-400 text-sm font-mono">₹27,790.00</strong>
+              <div className="p-3 bg-[#13110F] border border-[#26201B] rounded-xl">
+                <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Net Day Revenue:</span>
+                <strong className="text-emerald-400 text-lg font-mono font-black mt-1 block">
+                  ₹{netDayRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </strong>
               </div>
             </div>
 
-            {/* Row 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-3 border-b border-[#2C2520]">
+            {/* Row 2: Dine-in, Takeaway, Total Orders */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b border-[#2C2520]">
               <div>
                 <span className="text-stone-400">Dine-in Sales (16 Seats):</span>{' '}
-                <strong className="text-white text-sm font-mono">₹19,370.00</strong>
+                <strong className="text-white text-sm font-mono font-bold">
+                  ₹{dineInSales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </strong>
               </div>
               <div>
                 <span className="text-stone-400">Takeaway / Parcel Sales:</span>{' '}
-                <strong className="text-amber-400 text-sm font-mono">₹8,420.00</strong>
+                <strong className="text-amber-400 text-sm font-mono font-bold">
+                  ₹{takeawaySales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </strong>
               </div>
               <div>
                 <span className="text-stone-400">Total Orders Completed:</span>{' '}
-                <strong className="text-white text-sm font-mono">60</strong>{' '}
-                <span className="text-stone-400 text-[11px]">(42 Dine-in, 18 Parcel)</span>
+                <strong className="text-white text-sm font-mono font-bold">{totalOrdersCompleted}</strong>{' '}
+                <span className="text-stone-400 text-[11px]">({dineInCount} Dine-in, {takeawayCount} Parcel)</span>
               </div>
             </div>
 
-            {/* Row 3 */}
+            {/* Row 3: Payment Split */}
             <div className="text-xs text-stone-300 flex flex-wrap items-center gap-2">
               <span className="text-stone-400 font-bold">Payment Split:</span>
-              <span className="bg-[#1C1815] px-2.5 py-1 rounded border border-[#2C2520]">
-                💵 Cash: <strong className="text-amber-400">₹10,450 (37.6%)</strong>
+              <span className="bg-[#1C1815] px-3 py-1.5 rounded-lg border border-[#2C2520]">
+                💵 Cash: <strong className="text-amber-400 font-mono">₹{cashSales.toFixed(2)} ({cashPct}%)</strong>
               </span>
               <span>•</span>
-              <span className="bg-[#1C1815] px-2.5 py-1 rounded border border-[#2C2520]">
-                📱 UPI: <strong className="text-cyan-400">₹15,240 (54.8%)</strong>
+              <span className="bg-[#1C1815] px-3 py-1.5 rounded-lg border border-[#2C2520]">
+                📱 UPI: <strong className="text-cyan-400 font-mono">₹{upiSales.toFixed(2)} ({upiPct}%)</strong>
               </span>
               <span>•</span>
-              <span className="bg-[#1C1815] px-2.5 py-1 rounded border border-[#2C2520]">
-                💳 Card POS: <strong className="text-purple-400">₹2,100 (7.6%)</strong>
+              <span className="bg-[#1C1815] px-3 py-1.5 rounded-lg border border-[#2C2520]">
+                💳 Card POS: <strong className="text-purple-400 font-mono">₹{cardSales.toFixed(2)} ({cardPct}%)</strong>
               </span>
             </div>
           </div>
         </section>
 
         {/* 2. ITEM-WISE SALES PERFORMANCE */}
-        <section className="bg-[#181513] border border-[#2C2520] rounded-xl overflow-hidden shadow-xl">
+        <section className="bg-[#181513] border border-[#2C2520] rounded-2xl overflow-hidden shadow-xl">
           <div className="bg-[#1C1815] px-4 py-2.5 border-b border-[#2C2520] font-bold text-cyan-400 uppercase tracking-wider text-xs flex justify-between items-center">
-            <span>2. ITEM-WISE SALES PERFORMANCE</span>
+            <span>2. ITEM-WISE SALES PERFORMANCE ({itemPerformance.length} Items Sold)</span>
             <span className="text-[11px] text-stone-400 font-normal">Top Revenue Contributors</span>
           </div>
           <div className="overflow-x-auto">
@@ -497,38 +528,46 @@ export default function MasterSalesReportPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#2C2520] font-mono text-xs">
-                {itemPerformance.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-[#201B18] transition-colors">
-                    <td className="p-3 font-sans font-bold text-white border-r border-[#2C2520]">
-                      {row.dishName}
-                    </td>
-                    <td className="p-3 font-sans text-stone-300 border-r border-[#2C2520]">
-                      {row.category}
-                    </td>
-                    <td className="p-3 text-right text-white font-bold border-r border-[#2C2520]">
-                      {row.qtySold}
-                    </td>
-                    <td className="p-3 text-right text-stone-300 border-r border-[#2C2520]">
-                      ₹{row.unitPrice.toFixed(2)}
-                    </td>
-                    <td className="p-3 text-right text-emerald-400 font-bold border-r border-[#2C2520]">
-                      ₹{row.totalRevenue.toFixed(2)}
-                    </td>
-                    <td className="p-3 text-right text-amber-400 font-bold">
-                      {row.contributionPercent.toFixed(1)}%
+                {itemPerformance.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-6 text-center text-stone-500 font-sans">
+                      No dishes sold yet.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  itemPerformance.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-[#201B18] transition-colors">
+                      <td className="p-3 font-sans font-bold text-white border-r border-[#2C2520]">
+                        {row.dishName}
+                      </td>
+                      <td className="p-3 font-sans text-stone-300 border-r border-[#2C2520]">
+                        {row.category}
+                      </td>
+                      <td className="p-3 text-right text-white font-bold border-r border-[#2C2520]">
+                        {row.qtySold}
+                      </td>
+                      <td className="p-3 text-right text-stone-300 border-r border-[#2C2520]">
+                        ₹{row.unitPrice.toFixed(2)}
+                      </td>
+                      <td className="p-3 text-right text-emerald-400 font-bold border-r border-[#2C2520]">
+                        ₹{row.totalRevenue.toFixed(2)}
+                      </td>
+                      <td className="p-3 text-right text-amber-400 font-bold">
+                        {row.contributionPercent.toFixed(1)}%
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </section>
 
         {/* 3. MASTER DETAILED TRANSACTION AUDIT (MAXIMUM COLUMNS) */}
-        <section className="bg-[#181513] border border-[#2C2520] rounded-xl overflow-hidden shadow-xl">
+        <section className="bg-[#181513] border border-[#2C2520] rounded-2xl overflow-hidden shadow-xl">
           <div className="bg-[#1C1815] px-4 py-2.5 border-b border-[#2C2520] flex flex-wrap items-center justify-between gap-3">
             <span className="font-bold text-emerald-400 uppercase tracking-wider text-xs">
-              3. MASTER DETAILED TRANSACTION AUDIT (MAXIMUM COLUMNS)
+              3. MASTER DETAILED TRANSACTION AUDIT ({filtered.length} Invoices)
             </span>
             <div className="relative w-72">
               <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -558,77 +597,85 @@ export default function MasterSalesReportPage() {
                   <th className="p-2.5 border-r border-[#2C2520] text-right">SUBTOT</th>
                   <th className="p-2.5 border-r border-[#2C2520] text-right">GST 5%</th>
                   <th className="p-2.5 border-r border-[#2C2520] text-right">GRAND TOT</th>
-                  <th className="p-2.5 border-r border-[#2C2520] text-center">MODE</th>
+                  <th className="p-2.5 border-r border-[#2C2520]">MODE</th>
                   <th className="p-2.5 text-center">STATUS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#2C2520] font-mono text-[11px]">
-                {filtered.map((t, idx) => (
-                  <tr key={idx} className="hover:bg-[#201B18] transition-colors">
-                    <td className="p-2.5 font-bold text-amber-400 border-r border-[#2C2520] whitespace-nowrap">
-                      {t.billNumber}
-                    </td>
-                    <td className="p-2.5 text-stone-400 border-r border-[#2C2520] whitespace-nowrap">
-                      {t.date}
-                    </td>
-                    <td className="p-2.5 font-sans border-r border-[#2C2520]">
-                      <span
-                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                          t.orderType.toLowerCase().includes('dine')
-                            ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
-                            : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                        }`}
-                      >
-                        {t.orderType}
-                      </span>
-                    </td>
-                    <td className="p-2.5 font-bold text-white border-r border-[#2C2520]">
-                      {t.seatNumberOrToken}
-                    </td>
-                    <td className="p-2.5 font-sans font-bold text-stone-100 border-r border-[#2C2520] whitespace-nowrap">
-                      {t.customerName}
-                    </td>
-                    <td className="p-2.5 font-sans text-stone-300 border-r border-[#2C2520]">
-                      {t.serverName}
-                    </td>
-                    <td className="p-2.5 font-sans text-stone-300 border-r border-[#2C2520] max-w-xs truncate">
-                      {t.itemsSummary}
-                    </td>
-                    <td className="p-2.5 text-stone-400 border-r border-[#2C2520]">
-                      {t.placedAt}
-                    </td>
-                    <td className="p-2.5 text-stone-300 border-r border-[#2C2520]">
-                      {t.settledAt}
-                    </td>
-                    <td className="p-2.5 text-right text-stone-300 border-r border-[#2C2520]">
-                      ₹{t.subtotal.toFixed(2)}
-                    </td>
-                    <td className="p-2.5 text-right text-sky-400 border-r border-[#2C2520]">
-                      ₹{t.gst5Percent.toFixed(2)}
-                    </td>
-                    <td className="p-2.5 text-right font-black text-emerald-400 border-r border-[#2C2520]">
-                      ₹{t.grandTotal.toFixed(2)}
-                    </td>
-                    <td className="p-2.5 text-center font-sans border-r border-[#2C2520]">
-                      <span
-                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                          t.paymentMode.toLowerCase() === 'upi'
-                            ? 'bg-cyan-500/20 text-cyan-400'
-                            : t.paymentMode.toLowerCase() === 'cash'
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'bg-purple-500/20 text-purple-400'
-                        }`}
-                      >
-                        {t.paymentMode}
-                      </span>
-                    </td>
-                    <td className="p-2.5 text-center font-sans">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        {t.paymentStatus}
-                      </span>
+              <tbody className="divide-y divide-[#26201B]">
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={14} className="p-8 text-center text-stone-500 font-sans">
+                      {loading ? 'Loading real-time records...' : 'No settled transactions found matching this search or date filter.'}
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filtered.map((t) => (
+                    <tr key={t.billNumber} className="hover:bg-[#201B18] transition-colors">
+                      <td className="p-2.5 font-bold text-amber-400 border-r border-[#2C2520]">
+                        {t.billNumber}
+                      </td>
+                      <td className="p-2.5 text-stone-300 border-r border-[#2C2520]">
+                        {t.date}
+                      </td>
+                      <td className="p-2.5 border-r border-[#2C2520]">
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            t.orderType.toLowerCase().includes('take') || t.orderType.toLowerCase().includes('parcel')
+                              ? 'bg-amber-950/80 text-amber-300 border border-amber-500/30'
+                              : 'bg-stone-800 text-stone-300'
+                          }`}
+                        >
+                          {t.orderType}
+                        </span>
+                      </td>
+                      <td className="p-2.5 font-bold text-white border-r border-[#2C2520]">
+                        {t.seatNumberOrToken}
+                      </td>
+                      <td className="p-2.5 text-stone-200 border-r border-[#2C2520]">
+                        {t.customerName}
+                      </td>
+                      <td className="p-2.5 text-stone-300 border-r border-[#2C2520]">
+                        {t.serverName}
+                      </td>
+                      <td className="p-2.5 text-stone-200 max-w-xs truncate border-r border-[#2C2520]" title={t.itemsSummary}>
+                        {t.itemsSummary}
+                      </td>
+                      <td className="p-2.5 text-stone-300 border-r border-[#2C2520]">
+                        {t.placedAt}
+                      </td>
+                      <td className="p-2.5 text-stone-300 border-r border-[#2C2520]">
+                        {t.settledAt}
+                      </td>
+                      <td className="p-2.5 text-right font-mono text-stone-300 border-r border-[#2C2520]">
+                        ₹{t.subtotal.toFixed(2)}
+                      </td>
+                      <td className="p-2.5 text-right font-mono text-stone-400 border-r border-[#2C2520]">
+                        ₹{t.gst5Percent.toFixed(2)}
+                      </td>
+                      <td className="p-2.5 text-right font-mono font-bold text-amber-400 border-r border-[#2C2520]">
+                        ₹{t.grandTotal.toFixed(2)}
+                      </td>
+                      <td className="p-2.5 border-r border-[#2C2520]">
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            t.paymentMode.toUpperCase().includes('UPI')
+                              ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/30'
+                              : t.paymentMode.toUpperCase().includes('CASH')
+                              ? 'bg-amber-950/80 text-amber-300 border border-amber-500/30'
+                              : 'bg-purple-950/80 text-purple-300 border border-purple-500/30'
+                          }`}
+                        >
+                          {t.paymentMode}
+                        </span>
+                      </td>
+                      <td className="p-2.5 text-center">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-950/80 text-emerald-300 border border-emerald-500/30">
+                          {t.paymentStatus}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

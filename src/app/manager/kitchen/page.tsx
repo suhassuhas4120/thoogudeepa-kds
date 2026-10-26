@@ -48,7 +48,7 @@ export default function ManagerKitchenMonitorScreen() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem86[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'PARCELS' | 'COOKING' | 'READY' | 'COMPLETED' | 'ALL_ORDERS'>('ALL');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'ACTIVE' | 'PARCELS' | 'COOKING' | 'READY' | 'COMPLETED'>('ALL');
   const [show86Drawer, setShow86Drawer] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [updatingTicketId, setUpdatingTicketId] = useState<string | null>(null);
@@ -293,12 +293,12 @@ export default function ManagerKitchenMonitorScreen() {
     const isCooking = !done && items.some((i) => i.status === 'preparing' || i.status === 'placed') && !isReady;
     const isParcel = isTicketParcel(t);
 
+    if (activeFilter === 'ACTIVE') return !done;
     if (activeFilter === 'PARCELS') return isParcel;
     if (activeFilter === 'COOKING') return isCooking;
     if (activeFilter === 'READY') return isReady;
     if (activeFilter === 'COMPLETED') return done;
-    if (activeFilter === 'ALL_ORDERS') return true;
-    return !done; // default 'ALL' is all active tickets
+    return true; // default 'ALL' shows all saved orders (at least last 20-50 orders)!
   });
 
   const soldOutCount = menuItems.filter((i) => !i.isAvailable).length;
@@ -343,7 +343,19 @@ export default function ManagerKitchenMonitorScreen() {
                 : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
             }`}
           >
-            [ All Active ({activeCount}) ]
+            [ All Orders ({totalCount}) ]
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveFilter('ACTIVE')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+              activeFilter === 'ACTIVE'
+                ? 'bg-[#8A4228] text-white shadow-sm'
+                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+            }`}
+          >
+            [ In Kitchen ({activeCount}) ]
           </button>
 
           <button
@@ -392,18 +404,6 @@ export default function ManagerKitchenMonitorScreen() {
             }`}
           >
             [ Completed ({completedCount}) ]
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveFilter('ALL_ORDERS')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-              activeFilter === 'ALL_ORDERS'
-                ? 'bg-[#503E36] text-white shadow-sm'
-                : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
-            }`}
-          >
-            [ All 50 History ({totalCount}) ]
           </button>
         </div>
       </div>

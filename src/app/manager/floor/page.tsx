@@ -34,6 +34,7 @@ interface SeatData {
     orderTickets: {
       id: string;
       ticketNumber: string;
+      placedAt?: string | Date;
       placedAtTime?: string;
       status: string;
       items: OrderItem[];
@@ -158,7 +159,19 @@ export default function ManagerFloorScreen() {
   if (session?.orderTickets && session.orderTickets.length > 0) {
     session.orderTickets.forEach((t) => {
       if (t.ticketNumber) latestTicketNumber = `#${t.ticketNumber}`;
-      if (t.placedAtTime) placedTime = t.placedAtTime;
+      if (t.placedAt) {
+        const d = new Date(t.placedAt);
+        if (!isNaN(d.getTime())) {
+          placedTime = d.toLocaleTimeString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          });
+        }
+      } else if (t.placedAtTime) {
+        placedTime = t.placedAtTime;
+      }
       t.items?.forEach((it) => allSelectedItems.push(it));
     });
   }
