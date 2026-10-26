@@ -58,6 +58,7 @@ export default function CustomerScreen6({ params }: { params: { seatId: string }
   }, [socket, seatId, router]);
 
   const handleSimulateSelfPay = async () => {
+    if (finalAmount <= 0) return;
     try {
       await fetch('/api/billing/settle-vacate', {
         method: 'POST',

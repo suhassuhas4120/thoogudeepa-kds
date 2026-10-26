@@ -211,7 +211,7 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
 
   // Settle Bill & Vacate Seat
   const handleVacateSeat = async () => {
-    if (!paymentConfirmed || loadingVacate) return;
+    if (!paymentConfirmed || loadingVacate || grandTotal <= 0) return;
     setLoadingVacate(true);
     try {
       const res = await fetch('/api/billing/settle-vacate', {
@@ -634,22 +634,28 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
                 )}
 
                 {/* Confirmation Check */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentConfirmed(!paymentConfirmed)}
-                  className="mt-4 w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-xs font-bold hover:bg-slate-800 transition"
-                >
-                  <div
-                    className={`w-5 h-5 rounded-md border flex items-center justify-center transition ${
-                      paymentConfirmed ? 'bg-emerald-500 border-emerald-400 text-slate-950' : 'border-slate-600'
-                    }`}
-                  >
-                    {paymentConfirmed && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                {grandTotal <= 0 ? (
+                  <div className="mt-4 p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs text-center font-bold">
+                    Amount is ₹0.00 — Payment cannot be done.
                   </div>
-                  <span className={paymentConfirmed ? 'text-emerald-400' : 'text-slate-300'}>
-                    confirm payment
-                  </span>
-                </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setPaymentConfirmed(!paymentConfirmed)}
+                    className="mt-4 w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-xs font-bold hover:bg-slate-800 transition"
+                  >
+                    <div
+                      className={`w-5 h-5 rounded-md border flex items-center justify-center transition ${
+                        paymentConfirmed ? 'bg-emerald-500 border-emerald-400 text-slate-950' : 'border-slate-600'
+                      }`}
+                    >
+                      {paymentConfirmed && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                    </div>
+                    <span className={paymentConfirmed ? 'text-emerald-400' : 'text-slate-300'}>
+                      confirm payment
+                    </span>
+                  </button>
+                )}
               </div>
 
               {/* Vacate Seat Button */}
@@ -657,9 +663,9 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
                 <button
                   type="button"
                   onClick={handleVacateSeat}
-                  disabled={!paymentConfirmed || loadingVacate}
+                  disabled={!paymentConfirmed || loadingVacate || grandTotal <= 0}
                   className={`w-full py-4 rounded-2xl font-black text-sm transition shadow-xl select-none active:scale-98 ${
-                    paymentConfirmed
+                    paymentConfirmed && grandTotal > 0
                       ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20'
                       : 'bg-slate-800 text-slate-500 border border-slate-800 cursor-not-allowed'
                   }`}

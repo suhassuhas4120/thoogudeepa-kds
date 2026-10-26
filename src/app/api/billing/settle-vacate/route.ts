@@ -41,6 +41,50 @@ export async function POST(req: NextRequest) {
         return { status: 400, payload: { success: false, error: 'No active session found for seat' } };
       }
 
+      const sessionGrandTotal = Number(session.grandTotal) || 0;
+
+      // 0. RULE: When amount is 0, payment must NEVER be done.
+      if (sessionGrandTotal <= 0) {
+        // If seat is being vacated directly without an order/bill, clear the table without creating any sales record
+        await prisma.diningSession.update({
+          where: { id: session.id },
+          data: {
+            status: 'COMPLETED',
+            endedAt: new Date(),
+            paymentStatus: 'UNPAID',
+            paymentLockState: 'UNLOCKED',
+          },
+        });
+
+        await prisma.diningSeat.update({
+          where: { id: seat.id },
+          data: {
+            status: 'VACANT',
+            currentGuestName: '-',
+          },
+        });
+
+        const isZoneA = seat.zone === 'ZONE_A';
+        const targetWaiterRoom: SocketRoom = isZoneA ? 'room:waiter:zoneA' : 'room:waiter:zoneB';
+        await emitToMultipleRooms(
+          [targetWaiterRoom, 'room:manager', 'room:kitchen', `room:seat:${seat.id}`],
+          'seat:vacated',
+          {
+            seatId: seat.id,
+            seatNumber: seat.seatNumber,
+            zone: seat.zone,
+          }
+        );
+
+        return {
+          status: 200,
+          payload: {
+            success: true,
+            message: 'Seat vacated without payment (Amount was ₹0.00 - No payment recorded)',
+          },
+        };
+      }
+
       const now = new Date();
       const formattedDate = now.toLocaleDateString('en-GB').replace(/\//g, '-'); // "25-10-2026"
       const formattedSettledTime = now.toLocaleTimeString('en-IN', {

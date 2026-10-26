@@ -109,7 +109,7 @@ export default function ManagerFloorScreen() {
 
   // Manager Actions: Collect Payment & Vacate
   const handleCollectPaymentAndVacate = async (mode: string = 'UPI') => {
-    if (!selectedSeat || !session) return;
+    if (!selectedSeat || !session || (session.grandTotal || 0) <= 0) return;
     try {
       const res = await fetch('/api/billing/settle-vacate', {
         method: 'POST',
@@ -133,13 +133,14 @@ export default function ManagerFloorScreen() {
   const handleVacateSeat = async () => {
     if (!selectedSeat) return;
     try {
+      const hasAmount = (session?.grandTotal || 0) > 0;
       const res = await fetch('/api/billing/settle-vacate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           seatId: selectedSeat.id,
-          paymentMode: 'CASH',
-          settledBy: 'General Manager Desk (Direct Vacate)',
+          paymentMode: hasAmount ? 'CASH' : undefined,
+          settledBy: hasAmount ? 'General Manager Desk' : 'General Manager Desk (Direct Vacate)',
         }),
       });
       const data = await res.json();
@@ -399,11 +400,11 @@ export default function ManagerFloorScreen() {
               <button
                 type="button"
                 onClick={() => handleCollectPaymentAndVacate('CASH')}
-                disabled={!isOccupied}
+                disabled={!isOccupied || (session?.grandTotal || 0) <= 0}
                 className={`py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-1.5 transition shadow-md select-none ${
-                  isOccupied
+                  isOccupied && (session?.grandTotal || 0) > 0
                     ? 'bg-amber-700 hover:bg-amber-600 text-white active:scale-98 shadow-amber-900/30'
-                    : 'bg-[#1C1815] text-stone-600 border border-[#2C2520] cursor-not-allowed'
+                    : 'bg-[#1C1815] text-stone-600 border border-[#2C2520] cursor-not-allowed opacity-50'
                 }`}
               >
                 <Banknote className="w-4 h-4" />
@@ -413,11 +414,11 @@ export default function ManagerFloorScreen() {
               <button
                 type="button"
                 onClick={() => handleCollectPaymentAndVacate('UPI')}
-                disabled={!isOccupied}
+                disabled={!isOccupied || (session?.grandTotal || 0) <= 0}
                 className={`py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-1.5 transition shadow-md select-none ${
-                  isOccupied
+                  isOccupied && (session?.grandTotal || 0) > 0
                     ? 'bg-[#8A4228] hover:bg-[#71351F] text-white active:scale-98 shadow-[#8A4228]/25'
-                    : 'bg-[#1C1815] text-stone-600 border border-[#2C2520] cursor-not-allowed'
+                    : 'bg-[#1C1815] text-stone-600 border border-[#2C2520] cursor-not-allowed opacity-50'
                 }`}
               >
                 <Smartphone className="w-4 h-4" />

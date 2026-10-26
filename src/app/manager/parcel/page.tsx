@@ -66,7 +66,7 @@ export default function ManagerParcelDeskScreen() {
   const changeToReturn = Math.max(0, tenderedAmount - grandTotal);
 
   const handleCompleteParcel = async () => {
-    if (totalQty === 0 || loading) return;
+    if (totalQty === 0 || loading || grandTotal <= 0) return;
     setLoading(true);
 
     try {
@@ -300,9 +300,9 @@ export default function ManagerParcelDeskScreen() {
             <button
               type="button"
               onClick={handleCompleteParcel}
-              disabled={totalQty === 0 || loading}
+              disabled={totalQty === 0 || loading || grandTotal <= 0}
               className={`w-full py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition shadow-xl select-none active:scale-98 ${
-                totalQty > 0
+                totalQty > 0 && grandTotal > 0
                   ? 'bg-[#8A4228] hover:bg-[#71351F] text-white shadow-[#8A4228]/20'
                   : 'bg-[#181513] text-stone-600 border border-[#2C2520] cursor-not-allowed'
               }`}

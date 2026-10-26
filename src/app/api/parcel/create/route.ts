@@ -37,6 +37,17 @@ export async function POST(req: NextRequest) {
       const gst = Math.round(taxable * 0.05 * 100) / 100;
       const grandTotal = Math.round((taxable + gst) * 100) / 100;
 
+      // RULE: When amount is 0, payment must NEVER be done.
+      if (grandTotal <= 0 || subtotal <= 0) {
+        return {
+          status: 400,
+          payload: {
+            success: false,
+            error: 'Cannot process payment for ₹0.00. Payment cannot be done when amount is zero.',
+          },
+        };
+      }
+
       // 2. Generate Parcel Token #
       const parcelCount = await prisma.orderTicket.count({ where: { orderType: 'PARCEL' } });
       const parcelToken = `P-${String(parcelCount + 1).padStart(2, '0')}`;
