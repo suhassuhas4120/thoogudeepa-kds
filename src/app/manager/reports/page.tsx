@@ -47,12 +47,38 @@ interface ItemPerformanceRow {
 export default function MasterSalesReportPage() {
   const socket = useSocketRoom('room:manager');
 
-  const todayStr = new Date().toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' }).replace(/\//g, '-'); // e.g. "27-10-2026"
+  const now = new Date();
+  const todayStr = now.toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' }).replace(/\//g, '-'); // e.g. "27-10-2026"
+  const yesterdayDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const yesterdayStr = yesterdayDate.toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' }).replace(/\//g, '-'); // e.g. "26-10-2026"
+
   const [selectedDate, setSelectedDate] = useState<string>(todayStr); // Default to today's live business
+  const [availableDates, setAvailableDates] = useState<string[]>([todayStr, yesterdayStr, '25-10-2026']);
   const [transactions, setTransactions] = useState<TransactionRow[]>([]);
   const [itemPerformance, setItemPerformance] = useState<ItemPerformanceRow[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Auto-discover all available historical business dates from the database
+  useEffect(() => {
+    fetch('/api/reports/master-sales?date=ALL&t=' + Date.now())
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success && Array.isArray(d.data?.records)) {
+          const datesSet = new Set<string>([todayStr, yesterdayStr]);
+          d.data.records.forEach((rec: any) => {
+            if (rec.date && typeof rec.date === 'string') datesSet.add(rec.date);
+          });
+          const sorted = Array.from(datesSet).sort((a, b) => {
+            const [da, ma, ya] = a.split('-').map(Number);
+            const [db, mb, yb] = b.split('-').map(Number);
+            return new Date(yb, mb - 1, db).getTime() - new Date(ya, ma - 1, da).getTime();
+          });
+          setAvailableDates(sorted);
+        }
+      })
+      .catch(() => {});
+  }, [todayStr, yesterdayStr]);
 
   // Fetch real-time live data from database
   const fetchReportsData = () => {
@@ -189,6 +215,8 @@ export default function MasterSalesReportPage() {
       ? 'All Time (Cumulative)'
       : selectedDate === todayStr
       ? `Today (${todayStr})`
+      : selectedDate === yesterdayStr
+      ? `Yesterday (${yesterdayStr})`
       : selectedDate;
 
   // Export to Excel (.xlsx) using REAL calculated data
@@ -420,7 +448,14 @@ export default function MasterSalesReportPage() {
             >
               <option value="ALL">All Time (Cumulative)</option>
               <option value={todayStr}>Today ({todayStr})</option>
-              <option value="25-10-2026">Yesterday (25-10-2026)</option>
+              <option value={yesterdayStr}>Yesterday ({yesterdayStr})</option>
+              {availableDates
+                .filter((d) => d !== todayStr && d !== yesterdayStr && d !== 'ALL')
+                .map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
             </select>
           </div>
 
