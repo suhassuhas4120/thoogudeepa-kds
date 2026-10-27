@@ -8,7 +8,33 @@ import { useSocketRoom } from '@/lib/useSocket';
 
 export default function ManagerShiftAuditScreen() {
   const socket = useSocketRoom('room:manager');
-  const [dateStr, setDateStr] = useState('26-Oct-2026');
+
+  const getIstTodayStrings = () => {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).formatToParts(new Date());
+    const day = parts.find((p) => p.type === 'day')?.value || '27';
+    const month = parts.find((p) => p.type === 'month')?.value || 'Oct';
+    const year = parts.find((p) => p.type === 'year')?.value || '2026';
+
+    const numParts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).formatToParts(new Date());
+    const monthNum = numParts.find((p) => p.type === 'month')?.value || '10';
+
+    return {
+      displayStr: `${day}-${month}-${year}`,
+      todayDbStr: `${day}-${monthNum}-${year}`,
+    };
+  };
+
+  const [dateStr, setDateStr] = useState(() => getIstTodayStrings().displayStr);
   
   // Waiter 1 (Suhas) handover states
   const [suhasHandingOver, setSuhasHandingOver] = useState('');
@@ -43,10 +69,7 @@ export default function ManagerShiftAuditScreen() {
   // Load saved handovers for today on mount
   useEffect(() => {
     try {
-      const now = new Date();
-      const day = String(now.getDate()).padStart(2, '0');
-      const year = now.getFullYear();
-      const todayDbStr = `${day}-${String(now.getMonth() + 1).padStart(2, '0')}-${year}`;
+      const { todayDbStr } = getIstTodayStrings();
 
       const savedSuhas = localStorage.getItem(`shift_suhas_handed_${todayDbStr}`);
       if (savedSuhas !== null) {
@@ -60,13 +83,8 @@ export default function ManagerShiftAuditScreen() {
   }, []);
 
   const fetchShiftData = () => {
-    const now = new Date();
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = now.toLocaleString('en-US', { month: 'short' });
-    const year = now.getFullYear();
-    setDateStr(`${day}-${month}-${year}`);
-
-    const todayDbStr = `${day}-${String(now.getMonth() + 1).padStart(2, '0')}-${year}`;
+    const { displayStr, todayDbStr } = getIstTodayStrings();
+    setDateStr(displayStr);
 
     // Fetch live totals for today from /api/reports/master-sales
     fetch(`/api/reports/master-sales?date=${todayDbStr}&t=${Date.now()}`, { cache: 'no-store' })

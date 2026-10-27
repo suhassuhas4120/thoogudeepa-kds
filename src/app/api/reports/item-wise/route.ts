@@ -1,15 +1,38 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma, ensureWalMode } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     await ensureWalMode();
 
+    const dateParam = req.nextUrl.searchParams.get('date');
+    let dateFilter: any = {};
+
+    if (dateParam && dateParam !== 'ALL') {
+      const parts = dateParam.split('-');
+      if (parts.length === 3) {
+        const [day, month, year] = parts.map(Number);
+        // Business day in IST: starts at 12:00:00 AM midnight (+05:30) and ends at 11:59:59.999 PM (+05:30)
+        const startOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:00:00.000+05:30`);
+        const endOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T23:59:59.999+05:30`);
+
+        dateFilter = {
+          placedAt: {
+            gte: startOfDay,
+            lte: endOfDay,
+          },
+        };
+      }
+    }
+
     const orderItems = await prisma.orderItem.findMany({
-      where: { status: { not: 'cancelled' } },
+      where: {
+        status: { not: 'cancelled' },
+        ...dateFilter,
+      },
       include: {
         menuItem: {
           include: { category: true },

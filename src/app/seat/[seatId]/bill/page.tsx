@@ -64,7 +64,7 @@ export default function CustomerScreen7({ params }: { params: { seatId: string }
     fetchBillData();
 
     const now = new Date();
-    setDateStr(now.toLocaleDateString('en-GB').replace(/\//g, '-'));
+    setDateStr(now.toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' }).replace(/\//g, '-'));
     setBillNumber(`INV-${100 + seatId}`);
 
     if (!socket) return;

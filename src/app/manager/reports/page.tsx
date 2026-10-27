@@ -47,7 +47,7 @@ interface ItemPerformanceRow {
 export default function MasterSalesReportPage() {
   const socket = useSocketRoom('room:manager');
 
-  const todayStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-'); // e.g. "26-10-2026"
+  const todayStr = new Date().toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' }).replace(/\//g, '-'); // e.g. "27-10-2026"
   const [selectedDate, setSelectedDate] = useState<string>(todayStr); // Default to today's live business
   const [transactions, setTransactions] = useState<TransactionRow[]>([]);
   const [itemPerformance, setItemPerformance] = useState<ItemPerformanceRow[]>([]);
@@ -88,8 +88,8 @@ export default function MasterSalesReportPage() {
         setLoading(false);
       });
 
-    // Fetch live item-wise sales
-    fetch(`/api/reports/item-wise?t=${Date.now()}`, { cache: 'no-store' })
+    // Fetch live item-wise sales for the selected date
+    fetch(`/api/reports/item-wise?date=${selectedDate}&t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.data?.report)) {

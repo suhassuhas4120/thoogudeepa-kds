@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       }
 
       const now = new Date();
-      const formattedDate = now.toLocaleDateString('en-GB').replace(/\//g, '-'); // "25-10-2026"
+      const formattedDate = now.toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' }).replace(/\//g, '-');
       const formattedSettledTime = now.toLocaleTimeString('en-IN', {
         timeZone: 'Asia/Kolkata',
         hour: '2-digit',

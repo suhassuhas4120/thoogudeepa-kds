@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       const parcelToken = `P-${String(parcelCount + 1).padStart(2, '0')}`;
 
       const now = new Date();
-      const formattedDate = now.toLocaleDateString('en-GB').replace(/\//g, '-');
+      const formattedDate = now.toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' }).replace(/\//g, '-');
       const formattedPlacedTime = now.toLocaleTimeString('en-IN', {
         timeZone: 'Asia/Kolkata',
         hour: '2-digit',

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, AlertTriangle, EyeOff, X, Check, Clock, PackageCheck, Phone, User, FileText, Receipt, Layers, ExternalLink } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, EyeOff, X, Check, Clock, PackageCheck, Phone, User, FileText, Receipt, Layers, ExternalLink, Printer } from 'lucide-react';
 import { useSocketRoom } from '@/lib/useSocket';
 import { playKitchenBell } from '@/lib/audio-synth';
 import ManagerTopNav from '@/components/ManagerTopNav';
@@ -748,6 +748,100 @@ export default function ManagerKitchenMonitorScreen() {
           0
         );
 
+        const handlePrintKot = () => {
+          if (!selectedTicket) return;
+          const printWindow = window.open('', '_blank', 'width=380,height=600');
+          if (!printWindow) {
+            window.print();
+            return;
+          }
+          const itemsHtml = (selectedTicket.items || [])
+            .map(
+              (it) => `
+              <div style="display: flex; justify-content: space-between; margin: 4px 0; font-size: 13px;">
+                <span><strong>${it.quantity}x</strong> ${it.itemName}</span>
+                <span>₹${(it.unitPrice * it.quantity).toFixed(2)}</span>
+              </div>
+            `
+            )
+            .join('');
+
+          printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <title>KOT #${selectedTicket.ticketNumber}</title>
+                <style>
+                  @page { size: 80mm auto; margin: 5mm; }
+                  body {
+                    font-family: 'Courier New', Courier, monospace, sans-serif;
+                    width: 72mm;
+                    margin: 0 auto;
+                    color: #000;
+                    font-size: 12px;
+                    line-height: 1.3;
+                  }
+                  .center { text-align: center; }
+                  .bold { font-weight: bold; }
+                  .divider { border-top: 1px dashed #000; margin: 6px 0; }
+                  .double-divider { border-top: 2px dashed #000; margin: 6px 0; }
+                  .flex-between { display: flex; justify-content: space-between; }
+                </style>
+              </head>
+              <body>
+                <div class="center">
+                  <h2 style="margin: 0; font-size: 16px;">THOOGUDEEPA</h2>
+                  <div style="font-size: 11px;">Donne Biryani Mane</div>
+                  <div class="bold" style="font-size: 13px; margin-top: 4px;">KITCHEN ORDER TICKET (KOT)</div>
+                </div>
+                <div class="divider"></div>
+                <div class="flex-between">
+                  <span><strong>TICKET: #${selectedTicket.ticketNumber}</strong></span>
+                  <span><strong>${isParcel ? '📦 TAKEAWAY' : `TABLE: S${selectedTicket.seatId || '1'}`}</strong></span>
+                </div>
+                <div class="flex-between">
+                  <span>Server: ${selectedTicket.waiterName || 'Staff'}</span>
+                  <span>${formatOrderTime(selectedTicket.placedAt, selectedTicket.placedAtTime)}</span>
+                </div>
+                ${
+                  selectedTicket.customerName && selectedTicket.customerName !== '(-)'
+                    ? `<div class="flex-between"><span>Guest: ${selectedTicket.customerName}</span></div>`
+                    : ''
+                }
+                ${
+                  selectedTicket.invoiceNumber
+                    ? `<div class="flex-between"><span>Inv: #${selectedTicket.invoiceNumber} (${selectedTicket.billPaymentMode || 'PAID'})</span></div>`
+                    : ''
+                }
+                <div class="divider"></div>
+                <div style="margin: 4px 0;">
+                  ${itemsHtml}
+                </div>
+                <div class="divider"></div>
+                <div class="flex-between bold" style="font-size: 13px;">
+                  <span>TOTAL:</span>
+                  <span>₹${totalCalculated.toFixed(2)}</span>
+                </div>
+                ${
+                  selectedTicket.specialNotes
+                    ? `<div class="divider"></div><div style="font-size: 11px;">Note: ${selectedTicket.specialNotes}</div>`
+                    : ''
+                }
+                <div class="double-divider"></div>
+                <div class="center" style="font-size: 10px; margin-top: 6px;">
+                  Printed at ${new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true })}
+                </div>
+              </body>
+            </html>
+          `);
+          printWindow.document.close();
+          printWindow.focus();
+          setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+          }, 250);
+        };
+
         return (
           <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
             <div className="bg-[#181513] border border-[#2C2520] rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
@@ -964,23 +1058,31 @@ export default function ManagerKitchenMonitorScreen() {
                     className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 active:scale-95"
                   >
                     <Check className="w-4 h-4" />
-                    <span>{updatingTicketId === selectedTicket.id ? 'Marking Done...' : '✓ Mark Parcel Done & Handed Over'}</span>
+                    <span>{updatingTicketId === selectedTicket.id ? 'Marking Done...' : '✓ Mark Done'}</span>
                   </button>
                 )}
 
                 {isParcel && isDone && (
                   <div className="flex-1 py-3 px-4 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold text-xs rounded-xl flex items-center justify-center gap-2">
                     <Check className="w-4 h-4 text-emerald-400" />
-                    <span>Parcel Order Completed & Handed Over</span>
+                    <span>Parcel Completed</span>
                   </div>
                 )}
+
+                {/* Dedicated Print KOT button */}
+                <button
+                  type="button"
+                  onClick={handlePrintKot}
+                  className="flex-1 py-3 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg active:scale-95"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>🖨️ PRINT KOT</span>
+                </button>
 
                 <button
                   type="button"
                   onClick={() => setSelectedTicket(null)}
-                  className={`py-3 px-5 bg-[#221D1A] hover:bg-[#2C2520] text-stone-300 hover:text-white font-bold text-xs rounded-xl border border-[#2C2520] transition active:scale-95 ${
-                    !isParcel ? 'w-full' : ''
-                  }`}
+                  className="py-3 px-5 bg-[#221D1A] hover:bg-[#2C2520] text-stone-300 hover:text-white font-bold text-xs rounded-xl border border-[#2C2520] transition active:scale-95"
                 >
                   Close
                 </button>
