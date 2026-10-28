@@ -286,28 +286,28 @@ export default function ManagerShiftAuditScreen() {
         {/* 1. SUHAS SECTION */}
         <div className="bg-white border border-stone-200 rounded-2xl p-5 shadow-xs">
           <div className="flex justify-between items-center pb-2.5 border-b border-stone-200 mb-3">
-            <h2 className="font-black text-sm text-sky-400 uppercase tracking-wider flex items-center gap-2">
+            <h2 className="font-black text-sm text-stone-900 uppercase tracking-wider flex items-center gap-2">
               <span>🤵 WAITER 1: SUHAS</span>
-              <span className="text-xs text-stone-400 font-normal">(Zone A: Seats 1 - 8)</span>
+              <span className="text-xs text-stone-500 font-normal">(Zone A: Seats 1 - 8)</span>
             </h2>
-            <span className="text-xs text-stone-400">
-              Total Seats Served: <strong className="text-white">{suhasStats.tablesCount}</strong>
+            <span className="text-xs text-stone-500">
+              Total Seats Served: <strong className="text-stone-900">{suhasStats.tablesCount}</strong>
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-stone-300 mb-3 font-medium">
-            <span>• Total Billed: <strong className="text-white">₹{suhasStats.totalBilled.toFixed(2)}</strong></span>
-            <span>• 📱 UPI / Online: <strong className="text-white">₹{suhasStats.upiCollected.toFixed(2)}</strong></span>
+          <div className="flex items-center justify-between text-xs text-stone-700 mb-3 font-medium">
+            <span>• Total Billed: <strong className="text-stone-900">₹{suhasStats.totalBilled.toFixed(2)}</strong></span>
+            <span>• 📱 UPI / Online: <strong className="text-stone-900">₹{suhasStats.upiCollected.toFixed(2)}</strong></span>
           </div>
 
           {/* 4-Item Cash Handover Row: (Cash Collected -> Handing Over Input + Submit -> Handed Over -> Remaining) */}
           <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-4 text-xs">
             {/* 1. Cash Collected */}
             <div className="space-y-1">
-              <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
+              <span className="text-stone-500 font-bold block uppercase text-[10px] tracking-wider">
                 💵 1. Cash Collected
               </span>
-              <span className="font-black text-amber-400 text-base font-mono block">
+              <span className="font-black text-[#8A4228] text-base font-mono block">
                 ₹{suhasStats.cashCollected.toFixed(2)}
               </span>
             </div>
@@ -315,21 +315,21 @@ export default function ManagerShiftAuditScreen() {
             {/* 2. Handing Over Input Section with Submit Button */}
             <div className="space-y-1">
               <div className="flex justify-between items-center">
-                <span className="text-stone-300 font-bold block uppercase text-[10px] tracking-wider">
+                <span className="text-stone-700 font-bold block uppercase text-[10px] tracking-wider">
                   📥 2. Handing Over
                 </span>
                 {suhasBalance > 0 && (
                   <button
                     type="button"
                     onClick={() => setSuhasHandingOver(String(suhasBalance))}
-                    className="text-[10px] font-bold text-amber-400 hover:text-amber-300 hover:underline"
+                    className="text-[10px] font-bold text-[#8A4228] hover:text-amber-300 hover:underline"
                   >
                     + Fill Remaining (₹{suhasBalance.toFixed(2)})
                   </button>
                 )}
               </div>
               <form onSubmit={handleSuhasSubmit} className="flex items-center gap-1.5">
-                <div className="flex items-center bg-[#100E0C] border border-[#3D332C] rounded-lg px-2.5 py-1.5 flex-1 focus-within:border-amber-400 transition">
+                <div className="flex items-center bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 flex-1 focus-within:border-amber-400 transition">
                   <span className="text-stone-500 mr-1 font-bold text-xs">₹</span>
                   <input
                     type="number"
@@ -340,7 +340,7 @@ export default function ManagerShiftAuditScreen() {
                     onChange={(e) => setSuhasHandingOver(e.target.value)}
                     placeholder={suhasBalance > 0 ? "Enter cash (₹)" : "Fully Handed Over"}
                     disabled={suhasBalance <= 0}
-                    className="w-full bg-transparent text-white font-black focus:outline-none text-xs font-mono placeholder-stone-600 disabled:text-stone-600"
+                    className="w-full bg-transparent text-stone-900 font-black focus:outline-none text-xs font-mono placeholder-stone-600 disabled:text-stone-600"
                   />
                 </div>
                 <button
@@ -356,8 +356,8 @@ export default function ManagerShiftAuditScreen() {
                     parseFloat(suhasHandingOver) > 0 &&
                     parseFloat(suhasHandingOver) <= suhasBalance &&
                     suhasBalance > 0
-                      ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer'
-                      : 'bg-[#2A2420] text-stone-500 cursor-not-allowed opacity-60'
+                      ? 'bg-[#8A4228] hover:bg-[#71351F] text-white cursor-pointer font-bold shadow-xs'
+                      : 'bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed'
                   }`}
                 >
                   Submit
@@ -373,7 +373,7 @@ export default function ManagerShiftAuditScreen() {
             {/* 3. Handed Over */}
             <div className="space-y-1">
               <div className="flex justify-between items-center">
-                <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
+                <span className="text-stone-500 font-bold block uppercase text-[10px] tracking-wider">
                   🤝 3. Handed Over
                 </span>
                 <div className="flex items-center gap-1.5">
@@ -381,7 +381,7 @@ export default function ManagerShiftAuditScreen() {
                     <button
                       type="button"
                       onClick={handleFixSuhasExact}
-                      className="text-[10px] text-amber-400 hover:text-amber-300 underline font-bold"
+                      className="text-[10px] text-[#8A4228] hover:text-amber-300 underline font-bold"
                     >
                       Fix to Exact
                     </button>
@@ -398,7 +398,7 @@ export default function ManagerShiftAuditScreen() {
                 </div>
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="font-black text-emerald-400 text-base font-mono">
+                <span className="font-black text-emerald-700 text-base font-mono">
                   ₹{suhasHandedOver.toFixed(2)}
                 </span>
                 <span className="text-[10px] text-stone-500 font-mono">
@@ -409,17 +409,17 @@ export default function ManagerShiftAuditScreen() {
 
             {/* 4. Remaining */}
             <div className="space-y-1">
-              <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
+              <span className="text-stone-500 font-bold block uppercase text-[10px] tracking-wider">
                 ⚖️ 4. Remaining
               </span>
               <div>
                 <span
                   className={`font-black px-2.5 py-1 rounded-md text-xs inline-flex items-center gap-1 font-mono ${
                     suhasBalance === 0
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      ? 'bg-emerald-500/20 text-emerald-700 border border-emerald-500/30'
                       : suhasBalance > 0
-                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                      : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                      ? 'bg-amber-500/20 text-[#8A4228] border border-amber-500/30'
+                      : 'bg-cyan-500/20 text-stone-900 border border-cyan-500/30'
                   }`}
                 >
                   {suhasBalance === 0 ? (
@@ -444,28 +444,28 @@ export default function ManagerShiftAuditScreen() {
         {/* 2. SHIVA SECTION */}
         <div className="bg-white border border-stone-200 rounded-2xl p-5 shadow-xs">
           <div className="flex justify-between items-center pb-2.5 border-b border-stone-200 mb-3">
-            <h2 className="font-black text-sm text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+            <h2 className="font-black text-sm text-stone-900 uppercase tracking-wider flex items-center gap-2">
               <span>🤵 WAITER 2: SHIVA</span>
-              <span className="text-xs text-stone-400 font-normal">(Zone B: Seats 9 - 16)</span>
+              <span className="text-xs text-stone-500 font-normal">(Zone B: Seats 9 - 16)</span>
             </h2>
-            <span className="text-xs text-stone-400">
-              Total Seats Served: <strong className="text-white">{shivaStats.tablesCount}</strong>
+            <span className="text-xs text-stone-500">
+              Total Seats Served: <strong className="text-stone-900">{shivaStats.tablesCount}</strong>
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-stone-300 mb-3 font-medium">
-            <span>• Total Billed: <strong className="text-white">₹{shivaStats.totalBilled.toFixed(2)}</strong></span>
-            <span>• 📱 UPI / Online: <strong className="text-white">₹{shivaStats.upiCollected.toFixed(2)}</strong></span>
+          <div className="flex items-center justify-between text-xs text-stone-700 mb-3 font-medium">
+            <span>• Total Billed: <strong className="text-stone-900">₹{shivaStats.totalBilled.toFixed(2)}</strong></span>
+            <span>• 📱 UPI / Online: <strong className="text-stone-900">₹{shivaStats.upiCollected.toFixed(2)}</strong></span>
           </div>
 
           {/* 4-Item Cash Handover Row: (Cash Collected -> Handing Over Input + Submit -> Handed Over -> Remaining) */}
           <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-4 text-xs">
             {/* 1. Cash Collected */}
             <div className="space-y-1">
-              <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
+              <span className="text-stone-500 font-bold block uppercase text-[10px] tracking-wider">
                 💵 1. Cash Collected
               </span>
-              <span className="font-black text-amber-400 text-base font-mono block">
+              <span className="font-black text-[#8A4228] text-base font-mono block">
                 ₹{shivaStats.cashCollected.toFixed(2)}
               </span>
             </div>
@@ -473,21 +473,21 @@ export default function ManagerShiftAuditScreen() {
             {/* 2. Handing Over Input Section with Submit Button */}
             <div className="space-y-1">
               <div className="flex justify-between items-center">
-                <span className="text-stone-300 font-bold block uppercase text-[10px] tracking-wider">
+                <span className="text-stone-700 font-bold block uppercase text-[10px] tracking-wider">
                   📥 2. Handing Over
                 </span>
                 {shivaBalance > 0 && (
                   <button
                     type="button"
                     onClick={() => setShivaHandingOver(String(shivaBalance))}
-                    className="text-[10px] font-bold text-amber-400 hover:text-amber-300 hover:underline"
+                    className="text-[10px] font-bold text-[#8A4228] hover:text-amber-300 hover:underline"
                   >
                     + Fill Remaining (₹{shivaBalance.toFixed(2)})
                   </button>
                 )}
               </div>
               <form onSubmit={handleShivaSubmit} className="flex items-center gap-1.5">
-                <div className="flex items-center bg-[#100E0C] border border-[#3D332C] rounded-lg px-2.5 py-1.5 flex-1 focus-within:border-amber-400 transition">
+                <div className="flex items-center bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 flex-1 focus-within:border-amber-400 transition">
                   <span className="text-stone-500 mr-1 font-bold text-xs">₹</span>
                   <input
                     type="number"
@@ -498,7 +498,7 @@ export default function ManagerShiftAuditScreen() {
                     onChange={(e) => setShivaHandingOver(e.target.value)}
                     placeholder={shivaBalance > 0 ? "Enter cash (₹)" : "Fully Handed Over"}
                     disabled={shivaBalance <= 0}
-                    className="w-full bg-transparent text-white font-black focus:outline-none text-xs font-mono placeholder-stone-600 disabled:text-stone-600"
+                    className="w-full bg-transparent text-stone-900 font-black focus:outline-none text-xs font-mono placeholder-stone-600 disabled:text-stone-600"
                   />
                 </div>
                 <button
@@ -514,8 +514,8 @@ export default function ManagerShiftAuditScreen() {
                     parseFloat(shivaHandingOver) > 0 &&
                     parseFloat(shivaHandingOver) <= shivaBalance &&
                     shivaBalance > 0
-                      ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer'
-                      : 'bg-[#2A2420] text-stone-500 cursor-not-allowed opacity-60'
+                      ? 'bg-[#8A4228] hover:bg-[#71351F] text-white cursor-pointer font-bold shadow-xs'
+                      : 'bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed'
                   }`}
                 >
                   Submit
@@ -531,7 +531,7 @@ export default function ManagerShiftAuditScreen() {
             {/* 3. Handed Over */}
             <div className="space-y-1">
               <div className="flex justify-between items-center">
-                <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
+                <span className="text-stone-500 font-bold block uppercase text-[10px] tracking-wider">
                   🤝 3. Handed Over
                 </span>
                 <div className="flex items-center gap-1.5">
@@ -539,7 +539,7 @@ export default function ManagerShiftAuditScreen() {
                     <button
                       type="button"
                       onClick={handleFixShivaExact}
-                      className="text-[10px] text-amber-400 hover:text-amber-300 underline font-bold"
+                      className="text-[10px] text-[#8A4228] hover:text-amber-300 underline font-bold"
                     >
                       Fix to Exact
                     </button>
@@ -556,7 +556,7 @@ export default function ManagerShiftAuditScreen() {
                 </div>
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="font-black text-emerald-400 text-base font-mono">
+                <span className="font-black text-emerald-700 text-base font-mono">
                   ₹{shivaHandedOver.toFixed(2)}
                 </span>
                 <span className="text-[10px] text-stone-500 font-mono">
@@ -567,17 +567,17 @@ export default function ManagerShiftAuditScreen() {
 
             {/* 4. Remaining */}
             <div className="space-y-1">
-              <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
+              <span className="text-stone-500 font-bold block uppercase text-[10px] tracking-wider">
                 ⚖️ 4. Remaining
               </span>
               <div>
                 <span
                   className={`font-black px-2.5 py-1 rounded-md text-xs inline-flex items-center gap-1 font-mono ${
                     shivaBalance === 0
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      ? 'bg-emerald-500/20 text-emerald-700 border border-emerald-500/30'
                       : shivaBalance > 0
-                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                      : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                      ? 'bg-amber-500/20 text-[#8A4228] border border-amber-500/30'
+                      : 'bg-cyan-500/20 text-stone-900 border border-cyan-500/30'
                   }`}
                 >
                   {shivaBalance === 0 ? (
@@ -606,32 +606,32 @@ export default function ManagerShiftAuditScreen() {
               <span>📦 PARCEL / TAKEAWAY DESK</span>
               <span className="text-xs text-amber-300/80 font-normal">(Manager Counter)</span>
             </h2>
-            <span className="text-xs text-stone-400">
-              Total Parcels: <strong className="text-white">{parcelStats.tablesCount}</strong>
+            <span className="text-xs text-stone-500">
+              Total Parcels: <strong className="text-stone-900">{parcelStats.tablesCount}</strong>
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-stone-300 mb-3 font-medium">
-            <span>• Total Billed: <strong className="text-white">₹{parcelStats.totalBilled.toFixed(2)}</strong></span>
-            <span>• 📱 UPI / Online: <strong className="text-white">₹{parcelStats.upiCollected.toFixed(2)}</strong></span>
+          <div className="flex items-center justify-between text-xs text-stone-700 mb-3 font-medium">
+            <span>• Total Billed: <strong className="text-stone-900">₹{parcelStats.totalBilled.toFixed(2)}</strong></span>
+            <span>• 📱 UPI / Online: <strong className="text-stone-900">₹{parcelStats.upiCollected.toFixed(2)}</strong></span>
           </div>
 
           {/* Parcel Cash Row */}
-          <div className="p-3.5 rounded-xl bg-[#221D1A] border border-[#8A4228]/40 flex flex-wrap items-center justify-between gap-4 text-xs">
+          <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 flex flex-wrap items-center justify-between gap-4 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="text-stone-300 font-bold">• 💵 Cash Collected:</span>
-              <span className="font-black text-amber-400 text-sm">₹{parcelStats.cashCollected.toFixed(2)}</span>
+              <span className="text-stone-700 font-bold">• 💵 Cash Collected:</span>
+              <span className="font-black text-[#8A4228] text-sm">₹{parcelStats.cashCollected.toFixed(2)}</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-md bg-[#8A4228]/20 border border-[#8A4228]/40 text-amber-300 font-semibold flex items-center gap-1.5 text-xs">
+              <span className="px-3 py-1 rounded-md bg-[#8A4228]/10 border border-[#8A4228]/20 text-[#8A4228] font-semibold flex items-center gap-1.5 text-xs">
                 <Store className="w-3.5 h-3.5 text-[#D08A52]" />
                 <span>Directly at Manager Counter — No Handover Required</span>
               </span>
             </div>
 
             <div className="flex items-center gap-1.5">
-              <span className="px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-black flex items-center gap-1">
+              <span className="px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-700 border border-emerald-500/30 font-black flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>🟢 Direct into Drawer</span>
               </span>
@@ -640,16 +640,16 @@ export default function ManagerShiftAuditScreen() {
         </div>
 
         {/* Total Cash In Drawer Bar */}
-        <div className="p-5 rounded-2xl bg-gradient-to-r from-[#8A4228]/20 via-[#181513] to-[#8A4228]/20 border-2 border-[#8A4228]/60 flex flex-wrap justify-between items-center shadow-lg gap-3">
+        <div className="p-5 rounded-2xl bg-stone-50 border border-stone-200 flex flex-wrap justify-between items-center shadow-lg gap-3">
           <div>
-            <span className="font-black text-sm md:text-base text-white tracking-wide flex items-center gap-2">
+            <span className="font-black text-sm md:text-base text-stone-900 tracking-wide flex items-center gap-2">
               <span>💰 TOTAL CASH IN DRAWER:</span>
             </span>
-            <p className="text-[11px] text-stone-400 mt-0.5 font-mono">
+            <p className="text-[11px] text-stone-500 mt-0.5 font-mono">
               (Suhas Handed: ₹{suhasHandedOver.toFixed(2)} + Shiva Handed: ₹{shivaHandedOver.toFixed(2)} + Parcel Direct: ₹{parcelStats.cashCollected.toFixed(2)})
             </p>
           </div>
-          <span className="text-2xl md:text-3xl font-black text-amber-400 font-mono">
+          <span className="text-2xl md:text-3xl font-black text-[#8A4228] font-mono">
             ₹{totalCashInDrawer.toFixed(2)}
           </span>
         </div>
@@ -659,7 +659,7 @@ export default function ManagerShiftAuditScreen() {
           <button
             type="button"
             onClick={() => alert(`Shift reconciled successfully! Total cash verified in drawer: ₹${totalCashInDrawer.toFixed(2)}`)}
-            className="py-4 rounded-xl bg-[#8A4228] hover:bg-[#71351F] text-white font-black text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-[#8A4228]/20 active:scale-98 transition-all"
+            className="py-4 rounded-xl bg-[#8A4228] hover:bg-[#71351F] text-stone-900 font-black text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-[#8A4228]/20 active:scale-98 transition-all"
           >
             <Lock className="w-4 h-4" />
             <span>🔒 CLOSE SHIFT & VERIFY CASH IN DRAWER</span>

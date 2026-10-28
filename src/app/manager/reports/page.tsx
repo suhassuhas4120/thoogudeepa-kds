@@ -431,7 +431,7 @@ export default function MasterSalesReportPage() {
           <h1 className="text-xs md:text-sm font-black text-[#8A4228] uppercase tracking-wider font-sans">
             MASTER FINANCIAL & DETAILED SALES REPORT
           </h1>
-          <p className="text-[11px] text-stone-400 font-sans mt-0.5">
+          <p className="text-[11px] text-stone-500 font-sans mt-0.5">
             Real-time live audit • {transactions.length} total bills settled
           </p>
         </div>
@@ -440,8 +440,8 @@ export default function MasterSalesReportPage() {
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Interactive Date Filter */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-700 font-bold text-xs">
-            <Calendar className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-stone-400 font-sans">Period:</span>
+            <Calendar className="w-3.5 h-3.5 text-[#8A4228]" />
+            <span className="text-stone-500 font-sans">Period:</span>
             <select
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
@@ -484,9 +484,9 @@ export default function MasterSalesReportPage() {
       <main className="p-6 space-y-6 flex-1 max-w-[1600px] w-full mx-auto">
         {/* 1. COMPLETE FINANCIAL SUMMARY BREAKDOWN */}
         <section className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs">
-          <div className="bg-stone-50 px-4 py-2.5 border-b border-stone-200 font-bold text-amber-400 uppercase tracking-wider text-xs flex justify-between items-center">
+          <div className="bg-stone-50 px-4 py-2.5 border-b border-stone-200 font-black text-stone-900 uppercase tracking-wider text-xs flex justify-between items-center">
             <span>1. COMPLETE FINANCIAL SUMMARY BREAKDOWN ({displayFilterLabel})</span>
-            <span className="text-[11px] text-emerald-400 font-mono font-bold flex items-center gap-1">
+            <span className="text-[11px] text-emerald-700 font-mono font-bold flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               Live Real-Time
             </span>
@@ -495,26 +495,26 @@ export default function MasterSalesReportPage() {
             {/* Row 1: Gross, Discounts, GST, Net */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-4 border-b border-stone-200">
               <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl">
-                <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Gross Food Sales:</span>
+                <span className="text-stone-500 block text-[11px] uppercase font-bold tracking-wider">Gross Food Sales:</span>
                 <strong className="text-stone-900 text-lg font-mono font-black mt-1 block">
                   ₹{grossFoodSales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </strong>
               </div>
               <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl">
-                <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Total Discounts:</span>
-                <strong className="text-emerald-400 text-lg font-mono font-black mt-1 block">
+                <span className="text-stone-500 block text-[11px] uppercase font-bold tracking-wider">Total Discounts:</span>
+                <strong className="text-emerald-700 text-lg font-mono font-black mt-1 block">
                   -₹{totalDiscount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </strong>
               </div>
               <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl">
-                <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Total GST (5%):</span>
-                <strong className="text-sky-400 text-lg font-mono font-black mt-1 block">
+                <span className="text-stone-500 block text-[11px] uppercase font-bold tracking-wider">Total GST (5%):</span>
+                <strong className="text-sky-800 text-lg font-mono font-black mt-1 block">
                   ₹{totalGst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </strong>
               </div>
               <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl">
-                <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Net Day Revenue:</span>
-                <strong className="text-amber-400 text-lg font-mono font-black mt-1 block">
+                <span className="text-stone-500 block text-[11px] uppercase font-bold tracking-wider">Net Day Revenue:</span>
+                <strong className="text-[#8A4228] text-lg font-mono font-black mt-1 block">
                   ₹{netDayRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </strong>
               </div>
@@ -523,33 +523,33 @@ export default function MasterSalesReportPage() {
             {/* Row 2: Dine-in, Takeaway, Total Orders */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b border-stone-200">
               <div>
-                <span className="text-stone-400">Dine-in Sales (16 Seats):</span>{' '}
+                <span className="text-stone-500">Dine-in Sales (16 Seats):</span>{' '}
                 <strong className="text-stone-900 text-sm font-mono font-bold">
                   ₹{dineInSales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </strong>
               </div>
               <div>
-                <span className="text-stone-400">Takeaway / Parcel Sales:</span>{' '}
-                <strong className="text-amber-400 text-sm font-mono font-bold">
+                <span className="text-stone-500">Takeaway / Parcel Sales:</span>{' '}
+                <strong className="text-[#8A4228] text-sm font-mono font-bold">
                   ₹{takeawaySales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </strong>
               </div>
               <div>
-                <span className="text-stone-400">Total Orders Completed:</span>{' '}
+                <span className="text-stone-500">Total Orders Completed:</span>{' '}
                 <strong className="text-stone-900 text-sm font-mono font-bold">{totalOrdersCompleted}</strong>{' '}
-                <span className="text-stone-400 text-[11px]">({dineInCount} Dine-in, {takeawayCount} Parcel)</span>
+                <span className="text-stone-500 text-[11px]">({dineInCount} Dine-in, {takeawayCount} Parcel)</span>
               </div>
             </div>
 
             {/* Row 3: Payment Split */}
-            <div className="text-xs text-stone-300 flex flex-wrap items-center gap-2">
-              <span className="text-stone-400 font-bold">Payment Split:</span>
+            <div className="text-xs text-stone-700 flex flex-wrap items-center gap-2">
+              <span className="text-stone-500 font-bold">Payment Split:</span>
               <span className="bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-200 text-stone-700">
-                💵 Cash: <strong className="text-amber-400 font-mono">₹{cashSales.toFixed(2)} ({cashPct}%)</strong>
+                💵 Cash: <strong className="text-[#8A4228] font-mono">₹{cashSales.toFixed(2)} ({cashPct}%)</strong>
               </span>
               <span>•</span>
               <span className="bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-200 text-stone-700">
-                📱 UPI: <strong className="text-cyan-400 font-mono">₹{upiSales.toFixed(2)} ({upiPct}%)</strong>
+                📱 UPI: <strong className="text-stone-900 font-mono">₹{upiSales.toFixed(2)} ({upiPct}%)</strong>
               </span>
               <span>•</span>
               <span className="bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-200 text-stone-700">
@@ -561,9 +561,9 @@ export default function MasterSalesReportPage() {
 
         {/* 2. ITEM-WISE SALES PERFORMANCE */}
         <section className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs">
-          <div className="bg-stone-50 px-4 py-2.5 border-b border-stone-200 font-bold text-cyan-400 uppercase tracking-wider text-xs flex justify-between items-center">
+          <div className="bg-stone-50 px-4 py-2.5 border-b border-stone-200 font-black text-stone-900 uppercase tracking-wider text-xs flex justify-between items-center">
             <span>2. ITEM-WISE SALES PERFORMANCE ({itemPerformance.length} Items Sold)</span>
-            <span className="text-[11px] text-stone-400 font-normal">Top Revenue Contributors</span>
+            <span className="text-[11px] text-stone-500 font-normal">Top Revenue Contributors</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse font-sans text-xs">
@@ -590,19 +590,19 @@ export default function MasterSalesReportPage() {
                       <td className="p-3 font-sans font-bold text-stone-900 border-r border-stone-200">
                         {row.dishName}
                       </td>
-                      <td className="p-3 font-sans text-stone-300 border-r border-stone-200">
+                      <td className="p-3 font-sans text-stone-700 border-r border-stone-200">
                         {row.category}
                       </td>
                       <td className="p-3 text-right text-stone-900 font-bold border-r border-stone-200">
                         {row.qtySold}
                       </td>
-                      <td className="p-3 text-right text-stone-300 border-r border-stone-200">
+                      <td className="p-3 text-right text-stone-700 border-r border-stone-200">
                         ₹{row.unitPrice.toFixed(2)}
                       </td>
-                      <td className="p-3 text-right text-emerald-400 font-bold border-r border-stone-200">
+                      <td className="p-3 text-right text-emerald-700 font-bold border-r border-stone-200">
                         ₹{row.totalRevenue.toFixed(2)}
                       </td>
-                      <td className="p-3 text-right text-amber-400 font-bold">
+                      <td className="p-3 text-right text-[#8A4228] font-bold">
                         {row.contributionPercent.toFixed(1)}%
                       </td>
                     </tr>
@@ -616,11 +616,11 @@ export default function MasterSalesReportPage() {
         {/* 3. MASTER DETAILED TRANSACTION AUDIT (MAXIMUM COLUMNS) */}
         <section className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs">
           <div className="bg-stone-50 px-4 py-2.5 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3">
-            <span className="font-bold text-emerald-400 uppercase tracking-wider text-xs">
+            <span className="font-bold text-emerald-700 uppercase tracking-wider text-xs">
               3. MASTER DETAILED TRANSACTION AUDIT ({filtered.length} Invoices)
             </span>
             <div className="relative w-72">
-              <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-stone-500 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search Bill #, Guest, Server or Mode..."
@@ -662,10 +662,10 @@ export default function MasterSalesReportPage() {
                 ) : (
                   filtered.map((t) => (
                     <tr key={t.billNumber} className="hover:bg-stone-50/70 transition-colors">
-                      <td className="p-2.5 font-bold text-amber-400 border-r border-stone-200">
+                      <td className="p-2.5 font-bold text-[#8A4228] border-r border-stone-200">
                         {t.billNumber}
                       </td>
-                      <td className="p-2.5 text-stone-300 border-r border-stone-200">
+                      <td className="p-2.5 text-stone-700 border-r border-stone-200">
                         {t.date}
                       </td>
                       <td className="p-2.5 border-r border-stone-200">
@@ -673,7 +673,7 @@ export default function MasterSalesReportPage() {
                           className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                             t.orderType.toLowerCase().includes('take') || t.orderType.toLowerCase().includes('parcel')
                               ? 'bg-amber-950/80 text-amber-300 border border-amber-500/30'
-                              : 'bg-stone-800 text-stone-300'
+                              : 'bg-stone-800 text-stone-700'
                           }`}
                         >
                           {t.orderType}
@@ -682,31 +682,31 @@ export default function MasterSalesReportPage() {
                       <td className="p-2.5 font-bold text-stone-900 border-r border-stone-200">
                         {t.seatNumberOrToken}
                       </td>
-                      <td className="p-2.5 text-stone-200 border-r border-stone-200">
+                      <td className="p-2.5 text-stone-800 border-r border-stone-200">
                         {t.customerName}
                       </td>
-                      <td className="p-2.5 text-stone-300 border-r border-stone-200">
+                      <td className="p-2.5 text-stone-700 border-r border-stone-200">
                         {t.serverName}
                       </td>
-                      <td className="p-2.5 text-stone-200 max-w-xs truncate border-r border-stone-200" title={t.itemsSummary}>
+                      <td className="p-2.5 text-stone-800 max-w-xs truncate border-r border-stone-200" title={t.itemsSummary}>
                         {t.itemsSummary}
                       </td>
-                      <td className="p-2.5 text-stone-300 border-r border-stone-200">
+                      <td className="p-2.5 text-stone-700 border-r border-stone-200">
                         {t.placedAt}
                       </td>
-                      <td className="p-2.5 text-stone-300 border-r border-stone-200">
+                      <td className="p-2.5 text-stone-700 border-r border-stone-200">
                         {t.settledAt}
                       </td>
-                      <td className="p-2.5 text-right font-mono text-stone-300 border-r border-stone-200">
+                      <td className="p-2.5 text-right font-mono text-stone-700 border-r border-stone-200">
                         ₹{t.subtotal.toFixed(2)}
                       </td>
-                      <td className="p-2.5 text-right font-mono text-emerald-400 font-bold border-r border-stone-200">
+                      <td className="p-2.5 text-right font-mono text-emerald-700 font-bold border-r border-stone-200">
                         {t.discountAmount > 0 ? `-₹${t.discountAmount.toFixed(2)}` : '₹0.00'}
                       </td>
-                      <td className="p-2.5 text-right font-mono text-stone-400 border-r border-stone-200">
+                      <td className="p-2.5 text-right font-mono text-stone-500 border-r border-stone-200">
                         ₹{t.gst5Percent.toFixed(2)}
                       </td>
-                      <td className="p-2.5 text-right font-mono font-bold text-amber-400 border-r border-stone-200">
+                      <td className="p-2.5 text-right font-mono font-bold text-[#8A4228] border-r border-stone-200">
                         ₹{t.grandTotal.toFixed(2)}
                       </td>
                       <td className="p-2.5 border-r border-stone-200">

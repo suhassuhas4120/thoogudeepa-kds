@@ -306,21 +306,21 @@ export default function ManagerFloorScreen() {
 
   // Determine status display label and color for seat cards
   const getSeatCardStatus = (seat: SeatData, isSelected: boolean) => {
-    if (isSelected) return { label: '🟢 Selected', color: 'text-emerald-400' };
+    if (isSelected) return { label: '🟢 Selected', color: 'text-emerald-700' };
     if (seat.status === 'VACANT') return { label: '⚪ Vacant', color: 'text-stone-500' };
-    if (seat.status === 'BILL_REQUESTED') return { label: '🧾 Bill Req', color: 'text-amber-400 font-bold' };
+    if (seat.status === 'BILL_REQUESTED') return { label: '🧾 Bill Req', color: 'text-amber-700 font-bold' };
     
     // Check ticket cooking/ready status
     const tickets = seat.activeSession?.orderTickets || [];
     const allItems = tickets.flatMap((t) => t.items || []);
-    if (allItems.some((i) => i.status === 'ready')) return { label: '🟢 Ready', color: 'text-emerald-400 font-bold' };
+    if (allItems.some((i) => i.status === 'ready')) return { label: '🟢 Ready', color: 'text-emerald-700 font-bold' };
     if (allItems.some((i) => i.status === 'preparing' || i.status === 'placed')) {
-      return { label: '🍳 Cooking', color: 'text-orange-400' };
+      return { label: '🍳 Cooking', color: 'text-orange-700' };
     }
     if (allItems.length > 0 && allItems.every((i) => i.status === 'served')) {
-      return { label: '🍽️ Eating', color: 'text-blue-400' };
+      return { label: '🍽️ Eating', color: 'text-blue-700' };
     }
-    return { label: '🟢 Seated', color: 'text-emerald-400' };
+    return { label: '🟢 Seated', color: 'text-emerald-700' };
   };
 
   return (

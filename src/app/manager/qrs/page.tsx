@@ -70,14 +70,14 @@ export default function ManagerQRStandsScreen() {
       </div>
 
       {/* Subheader Instructions - Hidden on Print */}
-      <div className="h-12 bg-[#181513] border-b border-stone-200 px-6 flex items-center justify-between text-xs text-stone-400 print:hidden">
+      <div className="h-12 bg-white border-b border-stone-200 px-6 flex items-center justify-between text-xs text-stone-600 print:hidden">
         <div>
           <span>High-Resolution Acrylic QR Stands for Seats 1 to 16.</span>
-          <span className="text-[#D08A52] font-bold ml-2">
+          <span className="text-[#8A4228] font-bold ml-2">
             Tip: Press Ctrl+P or click &apos;Print&apos; to export as PDF or print acrylic inserts.
           </span>
         </div>
-        <div className="font-mono text-[#D08A52]">
+        <div className="font-mono text-[#8A4228]">
           Domain: {origin || 'http://localhost:3000'}
         </div>
       </div>
@@ -99,25 +99,25 @@ export default function ManagerQRStandsScreen() {
             return (
               <div
                 key={seat.id}
-                className="bg-[#181513] rounded-3xl border border-stone-200 p-5 flex flex-col items-center justify-between text-center relative overflow-hidden shadow-xl print:border-2 print:border-black print:bg-white print:text-black print:page-break-after-always print:rounded-2xl print:my-4"
+                className="bg-white rounded-2xl border border-stone-200 p-5 flex flex-col items-center justify-between text-center relative overflow-hidden shadow-xs print:border-2 print:border-black print:bg-white print:text-black print:page-break-after-always print:rounded-2xl print:my-4"
               >
                 {/* Gold/Copper Top Accent Line */}
                 <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#8A4228] via-[#D08A52] to-[#8A4228] print:hidden" />
 
                 <div className="w-full">
-                  <div className="text-[11px] font-black uppercase tracking-widest text-[#D08A52] print:text-black">
+                  <div className="text-[11px] font-black uppercase tracking-widest text-[#8A4228] print:text-black">
                     THOOGUDEEPA
                   </div>
-                  <h2 className="text-xs font-black uppercase tracking-wider text-stone-300 print:text-black">
+                  <h2 className="text-xs font-black uppercase tracking-wider text-stone-900 print:text-black font-bold">
                     DONNE BIRYANI MANE
                   </h2>
 
                   {/* Seat Badge */}
                   <div className="my-4 py-2 px-6 rounded-2xl bg-[#8A4228]/15 border border-[#8A4228]/30 inline-block print:bg-gray-100 print:border-black">
-                    <span className="text-2xl font-black text-[#D08A52] print:text-black tracking-tight">
+                    <span className="text-2xl font-black text-[#8A4228] print:text-black tracking-tight">
                       SEAT {seat.seatNumber < 10 ? `0${seat.seatNumber}` : seat.seatNumber}
                     </span>
-                    <div className="text-[10px] font-bold text-stone-400 print:text-gray-700">
+                    <div className="text-[10px] font-bold text-stone-500 print:text-gray-700">
                       {seat.zone} • {seat.assignedWaiter}
                     </div>
                   </div>
@@ -134,10 +134,10 @@ export default function ManagerQRStandsScreen() {
                 </div>
 
                 <div className="w-full mt-3">
-                  <p className="text-xs font-bold text-white print:text-black">
+                  <p className="text-xs font-bold text-stone-900 print:text-black font-bold">
                     Scan to Order & Pay
                   </p>
-                  <p className="text-[10px] text-stone-400 print:text-gray-600">
+                  <p className="text-[10px] text-stone-500 print:text-gray-600">
                     UPI • Cash • Live Item Tracking
                   </p>
                 </div>
@@ -146,7 +146,7 @@ export default function ManagerQRStandsScreen() {
                 <div className="w-full mt-4 pt-3 border-t border-stone-200 flex items-center justify-between gap-2 print:hidden">
                   <button
                     onClick={() => handlePrintSingle(seat.id)}
-                    className="flex-1 py-1.5 px-2 bg-stone-50 hover:bg-[#2C2520] border border-stone-200 text-stone-300 hover:text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition"
+                    className="flex-1 py-1.5 px-2 bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 text-stone-300 hover:text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition"
                   >
                     <Printer className="w-3.5 h-3.5" />
                     <span>Print Stand</span>
@@ -156,7 +156,7 @@ export default function ManagerQRStandsScreen() {
                     href={`/seat/${seat.id}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="p-2 bg-[#8A4228]/20 text-[#D08A52] hover:bg-[#8A4228]/30 rounded-xl text-xs font-bold transition border border-[#8A4228]/30"
+                    className="p-2 bg-[#8A4228]/20 text-[#8A4228] hover:bg-[#8A4228]/30 rounded-xl text-xs font-bold transition border border-[#8A4228]/30"
                     title="Open Seat Portal"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />

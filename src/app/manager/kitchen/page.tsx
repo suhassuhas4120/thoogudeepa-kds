@@ -346,16 +346,16 @@ export default function ManagerKitchenMonitorScreen() {
 
   const getTicketStatusBadge = (ticket: Ticket) => {
     if (isTicketDone(ticket)) {
-      return { label: '✓ Done', color: 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/30' };
+      return { label: '✓ Done', color: 'bg-emerald-50 text-emerald-800 border border-emerald-200' };
     }
     const items = ticket.items || [];
     if (items.some((i) => i.status === 'ready')) {
-      return { label: 'Ready', color: 'bg-emerald-900/60 text-emerald-300 border border-emerald-500/40' };
+      return { label: 'Ready', color: 'bg-emerald-100 text-emerald-900 border border-emerald-300' };
     }
     if (items.some((i) => i.status === 'preparing')) {
-      return { label: 'Cooking', color: 'bg-sky-950/80 text-sky-300 border border-sky-500/30' };
+      return { label: 'Cooking', color: 'bg-sky-50 text-sky-800 border border-sky-200' };
     }
-    return { label: 'Received', color: 'bg-amber-950/80 text-amber-300 border border-amber-500/30' };
+    return { label: 'Received', color: 'bg-amber-50 text-amber-800 border border-amber-200' };
   };
 
   return (
@@ -379,7 +379,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setViewMode('KOT_TICKETS')}
               className={`px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
                 viewMode === 'KOT_TICKETS'
-                  ? 'bg-[#8A4228] text-white shadow-sm'
+                  ? 'bg-[#8A4228] text-stone-900 shadow-sm'
                   : 'text-stone-600 hover:text-stone-900'
               }`}
             >
@@ -391,7 +391,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setViewMode('MASTER_BILLS')}
               className={`px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
                 viewMode === 'MASTER_BILLS'
-                  ? 'bg-emerald-700 text-white shadow-sm'
+                  ? 'bg-emerald-700 text-stone-900 shadow-sm'
                   : 'text-stone-600 hover:text-stone-900'
               }`}
             >
@@ -425,7 +425,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setActiveFilter('ALL')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'ALL'
-                  ? 'bg-[#8A4228] text-white shadow-sm'
+                  ? 'bg-[#8A4228] text-stone-900 shadow-sm'
                   : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
@@ -437,7 +437,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setActiveFilter('ACTIVE')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'ACTIVE'
-                  ? 'bg-[#8A4228] text-white shadow-sm'
+                  ? 'bg-[#8A4228] text-stone-900 shadow-sm'
                   : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
@@ -449,7 +449,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setActiveFilter('PARCELS')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'PARCELS'
-                  ? 'bg-amber-600 text-white shadow-sm'
+                  ? 'bg-amber-600 text-stone-900 shadow-sm'
                   : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
@@ -461,7 +461,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setActiveFilter('COOKING')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'COOKING'
-                  ? 'bg-sky-600 text-white shadow-sm'
+                  ? 'bg-sky-600 text-stone-900 shadow-sm'
                   : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
@@ -473,7 +473,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setActiveFilter('READY')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'READY'
-                  ? 'bg-emerald-600 text-white shadow-sm'
+                  ? 'bg-emerald-600 text-stone-900 shadow-sm'
                   : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
@@ -485,7 +485,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setActiveFilter('COMPLETED')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'COMPLETED'
-                  ? 'bg-stone-700 text-white shadow-sm'
+                  ? 'bg-stone-700 text-stone-900 shadow-sm'
                   : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
@@ -493,7 +493,7 @@ export default function ManagerKitchenMonitorScreen() {
             </button>
           </div>
 
-          <div className="text-[11px] text-stone-400 hidden sm:block">
+          <div className="text-[11px] text-stone-500 hidden sm:block">
             <span>Showing all individual order rounds & their final invoice totals</span>
           </div>
         </div>
@@ -544,7 +544,7 @@ export default function ManagerKitchenMonitorScreen() {
                       <tr key={ticket.id} className="hover:bg-stone-50/70 border-b border-stone-100 transition">
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-mono font-black text-amber-400 text-sm">
+                            <span className="font-mono font-black text-[#8A4228] text-sm">
                               #{ticket.ticketNumber}
                             </span>
                             {ticket.totalRounds && ticket.totalRounds > 1 && (
@@ -554,9 +554,9 @@ export default function ManagerKitchenMonitorScreen() {
                             )}
                           </div>
                         </td>
-                        <td className="py-3 px-3 font-bold text-white">
+                        <td className="py-3 px-3 font-bold text-stone-900">
                           <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${
-                            isParcel ? 'bg-amber-950/60 text-amber-300 border border-amber-500/30' : 'bg-stone-800 text-stone-200'
+                            isParcel ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-stone-100 text-stone-800 border border-stone-200'
                           }`}>
                             {seatDisplay}
                           </span>
@@ -564,10 +564,10 @@ export default function ManagerKitchenMonitorScreen() {
                         <td className="py-3 px-4">
                           {ticket.invoiceNumber ? (
                             <div className="flex flex-col">
-                              <span className="inline-block px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-mono font-bold text-[11px] border border-emerald-500/40 w-fit">
+                              <span className="inline-block px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-mono font-bold text-[11px] border border-emerald-200 w-fit">
                                 #{ticket.invoiceNumber}
                               </span>
-                              <span className="text-[10px] text-stone-400 mt-0.5">
+                              <span className="text-[10px] text-stone-500 mt-0.5">
                                 {ticket.billPaymentMode || 'UPI'} • {ticket.billPaymentStatus || 'PAID'}
                               </span>
                             </div>
@@ -575,24 +575,24 @@ export default function ManagerKitchenMonitorScreen() {
                             <span className="text-stone-500 font-mono text-[11px]">Unbilled (Active)</span>
                           )}
                         </td>
-                        <td className="py-3 px-4 text-stone-300 font-medium">
+                        <td className="py-3 px-4 text-stone-800 font-medium">
                           {serverName}
                         </td>
-                        <td className="py-3 px-4 text-stone-200 max-w-xs truncate" title={itemsSummary}>
+                        <td className="py-3 px-4 text-stone-700 font-medium max-w-xs truncate" title={itemsSummary}>
                           {itemsSummary}
                         </td>
                         <td className="py-3 px-4">
-                          <span className="font-mono font-bold text-amber-400 text-sm">
+                          <span className="font-mono font-bold text-[#8A4228] text-sm font-black">
                             ₹{(ticket.totalAmount || 0).toFixed(2)}
                           </span>
                         </td>
                         <td className="py-3 px-4">
                           {ticket.billGrandTotal ? (
                             <div>
-                              <div className="font-mono font-bold text-emerald-400 text-sm">
+                              <div className="font-mono font-bold text-emerald-700 text-sm font-black">
                                 ₹{ticket.billGrandTotal.toFixed(2)}
                               </div>
-                              <div className="text-[10px] text-stone-400 font-normal">
+                              <div className="text-[10px] text-stone-500 font-normal">
                                 Subtot: ₹{(ticket.billSubtotal || 0).toFixed(2)} + GST
                               </div>
                             </div>
@@ -600,7 +600,7 @@ export default function ManagerKitchenMonitorScreen() {
                             <span className="text-stone-500 text-xs">—</span>
                           )}
                         </td>
-                        <td className="py-3 px-4 text-stone-300 font-mono">
+                        <td className="py-3 px-4 text-stone-600 font-mono font-medium">
                           {formatOrderTime(ticket.placedAt, ticket.placedAtTime)}
                         </td>
                         <td className="py-3 px-3">
@@ -624,7 +624,7 @@ export default function ManagerKitchenMonitorScreen() {
                                 type="button"
                                 disabled={updatingTicketId === ticket.id}
                                 onClick={() => handleMarkParcelDone(ticket)}
-                                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition active:scale-95 shadow-md flex items-center gap-1.5 disabled:opacity-50"
+                                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-stone-900 font-bold text-xs transition active:scale-95 shadow-md flex items-center gap-1.5 disabled:opacity-50"
                               >
                                 <Check className="w-3.5 h-3.5" />
                                 <span>{updatingTicketId === ticket.id ? 'Done...' : 'Mark Done'}</span>
@@ -676,47 +676,47 @@ export default function ManagerKitchenMonitorScreen() {
                 ) : (
                   masterBills.map((bill) => (
                     <tr key={bill.id} className="hover:bg-stone-50/70 border-b border-stone-100 transition">
-                      <td className="py-3 px-4 font-mono font-black text-amber-400">
+                      <td className="py-3 px-4 font-mono font-black text-[#8A4228]">
                         #{bill.billNumber}
                       </td>
-                      <td className="py-3 px-3 text-stone-300 font-mono text-[11px]">
+                      <td className="py-3 px-3 text-stone-600 font-mono text-[11px]">
                         {bill.date}
                       </td>
                       <td className="py-3 px-3">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                           bill.orderType === 'Takeaway'
-                            ? 'bg-amber-950/80 text-amber-300 border border-amber-600/30'
-                            : 'bg-stone-800 text-stone-200'
+                            ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                            : 'bg-stone-100 text-stone-800 border border-stone-200'
                         }`}>
                           {bill.orderType}
                         </span>
                       </td>
-                      <td className="py-3 px-3 font-bold text-white font-mono">
+                      <td className="py-3 px-3 font-bold text-stone-900 font-mono">
                         {bill.seatNumberOrToken}
                       </td>
-                      <td className="py-3 px-4 text-stone-300">
+                      <td className="py-3 px-4 text-stone-800 font-medium">
                         {bill.serverName}
                       </td>
-                      <td className="py-3 px-4 text-stone-200 max-w-xs truncate" title={bill.itemsSummary}>
+                      <td className="py-3 px-4 text-stone-700 font-medium max-w-xs truncate" title={bill.itemsSummary}>
                         {bill.itemsSummary}
                       </td>
-                      <td className="py-3 px-3 text-stone-400 font-mono text-[11px]">
+                      <td className="py-3 px-3 text-stone-500 font-mono text-[11px]">
                         {bill.placedAt}
                       </td>
-                      <td className="py-3 px-3 text-amber-400 font-mono text-[11px]">
+                      <td className="py-3 px-3 text-stone-600 font-mono text-[11px]">
                         {bill.settledAt}
                       </td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-stone-300">
+                      <td className="py-3 px-4 text-right font-mono font-bold text-stone-800">
                         ₹{bill.subtotal.toFixed(2)}
                       </td>
-                      <td className="py-3 px-3 text-right font-mono text-stone-400">
+                      <td className="py-3 px-3 text-right font-mono text-stone-500">
                         ₹{bill.gst5Percent.toFixed(2)}
                       </td>
-                      <td className="py-3 px-4 text-right font-mono font-black text-emerald-400 text-sm">
+                      <td className="py-3 px-4 text-right font-mono font-black text-emerald-700 text-sm">
                         ₹{bill.grandTotal.toFixed(2)}
                       </td>
                       <td className="py-3 px-3 text-center">
-                        <span className="px-2 py-0.5 rounded bg-stone-800 text-stone-300 text-[10px] font-bold">
+                        <span className="px-2 py-0.5 rounded bg-stone-100 text-stone-800 border border-stone-200 text-[10px] font-bold">
                           {bill.paymentMode}
                         </span>
                       </td>
@@ -850,10 +850,10 @@ export default function ManagerKitchenMonitorScreen() {
               <div className="flex justify-between items-start pb-4 border-b border-[#2C2520] mb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-mono font-black text-xl text-amber-400">
+                    <h3 className="font-mono font-black text-xl text-[#8A4228]">
                       Ticket #{selectedTicket.ticketNumber}
                     </h3>
-                    <span className="px-2.5 py-0.5 bg-stone-800 text-stone-300 text-xs font-bold rounded-full">
+                    <span className="px-2.5 py-0.5 bg-stone-100 border border-stone-200 text-stone-700 text-xs font-bold rounded-full">
                       {isParcel ? '📦 TAKEAWAY' : `DINE-IN • S${selectedTicket.seatId || '1'}`}
                     </span>
                     {selectedTicket.totalRounds && selectedTicket.totalRounds > 1 && (
@@ -862,19 +862,19 @@ export default function ManagerKitchenMonitorScreen() {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-stone-400 mt-1">
+                  <div className="flex items-center gap-3 text-xs text-stone-500 mt-1">
                     <span className="flex items-center gap-1 font-mono">
                       <Clock className="w-3.5 h-3.5 text-amber-500" />
                       Placed: {formatOrderTime(selectedTicket.placedAt, selectedTicket.placedAtTime)}
                     </span>
                     <span>•</span>
-                    <span>Server: <strong className="text-stone-200">{selectedTicket.waiterName || 'Staff'}</strong></span>
+                    <span>Server: <strong className="text-stone-800">{selectedTicket.waiterName || 'Staff'}</strong></span>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedTicket(null)}
-                  className="p-1 rounded-lg text-stone-400 hover:text-white hover:bg-stone-800 transition"
+                  className="p-1 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 border border-stone-200 transition"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -892,15 +892,15 @@ export default function ManagerKitchenMonitorScreen() {
                         {selectedTicket.billPaymentStatus || 'PAID'}
                       </span>
                     </div>
-                    <span className="text-stone-300 text-[11px] block mt-0.5">
+                    <span className="text-stone-700 text-[11px] block mt-0.5">
                       Paid via {selectedTicket.billPaymentMode || 'UPI'} {selectedTicket.billSettledAt ? `at ${selectedTicket.billSettledAt}` : ''}
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] uppercase tracking-wider text-stone-400 block font-bold">
+                    <span className="text-[10px] uppercase tracking-wider text-stone-500 block font-bold">
                       Bill Grand Total
                     </span>
-                    <span className="font-mono font-black text-emerald-400 text-base">
+                    <span className="font-mono font-black text-emerald-700 text-base">
                       ₹{selectedTicket.billGrandTotal?.toFixed(2)}
                     </span>
                   </div>
@@ -910,28 +910,28 @@ export default function ManagerKitchenMonitorScreen() {
               {/* Parcel Details Section */}
               {isParcel && (
                 <div className="mb-4 p-3.5 bg-stone-50 border border-stone-200 rounded-2xl space-y-2 text-xs">
-                  <div className="flex items-center justify-between text-stone-300">
+                  <div className="flex items-center justify-between text-stone-700">
                     <div className="flex items-center gap-1.5 font-bold">
-                      <User className="w-3.5 h-3.5 text-amber-400" />
+                      <User className="w-3.5 h-3.5 text-[#8A4228]" />
                       <span>Customer:</span>
                     </div>
-                    <span className="font-black text-white">{selectedTicket.customerName || 'Takeaway Guest'}</span>
+                    <span className="font-black text-stone-900">{selectedTicket.customerName || 'Takeaway Guest'}</span>
                   </div>
 
-                  <div className="flex items-center justify-between text-stone-300">
+                  <div className="flex items-center justify-between text-stone-700">
                     <div className="flex items-center gap-1.5 font-bold">
-                      <Phone className="w-3.5 h-3.5 text-amber-400" />
+                      <Phone className="w-3.5 h-3.5 text-[#8A4228]" />
                       <span>Contact Phone:</span>
                     </div>
                     <span className="font-mono font-bold text-amber-300">{selectedTicket.customerPhone || 'Not provided'}</span>
                   </div>
 
-                  <div className="flex items-start justify-between text-stone-300 pt-1 border-t border-[#2C2520]">
+                  <div className="flex items-start justify-between text-stone-700 pt-1 border-t border-[#2C2520]">
                     <div className="flex items-center gap-1.5 font-bold">
-                      <FileText className="w-3.5 h-3.5 text-stone-400" />
+                      <FileText className="w-3.5 h-3.5 text-stone-500" />
                       <span>Packaging Instructions:</span>
                     </div>
-                    <span className="text-stone-300 text-right font-medium max-w-[220px]">
+                    <span className="text-stone-700 text-right font-medium max-w-[220px]">
                       {selectedTicket.specialNotes || 'PACKAGING REQUIRED (TAKEAWAY)'}
                     </span>
                   </div>
@@ -941,11 +941,11 @@ export default function ManagerKitchenMonitorScreen() {
               {/* Items in this specific KOT ticket */}
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 block">
                     Items In This Order #{selectedTicket.ticketNumber} ({selectedTicket.items?.length || 0}):
                   </span>
                   {selectedTicket.totalRounds && selectedTicket.totalRounds > 1 && (
-                    <span className="text-[10px] font-bold text-amber-400">
+                    <span className="text-[10px] font-bold text-[#8A4228]">
                       (Round {selectedTicket.roundNumber} of {selectedTicket.totalRounds})
                     </span>
                   )}
@@ -958,18 +958,18 @@ export default function ManagerKitchenMonitorScreen() {
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-black text-white text-sm">
+                          <span className="font-black text-stone-900 text-sm">
                             {item.quantity}x
                           </span>
-                          <span className="font-bold text-stone-200">
+                          <span className="font-bold text-stone-800">
                             {item.itemName}
                           </span>
                         </div>
-                        <span className="text-[10px] text-stone-400 block capitalize mt-0.5">
-                          Status: <strong className={item.status === 'served' ? 'text-emerald-400' : 'text-amber-400'}>{item.status}</strong>
+                        <span className="text-[10px] text-stone-500 block capitalize mt-0.5">
+                          Status: <strong className={item.status === 'served' ? 'text-emerald-700' : 'text-[#8A4228]'}>{item.status}</strong>
                         </span>
                       </div>
-                      <span className="font-mono font-black text-amber-400 text-sm">
+                      <span className="font-mono font-black text-[#8A4228] text-sm">
                         ₹{(item.unitPrice * item.quantity).toFixed(2)}
                       </span>
                     </div>
@@ -979,10 +979,10 @@ export default function ManagerKitchenMonitorScreen() {
 
               {/* KOT Subtotal */}
               <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl flex justify-between items-center mb-4">
-                <span className="text-xs font-bold text-stone-400">
+                <span className="text-xs font-bold text-stone-500">
                   This Ticket Subtotal (#{selectedTicket.ticketNumber}):
                 </span>
-                <span className="font-mono font-black text-base text-amber-400">
+                <span className="font-mono font-black text-base text-[#8A4228]">
                   ₹{totalCalculated.toFixed(2)}
                 </span>
               </div>
@@ -992,10 +992,10 @@ export default function ManagerKitchenMonitorScreen() {
                 <div className="mb-6 p-3.5 bg-stone-50 border border-stone-200 rounded-2xl space-y-2 text-xs">
                   <div className="flex items-center justify-between font-bold text-amber-300 pb-1.5 border-b border-[#2C2520]">
                     <span className="flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5 text-amber-400" />
+                      <Layers className="w-3.5 h-3.5 text-[#8A4228]" />
                       Table S{selectedTicket.seatId} Full Dining Session ({selectedTicket.totalRounds} Rounds)
                     </span>
-                    <span className="text-[10px] text-emerald-400 font-mono font-bold">
+                    <span className="text-[10px] text-emerald-700 font-mono font-bold">
                       ✓ Reconciled with Sales Report
                     </span>
                   </div>
@@ -1006,39 +1006,39 @@ export default function ManagerKitchenMonitorScreen() {
                         key={sr.ticketNumber}
                         className={`p-2 rounded-lg flex justify-between items-center text-xs ${
                           sr.ticketNumber === selectedTicket.ticketNumber
-                            ? 'bg-amber-950/50 border border-amber-500/30 text-white font-bold'
-                            : 'bg-[#181513] text-stone-300'
+                            ? 'bg-amber-950/50 border border-amber-500/30 text-stone-900 font-bold'
+                            : 'bg-[#181513] text-stone-700'
                         }`}
                       >
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-amber-400 font-bold">Round {sr.roundNumber} (#{sr.ticketNumber})</span>
-                            <span className="text-[10px] text-stone-400 font-normal">at {sr.placedAt}</span>
+                            <span className="font-mono text-[#8A4228] font-bold">Round {sr.roundNumber} (#{sr.ticketNumber})</span>
+                            <span className="text-[10px] text-stone-500 font-normal">at {sr.placedAt}</span>
                             {sr.ticketNumber === selectedTicket.ticketNumber && (
-                              <span className="px-1.5 py-0.2 rounded bg-amber-600 text-white text-[9px] font-black uppercase">Viewing</span>
+                              <span className="px-1.5 py-0.2 rounded bg-amber-600 text-stone-900 text-[9px] font-black uppercase">Viewing</span>
                             )}
                           </div>
-                          <span className="text-[10px] text-stone-400 block font-normal mt-0.5">{sr.itemsSummary}</span>
+                          <span className="text-[10px] text-stone-500 block font-normal mt-0.5">{sr.itemsSummary}</span>
                         </div>
-                        <span className="font-mono font-bold text-stone-200">₹{sr.subtotal.toFixed(2)}</span>
+                        <span className="font-mono font-bold text-stone-800">₹{sr.subtotal.toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
 
                   <div className="pt-2 border-t border-[#2C2520] space-y-1">
-                    <div className="flex justify-between text-stone-300">
+                    <div className="flex justify-between text-stone-700">
                       <span>Total Food Subtotal (All Rounds):</span>
-                      <span className="font-mono font-bold text-amber-400">
+                      <span className="font-mono font-bold text-[#8A4228]">
                         ₹{selectedTicket.billSubtotal?.toFixed(2)}
                       </span>
                     </div>
-                    <div className="flex justify-between text-stone-400 text-[11px]">
+                    <div className="flex justify-between text-stone-500 text-[11px]">
                       <span>GST (5%):</span>
-                      <span className="font-mono text-stone-300">
+                      <span className="font-mono text-stone-700">
                         ₹{selectedTicket.billGst?.toFixed(2)}
                       </span>
                     </div>
-                    <div className="flex justify-between text-emerald-400 font-black text-sm pt-1 border-t border-dashed border-[#2C2520]">
+                    <div className="flex justify-between text-emerald-700 font-black text-sm pt-1 border-t border-dashed border-[#2C2520]">
                       <span>Final Master Invoice #{selectedTicket.invoiceNumber || '—'}:</span>
                       <span className="font-mono">
                         ₹{selectedTicket.billGrandTotal?.toFixed(2)} ({selectedTicket.billPaymentMode || 'Paid'})
@@ -1056,7 +1056,7 @@ export default function ManagerKitchenMonitorScreen() {
                     type="button"
                     disabled={updatingTicketId === selectedTicket.id}
                     onClick={() => handleMarkParcelDone(selectedTicket)}
-                    className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 active:scale-95"
+                    className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-stone-900 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 active:scale-95"
                   >
                     <Check className="w-4 h-4" />
                     <span>{updatingTicketId === selectedTicket.id ? 'Marking Done...' : '✓ Mark Done'}</span>
@@ -1065,7 +1065,7 @@ export default function ManagerKitchenMonitorScreen() {
 
                 {isParcel && isDone && (
                   <div className="flex-1 py-3 px-4 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold text-xs rounded-xl flex items-center justify-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-400" />
+                    <Check className="w-4 h-4 text-emerald-700" />
                     <span>Parcel Completed</span>
                   </div>
                 )}
@@ -1083,7 +1083,7 @@ export default function ManagerKitchenMonitorScreen() {
                 <button
                   type="button"
                   onClick={() => setSelectedTicket(null)}
-                  className="py-3 px-5 bg-[#221D1A] hover:bg-[#2C2520] text-stone-300 hover:text-white font-bold text-xs rounded-xl border border-[#2C2520] transition active:scale-95"
+                  className="py-3 px-5 bg-[#221D1A] hover:bg-[#2C2520] text-stone-700 hover:text-stone-900 font-bold text-xs rounded-xl border border-[#2C2520] transition active:scale-95"
                 >
                   Close
                 </button>
@@ -1101,17 +1101,17 @@ export default function ManagerKitchenMonitorScreen() {
           <div className="bg-white border border-stone-200 rounded-3xl max-w-lg w-full p-6 shadow-xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex justify-between items-start pb-4 border-b border-[#2C2520] mb-4">
               <div>
-                <h3 className="font-mono font-black text-xl text-emerald-400">
+                <h3 className="font-mono font-black text-xl text-emerald-700">
                   Master Invoice #{selectedMasterBill.billNumber}
                 </h3>
-                <span className="text-xs text-stone-400 block mt-0.5">
+                <span className="text-xs text-stone-500 block mt-0.5">
                   {selectedMasterBill.date} • {selectedMasterBill.orderType} • {selectedMasterBill.seatNumberOrToken}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedMasterBill(null)}
-                className="p-1 rounded-lg text-stone-400 hover:text-white hover:bg-stone-800 transition"
+                className="p-1 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 border border-stone-200 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1119,49 +1119,49 @@ export default function ManagerKitchenMonitorScreen() {
 
             <div className="space-y-3 mb-6 text-xs">
               <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
-                <div className="flex justify-between text-stone-300">
-                  <span className="text-stone-400 font-bold">Customer Name:</span>
-                  <span className="font-bold text-white">{selectedMasterBill.customerName || 'Walk-in Guest'}</span>
+                <div className="flex justify-between text-stone-700">
+                  <span className="text-stone-500 font-bold">Customer Name:</span>
+                  <span className="font-bold text-stone-900">{selectedMasterBill.customerName || 'Walk-in Guest'}</span>
                 </div>
-                <div className="flex justify-between text-stone-300">
-                  <span className="text-stone-400 font-bold">Server:</span>
-                  <span className="font-bold text-white">{selectedMasterBill.serverName}</span>
+                <div className="flex justify-between text-stone-700">
+                  <span className="text-stone-500 font-bold">Server:</span>
+                  <span className="font-bold text-stone-900">{selectedMasterBill.serverName}</span>
                 </div>
-                <div className="flex justify-between text-stone-300">
-                  <span className="text-stone-400 font-bold">Order Placed:</span>
-                  <span className="font-mono text-stone-300">{selectedMasterBill.placedAt}</span>
+                <div className="flex justify-between text-stone-700">
+                  <span className="text-stone-500 font-bold">Order Placed:</span>
+                  <span className="font-mono text-stone-700">{selectedMasterBill.placedAt}</span>
                 </div>
-                <div className="flex justify-between text-stone-300">
-                  <span className="text-stone-400 font-bold">Settled At:</span>
-                  <span className="font-mono text-amber-400 font-bold">{selectedMasterBill.settledAt}</span>
+                <div className="flex justify-between text-stone-700">
+                  <span className="text-stone-500 font-bold">Settled At:</span>
+                  <span className="font-mono text-[#8A4228] font-bold">{selectedMasterBill.settledAt}</span>
                 </div>
               </div>
 
               <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block mb-1">
                   Ordered Items Summary:
                 </span>
-                <span className="text-stone-200 font-medium leading-relaxed block">
+                <span className="text-stone-800 font-medium leading-relaxed block">
                   {selectedMasterBill.itemsSummary}
                 </span>
               </div>
 
               <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-1.5">
-                <div className="flex justify-between text-stone-300">
+                <div className="flex justify-between text-stone-700">
                   <span>Gross Food Subtotal:</span>
-                  <span className="font-mono font-bold text-amber-400">₹{selectedMasterBill.subtotal.toFixed(2)}</span>
+                  <span className="font-mono font-bold text-[#8A4228]">₹{selectedMasterBill.subtotal.toFixed(2)}</span>
                 </div>
                 {selectedMasterBill.packagingCharges > 0 && (
-                  <div className="flex justify-between text-stone-400">
+                  <div className="flex justify-between text-stone-500">
                     <span>Packaging Charges:</span>
-                    <span className="font-mono text-stone-300">₹{selectedMasterBill.packagingCharges.toFixed(2)}</span>
+                    <span className="font-mono text-stone-700">₹{selectedMasterBill.packagingCharges.toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-stone-400">
+                <div className="flex justify-between text-stone-500">
                   <span>GST (5%):</span>
-                  <span className="font-mono text-stone-300">₹{selectedMasterBill.gst5Percent.toFixed(2)}</span>
+                  <span className="font-mono text-stone-700">₹{selectedMasterBill.gst5Percent.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-emerald-400 font-black text-sm pt-1.5 border-t border-[#2C2520]">
+                <div className="flex justify-between text-emerald-700 font-black text-sm pt-1.5 border-t border-[#2C2520]">
                   <span>Grand Total Paid:</span>
                   <span className="font-mono">₹{selectedMasterBill.grandTotal.toFixed(2)} ({selectedMasterBill.paymentMode})</span>
                 </div>
@@ -1171,7 +1171,7 @@ export default function ManagerKitchenMonitorScreen() {
             <button
               type="button"
               onClick={() => setSelectedMasterBill(null)}
-              className="w-full py-3 bg-[#221D1A] hover:bg-[#2C2520] text-stone-300 hover:text-white font-bold text-xs rounded-xl border border-[#2C2520] transition active:scale-95"
+              className="w-full py-3 bg-[#221D1A] hover:bg-[#2C2520] text-stone-700 hover:text-stone-900 font-bold text-xs rounded-xl border border-[#2C2520] transition active:scale-95"
             >
               Close
             </button>
@@ -1187,14 +1187,14 @@ export default function ManagerKitchenMonitorScreen() {
           <div className="bg-white border-l border-stone-200 w-full max-w-md h-full flex flex-col p-6 shadow-2xl">
             <div className="flex justify-between items-center pb-3 border-b border-[#2C2520] mb-4">
               <div>
-                <h3 className="font-black text-sm text-white uppercase tracking-wider">
+                <h3 className="font-black text-sm text-stone-900 uppercase tracking-wider">
                   86 / Sold Out Item Manager
                 </h3>
-                <p className="text-xs text-stone-400">Instantly toggle dish availability across all customer menus</p>
+                <p className="text-xs text-stone-500">Instantly toggle dish availability across all customer menus</p>
               </div>
               <button
                 onClick={() => setShow86Drawer(false)}
-                className="p-1 rounded-lg text-stone-400 hover:text-white"
+                className="p-1 rounded-lg text-stone-500 hover:text-stone-900"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1207,8 +1207,8 @@ export default function ManagerKitchenMonitorScreen() {
                   className="p-3 bg-stone-50 border border-stone-200 rounded-xl flex justify-between items-center"
                 >
                   <div>
-                    <span className="font-bold text-xs text-white block">{item.name}</span>
-                    <span className="text-[10px] text-stone-400">{item.category?.name} • ₹{item.price}</span>
+                    <span className="font-bold text-xs text-stone-900 block">{item.name}</span>
+                    <span className="text-[10px] text-stone-500">{item.category?.name} • ₹{item.price}</span>
                   </div>
                   <button
                     type="button"
@@ -1229,7 +1229,7 @@ export default function ManagerKitchenMonitorScreen() {
               <button
                 type="button"
                 onClick={() => setShow86Drawer(false)}
-                className="w-full py-3 bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs rounded-xl transition"
+                className="w-full py-3 bg-[#8A4228] hover:bg-[#71351F] text-stone-900 font-bold text-xs rounded-xl transition"
               >
                 Done
               </button>
