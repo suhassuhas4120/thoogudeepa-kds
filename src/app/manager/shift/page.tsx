@@ -266,16 +266,17 @@ export default function ManagerShiftAuditScreen() {
     parcelStats.cashCollected;
 
   return (
-    <div className="min-h-screen bg-[#100E0C] text-white flex flex-col font-sans select-none">
+    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col font-sans select-none p-3">
+      <div className="border border-[#8A4228] rounded-2xl bg-[#FBF9F6] min-h-[calc(100vh-1.5rem)] flex flex-col overflow-hidden">
       {/* Shared Manager Top Navigation */}
       <ManagerTopNav activeTab="shift" />
 
       {/* Subheader */}
-      <div className="bg-[#141210] border-b border-[#2C2520] px-6 py-3 flex items-center justify-between">
-        <h1 className="text-xs md:text-sm font-black text-[#D08A52] uppercase tracking-wider">
+      <div className="bg-white border-b border-stone-200 px-6 py-3 flex items-center justify-between">
+        <h1 className="text-xs md:text-sm font-black text-[#8A4228] uppercase tracking-wider">
           STAFF SHIFT AUDIT & CASH RECONCILIATION
         </h1>
-        <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#181513] border border-[#2C2520] text-amber-400">
+        <span className="text-xs font-bold px-3 py-1 rounded-full bg-stone-50 border border-stone-200 text-stone-700">
           Date: {dateStr}
         </span>
       </div>
@@ -283,8 +284,8 @@ export default function ManagerShiftAuditScreen() {
       {/* Main Audit Sections */}
       <div className="p-6 md:p-8 max-w-5xl w-full mx-auto space-y-5 flex-1">
         {/* 1. SUHAS SECTION */}
-        <div className="bg-[#181513] border border-[#2C2520] rounded-2xl p-5 shadow-xl">
-          <div className="flex justify-between items-center pb-2.5 border-b border-[#2C2520] mb-3">
+        <div className="bg-white border border-stone-200 rounded-2xl p-5 shadow-xs">
+          <div className="flex justify-between items-center pb-2.5 border-b border-stone-200 mb-3">
             <h2 className="font-black text-sm text-sky-400 uppercase tracking-wider flex items-center gap-2">
               <span>🤵 WAITER 1: SUHAS</span>
               <span className="text-xs text-stone-400 font-normal">(Zone A: Seats 1 - 8)</span>
@@ -300,7 +301,7 @@ export default function ManagerShiftAuditScreen() {
           </div>
 
           {/* 4-Item Cash Handover Row: (Cash Collected -> Handing Over Input + Submit -> Handed Over -> Remaining) */}
-          <div className="p-4 rounded-xl bg-[#221D1A] border border-[#2C2520] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-4 text-xs">
+          <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-4 text-xs">
             {/* 1. Cash Collected */}
             <div className="space-y-1">
               <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
@@ -441,8 +442,8 @@ export default function ManagerShiftAuditScreen() {
         </div>
 
         {/* 2. SHIVA SECTION */}
-        <div className="bg-[#181513] border border-[#2C2520] rounded-2xl p-5 shadow-xl">
-          <div className="flex justify-between items-center pb-2.5 border-b border-[#2C2520] mb-3">
+        <div className="bg-white border border-stone-200 rounded-2xl p-5 shadow-xs">
+          <div className="flex justify-between items-center pb-2.5 border-b border-stone-200 mb-3">
             <h2 className="font-black text-sm text-cyan-400 uppercase tracking-wider flex items-center gap-2">
               <span>🤵 WAITER 2: SHIVA</span>
               <span className="text-xs text-stone-400 font-normal">(Zone B: Seats 9 - 16)</span>
@@ -458,7 +459,7 @@ export default function ManagerShiftAuditScreen() {
           </div>
 
           {/* 4-Item Cash Handover Row: (Cash Collected -> Handing Over Input + Submit -> Handed Over -> Remaining) */}
-          <div className="p-4 rounded-xl bg-[#221D1A] border border-[#2C2520] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-4 text-xs">
+          <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-4 text-xs">
             {/* 1. Cash Collected */}
             <div className="space-y-1">
               <span className="text-stone-400 font-bold block uppercase text-[10px] tracking-wider">
@@ -599,8 +600,8 @@ export default function ManagerShiftAuditScreen() {
         </div>
 
         {/* 3. PARCEL DESK SECTION (Manager Counter - Directly into Drawer) */}
-        <div className="bg-[#181513] border border-[#2C2520] rounded-2xl p-5 shadow-xl">
-          <div className="flex justify-between items-center pb-2.5 border-b border-[#2C2520] mb-3">
+        <div className="bg-white border border-stone-200 rounded-2xl p-5 shadow-xs">
+          <div className="flex justify-between items-center pb-2.5 border-b border-stone-200 mb-3">
             <h2 className="font-black text-sm text-[#D08A52] uppercase tracking-wider flex items-center gap-2">
               <span>📦 PARCEL / TAKEAWAY DESK</span>
               <span className="text-xs text-amber-300/80 font-normal">(Manager Counter)</span>
@@ -673,6 +674,7 @@ export default function ManagerShiftAuditScreen() {
             <span>📄 PRINT STAFF SHIFT SUMMARY</span>
           </button>
         </div>
+      </div>
       </div>
     </div>
   );

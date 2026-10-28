@@ -31,27 +31,37 @@ export default function ManagerTopNav({ activeTab, extraRightActions }: ManagerT
   ];
 
   return (
-    <header className="h-14 bg-[#181513] border-b border-[#2C2520] px-6 flex items-center justify-between shrink-0 select-none">
+    <header className="h-14 bg-white border-b border-stone-200 px-6 flex items-center justify-between shrink-0 select-none">
       {/* Brand Badge */}
       <Link href="/manager/floor" className="flex items-center gap-2 group">
-        <span className="text-base">🏨</span>
-        <span className="font-black text-sm tracking-widest text-[#D08A52] uppercase group-hover:text-amber-400 transition-colors">
-          THOOGUDEEPA
+        <div className="w-8 h-8 rounded-full border border-stone-200 overflow-hidden flex items-center justify-center p-0.5 bg-stone-50 shadow-xs">
+          <img
+            src="/logo.jpg"
+            alt="Thoogudeepa"
+            className="w-full h-full object-cover rounded-full"
+            onError={(e) => {
+              const target = e.target as HTMLElement;
+              target.style.display = 'none';
+            }}
+          />
+        </div>
+        <span className="font-bold text-xs tracking-wider text-[#8A4228] uppercase">
+          MANAGER
         </span>
       </Link>
 
-      {/* Navigation Tabs matching exact ASCII & Floor specification */}
-      <nav className="flex items-center gap-1.5 bg-[#100E0C] p-1 rounded-xl border border-[#2C2520] text-xs font-bold">
+      {/* Navigation Tabs matching exact thoogudeepa-v2 specification */}
+      <nav className="flex items-center gap-2 text-xs">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <Link
               key={tab.id}
               href={tab.href}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 isActive
-                  ? 'bg-[#8A4228] text-white shadow-sm font-black'
-                  : 'text-stone-400 hover:text-white hover:bg-[#181513]'
+                  ? 'bg-[#8A4228] text-white shadow-xs'
+                  : 'bg-white border border-stone-200 text-stone-600 hover:text-stone-900 hover:bg-stone-50'
               }`}
             >
               {tab.label}
@@ -64,12 +74,12 @@ export default function ManagerTopNav({ activeTab, extraRightActions }: ManagerT
       <div className="flex items-center gap-3">
         {extraRightActions}
         <span
-          className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400/50"
+          className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"
           title="Live WebSocket & Cloud DB Connected"
         />
         <Link
           href="/manager"
-          className="text-xs text-stone-400 hover:text-rose-400 transition-colors font-medium flex items-center gap-1"
+          className="text-xs text-stone-500 hover:text-rose-600 transition-colors font-medium flex items-center gap-1"
         >
           Logout
         </Link>

@@ -311,7 +311,8 @@ export default function ManagerPromosScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-[#100E0C] text-white flex flex-col font-sans select-none">
+    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col font-sans select-none p-3">
+      <div className="border border-[#8A4228] rounded-2xl bg-[#FBF9F6] min-h-[calc(100vh-1.5rem)] flex flex-col overflow-hidden">
       {/* Executive Unified Navigation Bar */}
       <ManagerTopNav
         activeTab="promos"
@@ -336,14 +337,14 @@ export default function ManagerPromosScreen() {
       />
 
       {/* Tabs Bar */}
-      <div className="h-14 bg-[#181513] border-b border-[#2C2520] px-6 flex items-center justify-between shrink-0">
+      <div className="h-14 bg-[#181513] border-b border-stone-200 px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveTab('CARDS')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition ${
               activeTab === 'CARDS'
                 ? 'bg-[#8A4228] text-white shadow-md'
-                : 'bg-[#100E0C] border border-[#2C2520] text-stone-400 hover:text-white'
+                : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'
             }`}
           >
             <Sparkles className="w-4 h-4 text-[#D08A52]" />
@@ -355,7 +356,7 @@ export default function ManagerPromosScreen() {
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition ${
               activeTab === 'CODES'
                 ? 'bg-[#8A4228] text-white shadow-md'
-                : 'bg-[#100E0C] border border-[#2C2520] text-stone-400 hover:text-white'
+                : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'
             }`}
           >
             <Tag className="w-4 h-4 text-[#D08A52]" />
@@ -377,7 +378,7 @@ export default function ManagerPromosScreen() {
               <div
                 key={card.id}
                 className={`bg-[#181513] rounded-3xl border p-5 flex flex-col justify-between transition shadow-xl relative overflow-hidden ${
-                  card.isActive ? 'border-[#8A4228]/40' : 'border-[#2C2520] opacity-60'
+                  card.isActive ? 'border-[#8A4228]/40' : 'border-stone-200 opacity-60'
                 }`}
               >
                 {/* Top Gold Gradient Banner */}
@@ -424,7 +425,7 @@ export default function ManagerPromosScreen() {
 
                   {/* Promo Code Attached */}
                   {card.promoCode && (
-                    <div className="p-2.5 bg-[#100E0C] border border-[#2C2520] rounded-xl flex items-center justify-between mb-4">
+                    <div className="p-2.5 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <Tag className="w-3.5 h-3.5 text-[#D08A52]" />
                         <span className="text-xs font-mono font-bold text-white">
@@ -441,7 +442,7 @@ export default function ManagerPromosScreen() {
                 </div>
 
                 {/* Scheduling Constraints */}
-                <div className="pt-3 border-t border-[#2C2520] space-y-1.5 text-[11px] text-stone-400">
+                <div className="pt-3 border-t border-stone-200 space-y-1.5 text-[11px] text-stone-400">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-3.5 h-3.5 text-[#D08A52]" />
                     <span>
@@ -473,7 +474,7 @@ export default function ManagerPromosScreen() {
               <div
                 key={code.id}
                 className={`bg-[#181513] rounded-3xl border p-5 flex flex-col justify-between transition shadow-xl ${
-                  code.isActive ? 'border-[#8A4228]/40' : 'border-[#2C2520] opacity-60'
+                  code.isActive ? 'border-[#8A4228]/40' : 'border-stone-200 opacity-60'
                 }`}
               >
                 <div>
@@ -534,7 +535,7 @@ export default function ManagerPromosScreen() {
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-[#2C2520] space-y-1 text-[11px] text-stone-400">
+                <div className="pt-3 border-t border-stone-200 space-y-1 text-[11px] text-stone-400">
                   <div className="flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-[#D08A52]" />
                     <span>
@@ -556,8 +557,8 @@ export default function ManagerPromosScreen() {
       {/* Design Promo Card Modal */}
       {isCardModalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-[#181513] border border-[#2C2520] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-4 bg-[#100E0C] border-b border-[#2C2520] flex items-center justify-between">
+          <div className="w-full max-w-lg bg-[#181513] border border-stone-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-4 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
               <div>
                 <h3 className="font-black text-[#D08A52] text-sm">
                   {editingCard ? 'Edit Promotional Menu Card' : 'Design Promotional Menu Card'}
@@ -568,7 +569,7 @@ export default function ManagerPromosScreen() {
               </div>
               <button
                 onClick={() => setIsCardModalOpen(false)}
-                className="w-8 h-8 rounded-lg bg-[#181513] border border-[#2C2520] text-stone-400 hover:text-white flex items-center justify-center font-bold"
+                className="w-8 h-8 rounded-lg bg-[#181513] border border-stone-200 text-stone-400 hover:text-white flex items-center justify-center font-bold"
               >
                 ✕
               </button>
@@ -583,7 +584,7 @@ export default function ManagerPromosScreen() {
                   placeholder="e.g. Weekend Donne Mutton Feast Combo"
                   value={cardForm.title}
                   onChange={(e) => setCardForm({ ...cardForm, title: e.target.value })}
-                  className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3.5 py-2 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
                 />
               </div>
 
@@ -595,7 +596,7 @@ export default function ManagerPromosScreen() {
                   placeholder="e.g. 1 Donne Mutton Biryani + Chilli Chicken @ ₹399"
                   value={cardForm.subtitle}
                   onChange={(e) => setCardForm({ ...cardForm, subtitle: e.target.value })}
-                  className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3.5 py-2 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
                 />
               </div>
 
@@ -607,7 +608,7 @@ export default function ManagerPromosScreen() {
                     placeholder="SPECIAL OFFER"
                     value={cardForm.badgeText}
                     onChange={(e) => setCardForm({ ...cardForm, badgeText: e.target.value })}
-                    className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3 py-2 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
                   />
                 </div>
 
@@ -641,7 +642,7 @@ export default function ManagerPromosScreen() {
                   <select
                     value={cardForm.promoCodeId}
                     onChange={(e) => setCardForm({ ...cardForm, promoCodeId: e.target.value })}
-                    className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#D08A52]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#D08A52]"
                   >
                     <option value="">None (Display only)</option>
                     {promoCodes.map((c) => (
@@ -654,7 +655,7 @@ export default function ManagerPromosScreen() {
               </div>
 
               {/* Date & Time Happy Hours Scheduling */}
-              <div className="p-3 bg-[#100E0C] border border-[#2C2520] rounded-2xl space-y-2.5">
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-2xl space-y-2.5">
                 <div className="text-[11px] font-black uppercase text-[#D08A52] tracking-wider">
                   Scheduling & Happy Hours
                 </div>
@@ -666,7 +667,7 @@ export default function ManagerPromosScreen() {
                       type="date"
                       value={cardForm.startDate}
                       onChange={(e) => setCardForm({ ...cardForm, startDate: e.target.value })}
-                      className="w-full bg-[#181513] border border-[#2C2520] rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
+                      className="w-full bg-[#181513] border border-stone-200 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
                     />
                   </div>
                   <div>
@@ -675,7 +676,7 @@ export default function ManagerPromosScreen() {
                       type="date"
                       value={cardForm.endDate}
                       onChange={(e) => setCardForm({ ...cardForm, endDate: e.target.value })}
-                      className="w-full bg-[#181513] border border-[#2C2520] rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
+                      className="w-full bg-[#181513] border border-stone-200 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
                     />
                   </div>
                 </div>
@@ -687,7 +688,7 @@ export default function ManagerPromosScreen() {
                       type="time"
                       value={cardForm.startTime}
                       onChange={(e) => setCardForm({ ...cardForm, startTime: e.target.value })}
-                      className="w-full bg-[#181513] border border-[#2C2520] rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
+                      className="w-full bg-[#181513] border border-stone-200 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
                     />
                   </div>
                   <div>
@@ -696,7 +697,7 @@ export default function ManagerPromosScreen() {
                       type="time"
                       value={cardForm.endTime}
                       onChange={(e) => setCardForm({ ...cardForm, endTime: e.target.value })}
-                      className="w-full bg-[#181513] border border-[#2C2520] rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
+                      className="w-full bg-[#181513] border border-stone-200 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
                     />
                   </div>
                 </div>
@@ -710,7 +711,7 @@ export default function ManagerPromosScreen() {
                     placeholder="ALL or SAT,SUN or MON,TUE"
                     value={cardForm.daysOfWeek}
                     onChange={(e) => setCardForm({ ...cardForm, daysOfWeek: e.target.value.toUpperCase() })}
-                    className="w-full bg-[#181513] border border-[#2C2520] rounded-lg px-2 py-1 text-xs text-white font-mono focus:outline-none focus:border-[#D08A52]"
+                    className="w-full bg-[#181513] border border-stone-200 rounded-lg px-2 py-1 text-xs text-white font-mono focus:outline-none focus:border-[#D08A52]"
                   />
                 </div>
               </div>
@@ -719,7 +720,7 @@ export default function ManagerPromosScreen() {
                 <button
                   type="button"
                   onClick={() => setIsCardModalOpen(false)}
-                  className="px-4 py-2 bg-[#100E0C] border border-[#2C2520] text-stone-400 hover:text-white rounded-xl text-xs font-bold"
+                  className="px-4 py-2 bg-white border border-stone-200 text-stone-600 hover:bg-stone-50 rounded-xl text-xs font-bold"
                 >
                   Cancel
                 </button>
@@ -738,8 +739,8 @@ export default function ManagerPromosScreen() {
       {/* Create / Edit Promo Code Modal */}
       {isCodeModalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-[#181513] border border-[#2C2520] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-4 bg-[#100E0C] border-b border-[#2C2520] flex items-center justify-between">
+          <div className="w-full max-w-lg bg-[#181513] border border-stone-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-4 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
               <div>
                 <h3 className="font-black text-[#D08A52] text-sm">
                   {editingCode ? `Edit Promo Code: ${editingCode.code}` : 'Create Promo Code'}
@@ -750,7 +751,7 @@ export default function ManagerPromosScreen() {
               </div>
               <button
                 onClick={() => setIsCodeModalOpen(false)}
-                className="w-8 h-8 rounded-lg bg-[#181513] border border-[#2C2520] text-stone-400 hover:text-white flex items-center justify-center font-bold"
+                className="w-8 h-8 rounded-lg bg-[#181513] border border-stone-200 text-stone-400 hover:text-white flex items-center justify-center font-bold"
               >
                 ✕
               </button>
@@ -765,7 +766,7 @@ export default function ManagerPromosScreen() {
                   placeholder="e.g. COMBO399"
                   value={codeForm.code}
                   onChange={(e) => setCodeForm({ ...codeForm, code: e.target.value.toUpperCase() })}
-                  className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3.5 py-2 text-xs text-white font-mono uppercase focus:outline-none focus:border-[#D08A52]"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs text-white font-mono uppercase focus:outline-none focus:border-[#D08A52]"
                 />
               </div>
 
@@ -777,7 +778,7 @@ export default function ManagerPromosScreen() {
                     onChange={(e) =>
                       setCodeForm({ ...codeForm, discountType: e.target.value as 'FLAT' | 'PERCENTAGE' })
                     }
-                    className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#D08A52]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#D08A52]"
                   >
                     <option value="FLAT">Flat Amount (₹)</option>
                     <option value="PERCENTAGE">Percentage (%)</option>
@@ -795,7 +796,7 @@ export default function ManagerPromosScreen() {
                     placeholder="50"
                     value={codeForm.value}
                     onChange={(e) => setCodeForm({ ...codeForm, value: e.target.value })}
-                    className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#D08A52]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#D08A52]"
                   />
                 </div>
               </div>
@@ -809,7 +810,7 @@ export default function ManagerPromosScreen() {
                     placeholder="399"
                     value={codeForm.minOrderValue}
                     onChange={(e) => setCodeForm({ ...codeForm, minOrderValue: e.target.value })}
-                    className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#D08A52]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#D08A52]"
                   />
                 </div>
 
@@ -821,13 +822,13 @@ export default function ManagerPromosScreen() {
                     placeholder="100 (Optional for %)"
                     value={codeForm.maxDiscount}
                     onChange={(e) => setCodeForm({ ...codeForm, maxDiscount: e.target.value })}
-                    className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#D08A52]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#D08A52]"
                   />
                 </div>
               </div>
 
               {/* Date & Time Restrictions */}
-              <div className="p-3 bg-[#100E0C] border border-[#2C2520] rounded-2xl space-y-2.5">
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-2xl space-y-2.5">
                 <div className="text-[11px] font-black uppercase text-[#D08A52] tracking-wider">
                   Validity & Day Restrictions
                 </div>
@@ -839,7 +840,7 @@ export default function ManagerPromosScreen() {
                       type="date"
                       value={codeForm.startDate}
                       onChange={(e) => setCodeForm({ ...codeForm, startDate: e.target.value })}
-                      className="w-full bg-[#181513] border border-[#2C2520] rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
+                      className="w-full bg-[#181513] border border-stone-200 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
                     />
                   </div>
                   <div>
@@ -848,7 +849,7 @@ export default function ManagerPromosScreen() {
                       type="date"
                       value={codeForm.endDate}
                       onChange={(e) => setCodeForm({ ...codeForm, endDate: e.target.value })}
-                      className="w-full bg-[#181513] border border-[#2C2520] rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
+                      className="w-full bg-[#181513] border border-stone-200 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
                     />
                   </div>
                 </div>
@@ -860,7 +861,7 @@ export default function ManagerPromosScreen() {
                       type="time"
                       value={codeForm.startTime}
                       onChange={(e) => setCodeForm({ ...codeForm, startTime: e.target.value })}
-                      className="w-full bg-[#181513] border border-[#2C2520] rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
+                      className="w-full bg-[#181513] border border-stone-200 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
                     />
                   </div>
                   <div>
@@ -869,7 +870,7 @@ export default function ManagerPromosScreen() {
                       type="time"
                       value={codeForm.endTime}
                       onChange={(e) => setCodeForm({ ...codeForm, endTime: e.target.value })}
-                      className="w-full bg-[#181513] border border-[#2C2520] rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
+                      className="w-full bg-[#181513] border border-stone-200 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-[#D08A52]"
                     />
                   </div>
                 </div>
@@ -883,7 +884,7 @@ export default function ManagerPromosScreen() {
                     placeholder="ALL"
                     value={codeForm.daysOfWeek}
                     onChange={(e) => setCodeForm({ ...codeForm, daysOfWeek: e.target.value.toUpperCase() })}
-                    className="w-full bg-[#181513] border border-[#2C2520] rounded-lg px-2 py-1 text-xs text-white font-mono focus:outline-none focus:border-[#D08A52]"
+                    className="w-full bg-[#181513] border border-stone-200 rounded-lg px-2 py-1 text-xs text-white font-mono focus:outline-none focus:border-[#D08A52]"
                   />
                 </div>
               </div>
@@ -892,7 +893,7 @@ export default function ManagerPromosScreen() {
                 <button
                   type="button"
                   onClick={() => setIsCodeModalOpen(false)}
-                  className="px-4 py-2 bg-[#100E0C] border border-[#2C2520] text-stone-400 hover:text-white rounded-xl text-xs font-bold"
+                  className="px-4 py-2 bg-white border border-stone-200 text-stone-600 hover:bg-stone-50 rounded-xl text-xs font-bold"
                 >
                   Cancel
                 </button>
@@ -907,6 +908,7 @@ export default function ManagerPromosScreen() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

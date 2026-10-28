@@ -31,12 +31,10 @@ export default function ManagerLoginScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-[#100E0C] text-white flex flex-col justify-center items-center p-6">
-      <div className="text-center mb-6">
-        <span className="text-xs font-black tracking-widest text-[#D08A52] uppercase">
-          EXECUTIVE CONTROL CENTER
-        </span>
-        <div className="w-24 h-24 rounded-full border-2 border-[#8A4228] bg-[#181513] p-1.5 flex items-center justify-center mx-auto my-3 shadow-xl shadow-[#8A4228]/20 overflow-hidden">
+    <div className="min-h-screen bg-[#FBF9F6] p-3 text-stone-900 font-sans select-none flex flex-col justify-center items-center">
+      <div className="border border-[#8A4228] rounded-2xl bg-[#FBF9F6] w-full max-w-lg p-8 shadow-xs flex flex-col items-center">
+        {/* Logo and Auth Header matching thoogudeepa-v2 */}
+        <div className="w-20 h-20 rounded-full border-2 border-[#8A4228] bg-white p-1 flex items-center justify-center mx-auto mb-3 shadow-xs overflow-hidden">
           <img
             src="/logo.jpg"
             alt="Thoogudeepa"
@@ -47,24 +45,34 @@ export default function ManagerLoginScreen() {
             }}
           />
         </div>
-        <h1 className="text-xl font-extrabold text-white tracking-wide">
-          THOOGUDEEPA DONNE BIRYANI
+
+        <h1 className="text-sm font-bold text-stone-900 tracking-wider uppercase mb-4 text-center">
+          MANAGER / CASHIER AUTHENTICATION
         </h1>
-        <p className="text-xs text-stone-400 mt-1">General Manager Portal</p>
-      </div>
 
-      <div className="w-full max-w-sm bg-[#181513] border border-[#2C2520] rounded-3xl p-6 shadow-2xl">
-        <PinPad
-          title="MANAGER ACCESS PIN"
-          subtitle="Enter 4-digit PIN to access Executive Cockpit"
-          onSuccess={handlePinSubmit}
-          error={error}
-          buttonText="ACCESS SYSTEM ➔"
-        />
-      </div>
+        <div className="w-full bg-white border border-stone-200 rounded-2xl p-6 shadow-xs">
+          <div className="mb-4">
+            <label className="text-[11px] font-bold text-stone-500 uppercase tracking-wider block mb-1">
+              Staff Profile:
+            </label>
+            <div className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs font-semibold text-stone-800">
+              MANJUNATH (GENERAL MANAGER) — (General Manager)
+            </div>
+          </div>
 
-      <div className="mt-8 text-xs text-stone-500">
-        Default Manager PIN: <strong className="text-stone-300">9999</strong>
+          <PinPad
+            title=""
+            subtitle="Enter 4-digit PIN to access Executive Cockpit"
+            onSuccess={handlePinSubmit}
+            error={error}
+            buttonText="VERIFY & UNLOCK DESK"
+            variant="light"
+          />
+        </div>
+
+        <div className="mt-6 text-xs text-stone-500 text-center">
+          Default Manager PIN: <strong className="text-stone-700">9999</strong>
+        </div>
       </div>
     </div>
   );

@@ -420,14 +420,15 @@ export default function MasterSalesReportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#100E0C] text-stone-100 flex flex-col font-mono text-xs select-none">
+    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col font-mono text-xs select-none p-3">
+      <div className="border border-[#8A4228] rounded-2xl bg-[#FBF9F6] min-h-[calc(100vh-1.5rem)] flex flex-col overflow-hidden">
       {/* Shared Manager Top Navigation */}
       <ManagerTopNav activeTab="reports" />
 
       {/* Subheader Bar with Title & Export Actions */}
-      <div className="bg-[#141210] border-b border-[#2C2520] px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white border-b border-stone-200 px-6 py-3 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xs md:text-sm font-black text-[#D08A52] uppercase tracking-wider font-sans">
+          <h1 className="text-xs md:text-sm font-black text-[#8A4228] uppercase tracking-wider font-sans">
             MASTER FINANCIAL & DETAILED SALES REPORT
           </h1>
           <p className="text-[11px] text-stone-400 font-sans mt-0.5">
@@ -438,13 +439,13 @@ export default function MasterSalesReportPage() {
         {/* Filter & Export Buttons */}
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Interactive Date Filter */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#181513] border border-[#2C2520] rounded-xl text-amber-400 font-bold text-xs">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-700 font-bold text-xs">
             <Calendar className="w-3.5 h-3.5 text-amber-400" />
             <span className="text-stone-400 font-sans">Period:</span>
             <select
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-[#100E0C] text-white font-mono text-xs px-2 py-0.5 rounded border border-[#2C2520] focus:outline-none focus:border-[#8A4228] cursor-pointer"
+              className="bg-white text-stone-900 font-mono text-xs px-2 py-0.5 rounded border border-stone-200 focus:outline-none focus:border-[#8A4228] cursor-pointer"
             >
               <option value="ALL">All Time (Cumulative)</option>
               <option value={todayStr}>Today ({todayStr})</option>
@@ -462,7 +463,7 @@ export default function MasterSalesReportPage() {
           <button
             type="button"
             onClick={handleExportPDF}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold text-xs transition shadow active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-500 text-stone-900 rounded-xl font-bold text-xs transition shadow active:scale-95"
           >
             <FileText className="w-3.5 h-3.5" />
             <span>PDF</span>
@@ -471,7 +472,7 @@ export default function MasterSalesReportPage() {
           <button
             type="button"
             onClick={handleExportExcel}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs transition shadow active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-stone-900 rounded-xl font-bold text-xs transition shadow active:scale-95"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
             <span>Excel (.xlsx)</span>
@@ -482,8 +483,8 @@ export default function MasterSalesReportPage() {
       {/* Main Content Area */}
       <main className="p-6 space-y-6 flex-1 max-w-[1600px] w-full mx-auto">
         {/* 1. COMPLETE FINANCIAL SUMMARY BREAKDOWN */}
-        <section className="bg-[#181513] border border-[#2C2520] rounded-2xl overflow-hidden shadow-xl">
-          <div className="bg-[#1C1815] px-4 py-2.5 border-b border-[#2C2520] font-bold text-amber-400 uppercase tracking-wider text-xs flex justify-between items-center">
+        <section className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs">
+          <div className="bg-stone-50 px-4 py-2.5 border-b border-stone-200 font-bold text-amber-400 uppercase tracking-wider text-xs flex justify-between items-center">
             <span>1. COMPLETE FINANCIAL SUMMARY BREAKDOWN ({displayFilterLabel})</span>
             <span className="text-[11px] text-emerald-400 font-mono font-bold flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -492,26 +493,26 @@ export default function MasterSalesReportPage() {
           </div>
           <div className="p-5 space-y-4 font-sans text-xs">
             {/* Row 1: Gross, Discounts, GST, Net */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-4 border-b border-[#2C2520]">
-              <div className="p-3 bg-[#13110F] border border-[#26201B] rounded-xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-4 border-b border-stone-200">
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl">
                 <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Gross Food Sales:</span>
-                <strong className="text-white text-lg font-mono font-black mt-1 block">
+                <strong className="text-stone-900 text-lg font-mono font-black mt-1 block">
                   ₹{grossFoodSales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </strong>
               </div>
-              <div className="p-3 bg-[#13110F] border border-[#26201B] rounded-xl">
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl">
                 <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Total Discounts:</span>
                 <strong className="text-emerald-400 text-lg font-mono font-black mt-1 block">
                   -₹{totalDiscount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </strong>
               </div>
-              <div className="p-3 bg-[#13110F] border border-[#26201B] rounded-xl">
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl">
                 <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Total GST (5%):</span>
                 <strong className="text-sky-400 text-lg font-mono font-black mt-1 block">
                   ₹{totalGst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </strong>
               </div>
-              <div className="p-3 bg-[#13110F] border border-[#26201B] rounded-xl">
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl">
                 <span className="text-stone-400 block text-[11px] uppercase font-bold tracking-wider">Net Day Revenue:</span>
                 <strong className="text-amber-400 text-lg font-mono font-black mt-1 block">
                   ₹{netDayRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -520,10 +521,10 @@ export default function MasterSalesReportPage() {
             </div>
 
             {/* Row 2: Dine-in, Takeaway, Total Orders */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b border-[#2C2520]">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b border-stone-200">
               <div>
                 <span className="text-stone-400">Dine-in Sales (16 Seats):</span>{' '}
-                <strong className="text-white text-sm font-mono font-bold">
+                <strong className="text-stone-900 text-sm font-mono font-bold">
                   ₹{dineInSales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </strong>
               </div>
@@ -535,7 +536,7 @@ export default function MasterSalesReportPage() {
               </div>
               <div>
                 <span className="text-stone-400">Total Orders Completed:</span>{' '}
-                <strong className="text-white text-sm font-mono font-bold">{totalOrdersCompleted}</strong>{' '}
+                <strong className="text-stone-900 text-sm font-mono font-bold">{totalOrdersCompleted}</strong>{' '}
                 <span className="text-stone-400 text-[11px]">({dineInCount} Dine-in, {takeawayCount} Parcel)</span>
               </div>
             </div>
@@ -543,15 +544,15 @@ export default function MasterSalesReportPage() {
             {/* Row 3: Payment Split */}
             <div className="text-xs text-stone-300 flex flex-wrap items-center gap-2">
               <span className="text-stone-400 font-bold">Payment Split:</span>
-              <span className="bg-[#1C1815] px-3 py-1.5 rounded-lg border border-[#2C2520]">
+              <span className="bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-200 text-stone-700">
                 💵 Cash: <strong className="text-amber-400 font-mono">₹{cashSales.toFixed(2)} ({cashPct}%)</strong>
               </span>
               <span>•</span>
-              <span className="bg-[#1C1815] px-3 py-1.5 rounded-lg border border-[#2C2520]">
+              <span className="bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-200 text-stone-700">
                 📱 UPI: <strong className="text-cyan-400 font-mono">₹{upiSales.toFixed(2)} ({upiPct}%)</strong>
               </span>
               <span>•</span>
-              <span className="bg-[#1C1815] px-3 py-1.5 rounded-lg border border-[#2C2520]">
+              <span className="bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-200 text-stone-700">
                 💳 Card POS: <strong className="text-purple-400 font-mono">₹{cardSales.toFixed(2)} ({cardPct}%)</strong>
               </span>
             </div>
@@ -559,24 +560,24 @@ export default function MasterSalesReportPage() {
         </section>
 
         {/* 2. ITEM-WISE SALES PERFORMANCE */}
-        <section className="bg-[#181513] border border-[#2C2520] rounded-2xl overflow-hidden shadow-xl">
-          <div className="bg-[#1C1815] px-4 py-2.5 border-b border-[#2C2520] font-bold text-cyan-400 uppercase tracking-wider text-xs flex justify-between items-center">
+        <section className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs">
+          <div className="bg-stone-50 px-4 py-2.5 border-b border-stone-200 font-bold text-cyan-400 uppercase tracking-wider text-xs flex justify-between items-center">
             <span>2. ITEM-WISE SALES PERFORMANCE ({itemPerformance.length} Items Sold)</span>
             <span className="text-[11px] text-stone-400 font-normal">Top Revenue Contributors</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse font-sans text-xs">
-              <thead className="bg-[#100E0C] text-stone-400 border-b border-[#2C2520] font-bold uppercase text-[11px]">
+              <thead className="bg-stone-50 text-stone-600 border-b border-stone-200 font-bold uppercase text-[11px]">
                 <tr>
-                  <th className="p-3 border-r border-[#2C2520]">DISH NAME</th>
-                  <th className="p-3 border-r border-[#2C2520]">CATEGORY</th>
-                  <th className="p-3 border-r border-[#2C2520] text-right">QTY SOLD</th>
-                  <th className="p-3 border-r border-[#2C2520] text-right">UNIT PRICE</th>
-                  <th className="p-3 border-r border-[#2C2520] text-right">TOTAL REVENUE (₹)</th>
+                  <th className="p-3 border-r border-stone-200">DISH NAME</th>
+                  <th className="p-3 border-r border-stone-200">CATEGORY</th>
+                  <th className="p-3 border-r border-stone-200 text-right">QTY SOLD</th>
+                  <th className="p-3 border-r border-stone-200 text-right">UNIT PRICE</th>
+                  <th className="p-3 border-r border-stone-200 text-right">TOTAL REVENUE (₹)</th>
                   <th className="p-3 text-right">CONTRIBUTION %</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#2C2520] font-mono text-xs">
+              <tbody className="divide-y divide-stone-100 font-mono text-xs">
                 {itemPerformance.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="p-6 text-center text-stone-500 font-sans">
@@ -585,20 +586,20 @@ export default function MasterSalesReportPage() {
                   </tr>
                 ) : (
                   itemPerformance.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-[#201B18] transition-colors">
-                      <td className="p-3 font-sans font-bold text-white border-r border-[#2C2520]">
+                    <tr key={idx} className="hover:bg-stone-50/70 transition-colors">
+                      <td className="p-3 font-sans font-bold text-stone-900 border-r border-stone-200">
                         {row.dishName}
                       </td>
-                      <td className="p-3 font-sans text-stone-300 border-r border-[#2C2520]">
+                      <td className="p-3 font-sans text-stone-300 border-r border-stone-200">
                         {row.category}
                       </td>
-                      <td className="p-3 text-right text-white font-bold border-r border-[#2C2520]">
+                      <td className="p-3 text-right text-stone-900 font-bold border-r border-stone-200">
                         {row.qtySold}
                       </td>
-                      <td className="p-3 text-right text-stone-300 border-r border-[#2C2520]">
+                      <td className="p-3 text-right text-stone-300 border-r border-stone-200">
                         ₹{row.unitPrice.toFixed(2)}
                       </td>
-                      <td className="p-3 text-right text-emerald-400 font-bold border-r border-[#2C2520]">
+                      <td className="p-3 text-right text-emerald-400 font-bold border-r border-stone-200">
                         ₹{row.totalRevenue.toFixed(2)}
                       </td>
                       <td className="p-3 text-right text-amber-400 font-bold">
@@ -613,8 +614,8 @@ export default function MasterSalesReportPage() {
         </section>
 
         {/* 3. MASTER DETAILED TRANSACTION AUDIT (MAXIMUM COLUMNS) */}
-        <section className="bg-[#181513] border border-[#2C2520] rounded-2xl overflow-hidden shadow-xl">
-          <div className="bg-[#1C1815] px-4 py-2.5 border-b border-[#2C2520] flex flex-wrap items-center justify-between gap-3">
+        <section className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs">
+          <div className="bg-stone-50 px-4 py-2.5 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3">
             <span className="font-bold text-emerald-400 uppercase tracking-wider text-xs">
               3. MASTER DETAILED TRANSACTION AUDIT ({filtered.length} Invoices)
             </span>
@@ -625,29 +626,29 @@ export default function MasterSalesReportPage() {
                 placeholder="Search Bill #, Guest, Server or Mode..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-[#100E0C] border border-[#2C2520] rounded-lg pl-8 pr-3 py-1 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-[#8A4228] font-sans"
+                className="w-full bg-white border border-stone-200 rounded-lg pl-8 pr-3 py-1 text-xs text-stone-900 placeholder-stone-500 focus:outline-none focus:border-[#8A4228] font-sans"
               />
             </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
-              <thead className="bg-[#100E0C] text-stone-400 border-b border-[#2C2520] font-bold uppercase text-[10px]">
+              <thead className="bg-stone-50 text-stone-600 border-b border-stone-200 font-bold uppercase text-[10px]">
                 <tr>
-                  <th className="p-2.5 border-r border-[#2C2520]">BILL #</th>
-                  <th className="p-2.5 border-r border-[#2C2520]">DATE</th>
-                  <th className="p-2.5 border-r border-[#2C2520]">TYPE</th>
-                  <th className="p-2.5 border-r border-[#2C2520]">SEAT</th>
-                  <th className="p-2.5 border-r border-[#2C2520]">CUSTOMER NAME</th>
-                  <th className="p-2.5 border-r border-[#2C2520]">SERVER</th>
-                  <th className="p-2.5 border-r border-[#2C2520]">ITEMS SUMMARY</th>
-                  <th className="p-2.5 border-r border-[#2C2520]">PLACED</th>
-                  <th className="p-2.5 border-r border-[#2C2520]">SETTLED</th>
-                  <th className="p-2.5 border-r border-[#2C2520] text-right">SUBTOT</th>
-                  <th className="p-2.5 border-r border-[#2C2520] text-right">DISCOUNT</th>
-                  <th className="p-2.5 border-r border-[#2C2520] text-right">GST 5%</th>
-                  <th className="p-2.5 border-r border-[#2C2520] text-right">GRAND TOT</th>
-                  <th className="p-2.5 border-r border-[#2C2520]">MODE</th>
+                  <th className="p-2.5 border-r border-stone-200">BILL #</th>
+                  <th className="p-2.5 border-r border-stone-200">DATE</th>
+                  <th className="p-2.5 border-r border-stone-200">TYPE</th>
+                  <th className="p-2.5 border-r border-stone-200">SEAT</th>
+                  <th className="p-2.5 border-r border-stone-200">CUSTOMER NAME</th>
+                  <th className="p-2.5 border-r border-stone-200">SERVER</th>
+                  <th className="p-2.5 border-r border-stone-200">ITEMS SUMMARY</th>
+                  <th className="p-2.5 border-r border-stone-200">PLACED</th>
+                  <th className="p-2.5 border-r border-stone-200">SETTLED</th>
+                  <th className="p-2.5 border-r border-stone-200 text-right">SUBTOT</th>
+                  <th className="p-2.5 border-r border-stone-200 text-right">DISCOUNT</th>
+                  <th className="p-2.5 border-r border-stone-200 text-right">GST 5%</th>
+                  <th className="p-2.5 border-r border-stone-200 text-right">GRAND TOT</th>
+                  <th className="p-2.5 border-r border-stone-200">MODE</th>
                   <th className="p-2.5 text-center">STATUS</th>
                 </tr>
               </thead>
@@ -660,14 +661,14 @@ export default function MasterSalesReportPage() {
                   </tr>
                 ) : (
                   filtered.map((t) => (
-                    <tr key={t.billNumber} className="hover:bg-[#201B18] transition-colors">
-                      <td className="p-2.5 font-bold text-amber-400 border-r border-[#2C2520]">
+                    <tr key={t.billNumber} className="hover:bg-stone-50/70 transition-colors">
+                      <td className="p-2.5 font-bold text-amber-400 border-r border-stone-200">
                         {t.billNumber}
                       </td>
-                      <td className="p-2.5 text-stone-300 border-r border-[#2C2520]">
+                      <td className="p-2.5 text-stone-300 border-r border-stone-200">
                         {t.date}
                       </td>
-                      <td className="p-2.5 border-r border-[#2C2520]">
+                      <td className="p-2.5 border-r border-stone-200">
                         <span
                           className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                             t.orderType.toLowerCase().includes('take') || t.orderType.toLowerCase().includes('parcel')
@@ -678,37 +679,37 @@ export default function MasterSalesReportPage() {
                           {t.orderType}
                         </span>
                       </td>
-                      <td className="p-2.5 font-bold text-white border-r border-[#2C2520]">
+                      <td className="p-2.5 font-bold text-stone-900 border-r border-stone-200">
                         {t.seatNumberOrToken}
                       </td>
-                      <td className="p-2.5 text-stone-200 border-r border-[#2C2520]">
+                      <td className="p-2.5 text-stone-200 border-r border-stone-200">
                         {t.customerName}
                       </td>
-                      <td className="p-2.5 text-stone-300 border-r border-[#2C2520]">
+                      <td className="p-2.5 text-stone-300 border-r border-stone-200">
                         {t.serverName}
                       </td>
-                      <td className="p-2.5 text-stone-200 max-w-xs truncate border-r border-[#2C2520]" title={t.itemsSummary}>
+                      <td className="p-2.5 text-stone-200 max-w-xs truncate border-r border-stone-200" title={t.itemsSummary}>
                         {t.itemsSummary}
                       </td>
-                      <td className="p-2.5 text-stone-300 border-r border-[#2C2520]">
+                      <td className="p-2.5 text-stone-300 border-r border-stone-200">
                         {t.placedAt}
                       </td>
-                      <td className="p-2.5 text-stone-300 border-r border-[#2C2520]">
+                      <td className="p-2.5 text-stone-300 border-r border-stone-200">
                         {t.settledAt}
                       </td>
-                      <td className="p-2.5 text-right font-mono text-stone-300 border-r border-[#2C2520]">
+                      <td className="p-2.5 text-right font-mono text-stone-300 border-r border-stone-200">
                         ₹{t.subtotal.toFixed(2)}
                       </td>
-                      <td className="p-2.5 text-right font-mono text-emerald-400 font-bold border-r border-[#2C2520]">
+                      <td className="p-2.5 text-right font-mono text-emerald-400 font-bold border-r border-stone-200">
                         {t.discountAmount > 0 ? `-₹${t.discountAmount.toFixed(2)}` : '₹0.00'}
                       </td>
-                      <td className="p-2.5 text-right font-mono text-stone-400 border-r border-[#2C2520]">
+                      <td className="p-2.5 text-right font-mono text-stone-400 border-r border-stone-200">
                         ₹{t.gst5Percent.toFixed(2)}
                       </td>
-                      <td className="p-2.5 text-right font-mono font-bold text-amber-400 border-r border-[#2C2520]">
+                      <td className="p-2.5 text-right font-mono font-bold text-amber-400 border-r border-stone-200">
                         ₹{t.grandTotal.toFixed(2)}
                       </td>
-                      <td className="p-2.5 border-r border-[#2C2520]">
+                      <td className="p-2.5 border-r border-stone-200">
                         <span
                           className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                             t.paymentMode.toUpperCase().includes('UPI')
@@ -734,6 +735,7 @@ export default function MasterSalesReportPage() {
           </div>
         </section>
       </main>
+      </div>
     </div>
   );
 }

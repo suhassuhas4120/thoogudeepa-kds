@@ -51,7 +51,8 @@ export default function ManagerQRStandsScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-[#100E0C] text-white flex flex-col font-sans select-none">
+    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col font-sans select-none p-3">
+      <div className="border border-[#8A4228] rounded-2xl bg-[#FBF9F6] min-h-[calc(100vh-1.5rem)] flex flex-col overflow-hidden">
       {/* Executive Unified Navigation Bar - Hidden on Print */}
       <div className="print:hidden">
         <ManagerTopNav
@@ -69,7 +70,7 @@ export default function ManagerQRStandsScreen() {
       </div>
 
       {/* Subheader Instructions - Hidden on Print */}
-      <div className="h-12 bg-[#181513] border-b border-[#2C2520] px-6 flex items-center justify-between text-xs text-stone-400 print:hidden">
+      <div className="h-12 bg-[#181513] border-b border-stone-200 px-6 flex items-center justify-between text-xs text-stone-400 print:hidden">
         <div>
           <span>High-Resolution Acrylic QR Stands for Seats 1 to 16.</span>
           <span className="text-[#D08A52] font-bold ml-2">
@@ -98,7 +99,7 @@ export default function ManagerQRStandsScreen() {
             return (
               <div
                 key={seat.id}
-                className="bg-[#181513] rounded-3xl border border-[#2C2520] p-5 flex flex-col items-center justify-between text-center relative overflow-hidden shadow-xl print:border-2 print:border-black print:bg-white print:text-black print:page-break-after-always print:rounded-2xl print:my-4"
+                className="bg-[#181513] rounded-3xl border border-stone-200 p-5 flex flex-col items-center justify-between text-center relative overflow-hidden shadow-xl print:border-2 print:border-black print:bg-white print:text-black print:page-break-after-always print:rounded-2xl print:my-4"
               >
                 {/* Gold/Copper Top Accent Line */}
                 <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#8A4228] via-[#D08A52] to-[#8A4228] print:hidden" />
@@ -142,10 +143,10 @@ export default function ManagerQRStandsScreen() {
                 </div>
 
                 {/* Bottom Actions - Hidden on Print */}
-                <div className="w-full mt-4 pt-3 border-t border-[#2C2520] flex items-center justify-between gap-2 print:hidden">
+                <div className="w-full mt-4 pt-3 border-t border-stone-200 flex items-center justify-between gap-2 print:hidden">
                   <button
                     onClick={() => handlePrintSingle(seat.id)}
-                    className="flex-1 py-1.5 px-2 bg-[#100E0C] hover:bg-[#2C2520] border border-[#2C2520] text-stone-300 hover:text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition"
+                    className="flex-1 py-1.5 px-2 bg-stone-50 hover:bg-[#2C2520] border border-stone-200 text-stone-300 hover:text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition"
                   >
                     <Printer className="w-3.5 h-3.5" />
                     <span>Print Stand</span>
@@ -165,6 +166,7 @@ export default function ManagerQRStandsScreen() {
             );
           })}
         </div>
+      </div>
       </div>
     </div>
   );

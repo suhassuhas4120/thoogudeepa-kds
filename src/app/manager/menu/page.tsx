@@ -210,7 +210,8 @@ export default function ManagerMenuScreen() {
   });
 
   return (
-    <div className="min-h-screen bg-[#100E0C] text-white flex flex-col font-sans select-none">
+    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col font-sans select-none p-3">
+      <div className="border border-[#8A4228] rounded-2xl bg-[#FBF9F6] min-h-[calc(100vh-1.5rem)] flex flex-col overflow-hidden">
       {/* Executive Unified Navigation Bar */}
       <ManagerTopNav
         activeTab="menu"
@@ -226,14 +227,14 @@ export default function ManagerMenuScreen() {
       />
 
       {/* Filter and Search Bar */}
-      <div className="h-14 bg-[#181513] border-b border-[#2C2520] px-6 flex items-center justify-between shrink-0">
+      <div className="h-14 bg-white border-b border-stone-200 px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2 overflow-x-auto py-1">
           <button
             onClick={() => setSelectedCategory('ALL')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
               selectedCategory === 'ALL'
                 ? 'bg-[#8A4228] text-white shadow-sm'
-                : 'bg-[#100E0C] border border-[#2C2520] text-stone-400 hover:text-white'
+                : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'
             }`}
           >
             All Categories ({items.length})
@@ -245,7 +246,7 @@ export default function ManagerMenuScreen() {
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
                 selectedCategory === c.id
                   ? 'bg-[#8A4228] text-white shadow-sm'
-                  : 'bg-[#100E0C] border border-[#2C2520] text-stone-400 hover:text-white'
+                  : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'
               }`}
             >
               {c.name}
@@ -260,7 +261,7 @@ export default function ManagerMenuScreen() {
             placeholder="Search dish name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
+            className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
           />
         </div>
       </div>
@@ -272,7 +273,7 @@ export default function ManagerMenuScreen() {
             <div
               key={item.id}
               className={`bg-[#181513] rounded-2xl border p-4 flex flex-col justify-between transition hover:border-[#8A4228]/60 shadow-lg ${
-                item.isAvailable ? 'border-[#2C2520]' : 'border-rose-900/40 opacity-75'
+                item.isAvailable ? 'border-stone-200' : 'border-rose-900/40 opacity-75'
               }`}
             >
               <div>
@@ -295,21 +296,21 @@ export default function ManagerMenuScreen() {
                       className={`p-1.5 rounded-lg text-xs font-bold transition ${
                         item.isPairWith
                           ? 'bg-[#8A4228]/20 text-[#D08A52] border border-[#8A4228]/40'
-                          : 'bg-[#100E0C] border border-[#2C2520] text-stone-500 hover:text-stone-300'
+                          : 'bg-stone-50 border border-stone-200 text-stone-500 hover:text-stone-300'
                       }`}
                     >
                       <Sparkles className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => openEditModal(item)}
-                      className="p-1.5 rounded-lg bg-[#100E0C] border border-[#2C2520] text-stone-300 hover:text-white"
+                      className="p-1.5 rounded-lg bg-stone-50 border border-stone-200 text-stone-300 hover:text-white"
                       title="Edit Dish"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDeleteItem(item.id)}
-                      className="p-1.5 rounded-lg bg-[#100E0C] border border-[#2C2520] text-stone-400 hover:text-rose-400"
+                      className="p-1.5 rounded-lg bg-stone-50 border border-stone-200 text-stone-400 hover:text-rose-400"
                       title="Delete / Disable"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -323,7 +324,7 @@ export default function ManagerMenuScreen() {
                 )}
               </div>
 
-              <div className="pt-3 border-t border-[#2C2520] flex items-center justify-between">
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
                 <div>
                   <span className="text-lg font-black text-[#D08A52]">₹{item.price}</span>
                   <span className="text-[10px] text-stone-500 ml-1">+ 5% GST</span>
@@ -348,8 +349,8 @@ export default function ManagerMenuScreen() {
       {/* Add / Edit Dish Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-[#181513] border border-[#2C2520] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-4 bg-[#100E0C] border-b border-[#2C2520] flex items-center justify-between">
+          <div className="w-full max-w-lg bg-[#181513] border border-stone-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-4 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
               <div>
                 <h3 className="font-black text-white text-base">
                   {editingItem ? 'Edit Dish' : 'Add New Menu Dish'}
@@ -358,7 +359,7 @@ export default function ManagerMenuScreen() {
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-lg bg-[#181513] border border-[#2C2520] text-stone-400 hover:text-white flex items-center justify-center font-bold"
+                className="w-8 h-8 rounded-lg bg-[#181513] border border-stone-200 text-stone-400 hover:text-white flex items-center justify-center font-bold"
               >
                 ✕
               </button>
@@ -373,7 +374,7 @@ export default function ManagerMenuScreen() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g. Donne Mutton Biryani"
-                  className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3.5 py-2 text-sm text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-sm text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
                 />
               </div>
 
@@ -383,7 +384,7 @@ export default function ManagerMenuScreen() {
                   <select
                     value={formData.categoryId}
                     onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                    className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D08A52]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D08A52]"
                   >
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -403,7 +404,7 @@ export default function ManagerMenuScreen() {
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     placeholder="290"
-                    className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3.5 py-2 text-sm text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-sm text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
                   />
                 </div>
               </div>
@@ -415,12 +416,12 @@ export default function ManagerMenuScreen() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Seeraga Samba rice cooked in copper handi with spices..."
-                  className="w-full bg-[#100E0C] border border-[#2C2520] rounded-xl px-3.5 py-2 text-sm text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-sm text-white placeholder-stone-600 focus:outline-none focus:border-[#D08A52]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-1">
-                <label className="flex items-center gap-2 p-3 bg-[#100E0C] border border-[#2C2520] rounded-xl cursor-pointer">
+                <label className="flex items-center gap-2 p-3 bg-stone-50 border border-stone-200 rounded-xl cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.isVeg}
@@ -433,7 +434,7 @@ export default function ManagerMenuScreen() {
                   </div>
                 </label>
 
-                <label className="flex items-center gap-2 p-3 bg-[#100E0C] border border-[#2C2520] rounded-xl cursor-pointer">
+                <label className="flex items-center gap-2 p-3 bg-stone-50 border border-stone-200 rounded-xl cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.isPairWith}
@@ -447,11 +448,11 @@ export default function ManagerMenuScreen() {
                 </label>
               </div>
 
-              <div className="pt-3 border-t border-[#2C2520] flex items-center justify-end gap-3">
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-[#100E0C] border border-[#2C2520] text-stone-400 hover:text-white rounded-xl text-xs font-bold"
+                  className="px-4 py-2 bg-white border border-stone-200 text-stone-600 hover:bg-stone-50 rounded-xl text-xs font-bold"
                 >
                   Cancel
                 </button>
@@ -466,6 +467,7 @@ export default function ManagerMenuScreen() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

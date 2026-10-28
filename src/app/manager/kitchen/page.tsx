@@ -359,27 +359,28 @@ export default function ManagerKitchenMonitorScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-[#100E0C] text-stone-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col font-sans select-none p-3">
+      <div className="border border-[#8A4228] rounded-2xl bg-[#FBF9F6] min-h-[calc(100vh-1.5rem)] flex flex-col overflow-hidden">
       <ManagerTopNav activeTab="orders" />
 
       {/* ────────────────────────────────────────────────────────────────── */}
       {/* SECONDARY SUB-NAV / VIEW SWITCHER                                  */}
       {/* ────────────────────────────────────────────────────────────────── */}
-      <div className="bg-[#14110F] border-b border-[#2C2520] px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white border-b border-stone-200 px-6 py-3 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <h2 className="font-black text-sm text-stone-200 uppercase tracking-wider">
+          <h2 className="font-black text-sm text-stone-900 uppercase tracking-wider">
             Orders & Kitchen Operations ({tickets.length})
           </h2>
 
           {/* Primary View Switcher: KOTs vs Master Invoices */}
-          <div className="flex items-center bg-[#1C1815] p-0.5 rounded-xl border border-[#2C2520] text-xs">
+          <div className="flex items-center bg-stone-100 p-0.5 rounded-xl border border-stone-200 text-xs">
             <button
               type="button"
               onClick={() => setViewMode('KOT_TICKETS')}
               className={`px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
                 viewMode === 'KOT_TICKETS'
                   ? 'bg-[#8A4228] text-white shadow-sm'
-                  : 'text-stone-400 hover:text-white'
+                  : 'text-stone-600 hover:text-stone-900'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
@@ -391,7 +392,7 @@ export default function ManagerKitchenMonitorScreen() {
               className={`px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
                 viewMode === 'MASTER_BILLS'
                   ? 'bg-emerald-700 text-white shadow-sm'
-                  : 'text-stone-400 hover:text-white'
+                  : 'text-stone-600 hover:text-stone-900'
               }`}
             >
               <Receipt className="w-3.5 h-3.5" />
@@ -404,7 +405,7 @@ export default function ManagerKitchenMonitorScreen() {
           <button
             type="button"
             onClick={() => setShow86Drawer(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-950/60 border border-amber-600/40 text-amber-300 hover:bg-amber-900/60 text-xs font-bold transition active:scale-95 shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 text-xs font-bold transition active:scale-95 shadow-sm"
           >
             <AlertTriangle className="w-3.5 h-3.5" />
             <span>86 / Sold Out Item Manager</span>
@@ -416,7 +417,7 @@ export default function ManagerKitchenMonitorScreen() {
       {/* FILTER TABS (Only shown in KOT view)                                */}
       {/* ────────────────────────────────────────────────────────────────── */}
       {viewMode === 'KOT_TICKETS' && (
-        <div className="bg-[#12100E] border-b border-[#2C2520] px-6 py-2.5 flex items-center justify-between text-xs overflow-x-auto">
+        <div className="bg-stone-50 border-b border-stone-200 px-6 py-2.5 flex items-center justify-between text-xs overflow-x-auto">
           <div className="flex items-center gap-2">
             <span className="text-stone-500 font-bold uppercase tracking-wider text-[10px] mr-1">Filter KOTs:</span>
             <button
@@ -425,7 +426,7 @@ export default function ManagerKitchenMonitorScreen() {
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'ALL'
                   ? 'bg-[#8A4228] text-white shadow-sm'
-                  : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+                  : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
               [ All Orders ({totalCount}) ]
@@ -437,7 +438,7 @@ export default function ManagerKitchenMonitorScreen() {
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'ACTIVE'
                   ? 'bg-[#8A4228] text-white shadow-sm'
-                  : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+                  : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
               [ In Kitchen ({activeCount}) ]
@@ -449,7 +450,7 @@ export default function ManagerKitchenMonitorScreen() {
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'PARCELS'
                   ? 'bg-amber-600 text-white shadow-sm'
-                  : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+                  : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
               [ 📦 Parcels ({parcelCount}) ]
@@ -461,7 +462,7 @@ export default function ManagerKitchenMonitorScreen() {
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'COOKING'
                   ? 'bg-sky-600 text-white shadow-sm'
-                  : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+                  : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
               [ Cooking ({cookingCount}) ]
@@ -473,7 +474,7 @@ export default function ManagerKitchenMonitorScreen() {
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'READY'
                   ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+                  : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
               [ Ready ({readyCount}) ]
@@ -485,7 +486,7 @@ export default function ManagerKitchenMonitorScreen() {
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'COMPLETED'
                   ? 'bg-stone-700 text-white shadow-sm'
-                  : 'bg-[#1C1815] text-stone-400 hover:text-white border border-[#2C2520]'
+                  : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
               [ Completed ({completedCount}) ]
@@ -503,10 +504,10 @@ export default function ManagerKitchenMonitorScreen() {
       {/* ────────────────────────────────────────────────────────────────── */}
       {viewMode === 'KOT_TICKETS' && (
         <div className="flex-1 p-6 overflow-x-auto">
-          <div className="bg-[#181513] border border-[#2C2520] rounded-2xl overflow-hidden shadow-xl">
+          <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-[#13110F] border-b border-[#2C2520] text-stone-400 font-bold uppercase tracking-wider text-[11px]">
+                <tr className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase tracking-wider text-[11px]">
                   <th className="py-3 px-4">TICKET / ROUND</th>
                   <th className="py-3 px-3">TYPE / SEAT</th>
                   <th className="py-3 px-4">LINKED INVOICE</th>
@@ -519,7 +520,7 @@ export default function ManagerKitchenMonitorScreen() {
                   <th className="py-3 px-4 text-right">ACTIONS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#26201B]">
+              <tbody className="divide-y divide-stone-100">
                 {filteredTickets.length === 0 ? (
                   <tr>
                     <td colSpan={10} className="py-12 text-center text-stone-500">
@@ -540,7 +541,7 @@ export default function ManagerKitchenMonitorScreen() {
                       : ticket.waiterName || (ticket.seatId && ticket.seatId <= 8 ? 'Suhas' : 'Shiva');
 
                     return (
-                      <tr key={ticket.id} className="hover:bg-[#201B18] transition">
+                      <tr key={ticket.id} className="hover:bg-stone-50/70 border-b border-stone-100 transition">
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-1.5">
                             <span className="font-mono font-black text-amber-400 text-sm">
@@ -612,7 +613,7 @@ export default function ManagerKitchenMonitorScreen() {
                             <button
                               type="button"
                               onClick={() => setSelectedTicket(ticket)}
-                              className="px-3 py-1.5 rounded-lg bg-[#221D1A] hover:bg-[#2C2520] text-stone-200 hover:text-white font-bold text-xs border border-[#3A302A] transition active:scale-95 shadow-sm"
+                              className="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs border border-stone-200 transition active:scale-95 shadow-xs"
                             >
                               Details
                             </button>
@@ -646,10 +647,10 @@ export default function ManagerKitchenMonitorScreen() {
       {/* ────────────────────────────────────────────────────────────────── */}
       {viewMode === 'MASTER_BILLS' && (
         <div className="flex-1 p-6 overflow-x-auto">
-          <div className="bg-[#181513] border border-[#2C2520] rounded-2xl overflow-hidden shadow-xl">
+          <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-[#13110F] border-b border-[#2C2520] text-stone-400 font-bold uppercase tracking-wider text-[11px]">
+                <tr className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase tracking-wider text-[11px]">
                   <th className="py-3 px-4">INVOICE #</th>
                   <th className="py-3 px-3">DATE</th>
                   <th className="py-3 px-3">TYPE</th>
@@ -665,7 +666,7 @@ export default function ManagerKitchenMonitorScreen() {
                   <th className="py-3 px-4 text-right">ACTIONS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#26201B]">
+              <tbody className="divide-y divide-stone-100">
                 {masterBills.length === 0 ? (
                   <tr>
                     <td colSpan={13} className="py-12 text-center text-stone-500">
@@ -674,7 +675,7 @@ export default function ManagerKitchenMonitorScreen() {
                   </tr>
                 ) : (
                   masterBills.map((bill) => (
-                    <tr key={bill.id} className="hover:bg-[#201B18] transition">
+                    <tr key={bill.id} className="hover:bg-stone-50/70 border-b border-stone-100 transition">
                       <td className="py-3 px-4 font-mono font-black text-amber-400">
                         #{bill.billNumber}
                       </td>
@@ -723,7 +724,7 @@ export default function ManagerKitchenMonitorScreen() {
                         <button
                           type="button"
                           onClick={() => setSelectedMasterBill(bill)}
-                          className="px-3 py-1.5 rounded-lg bg-[#221D1A] hover:bg-[#2C2520] text-stone-200 hover:text-white font-bold text-xs border border-[#3A302A] transition active:scale-95 shadow-sm"
+                          className="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs border border-stone-200 transition active:scale-95 shadow-xs"
                         >
                           Invoice Details
                         </button>
@@ -844,7 +845,7 @@ export default function ManagerKitchenMonitorScreen() {
 
         return (
           <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-            <div className="bg-[#181513] border border-[#2C2520] rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+            <div className="bg-white border border-stone-200 rounded-3xl max-w-lg w-full p-6 shadow-xl animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
               {/* Modal Header */}
               <div className="flex justify-between items-start pb-4 border-b border-[#2C2520] mb-4">
                 <div>
@@ -908,7 +909,7 @@ export default function ManagerKitchenMonitorScreen() {
 
               {/* Parcel Details Section */}
               {isParcel && (
-                <div className="mb-4 p-3.5 bg-[#201B18] border border-amber-900/30 rounded-2xl space-y-2 text-xs">
+                <div className="mb-4 p-3.5 bg-stone-50 border border-stone-200 rounded-2xl space-y-2 text-xs">
                   <div className="flex items-center justify-between text-stone-300">
                     <div className="flex items-center gap-1.5 font-bold">
                       <User className="w-3.5 h-3.5 text-amber-400" />
@@ -953,7 +954,7 @@ export default function ManagerKitchenMonitorScreen() {
                   {selectedTicket.items?.map((item) => (
                     <div
                       key={item.id}
-                      className="p-3 bg-[#221D1A] border border-[#2C2520] rounded-xl flex justify-between items-center text-xs"
+                      className="p-3 bg-stone-50 border border-stone-200 rounded-xl flex justify-between items-center text-xs"
                     >
                       <div>
                         <div className="flex items-center gap-2">
@@ -977,7 +978,7 @@ export default function ManagerKitchenMonitorScreen() {
               </div>
 
               {/* KOT Subtotal */}
-              <div className="p-3 bg-[#13110F] border border-[#2C2520] rounded-xl flex justify-between items-center mb-4">
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl flex justify-between items-center mb-4">
                 <span className="text-xs font-bold text-stone-400">
                   This Ticket Subtotal (#{selectedTicket.ticketNumber}):
                 </span>
@@ -988,7 +989,7 @@ export default function ManagerKitchenMonitorScreen() {
 
               {/* Multi-Round Session & Sales Report Reconciliation */}
               {selectedTicket.sessionRounds && selectedTicket.sessionRounds.length > 1 && (
-                <div className="mb-6 p-3.5 bg-[#201B18] border border-amber-900/30 rounded-2xl space-y-2 text-xs">
+                <div className="mb-6 p-3.5 bg-stone-50 border border-stone-200 rounded-2xl space-y-2 text-xs">
                   <div className="flex items-center justify-between font-bold text-amber-300 pb-1.5 border-b border-[#2C2520]">
                     <span className="flex items-center gap-1.5">
                       <Layers className="w-3.5 h-3.5 text-amber-400" />
@@ -1097,7 +1098,7 @@ export default function ManagerKitchenMonitorScreen() {
       {/* ────────────────────────────────────────────────────────────────── */}
       {selectedMasterBill && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#181513] border border-[#2C2520] rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white border border-stone-200 rounded-3xl max-w-lg w-full p-6 shadow-xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex justify-between items-start pb-4 border-b border-[#2C2520] mb-4">
               <div>
                 <h3 className="font-mono font-black text-xl text-emerald-400">
@@ -1117,7 +1118,7 @@ export default function ManagerKitchenMonitorScreen() {
             </div>
 
             <div className="space-y-3 mb-6 text-xs">
-              <div className="p-3 bg-[#221D1A] border border-[#2C2520] rounded-xl space-y-2">
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
                 <div className="flex justify-between text-stone-300">
                   <span className="text-stone-400 font-bold">Customer Name:</span>
                   <span className="font-bold text-white">{selectedMasterBill.customerName || 'Walk-in Guest'}</span>
@@ -1136,7 +1137,7 @@ export default function ManagerKitchenMonitorScreen() {
                 </div>
               </div>
 
-              <div className="p-3 bg-[#221D1A] border border-[#2C2520] rounded-xl">
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block mb-1">
                   Ordered Items Summary:
                 </span>
@@ -1145,7 +1146,7 @@ export default function ManagerKitchenMonitorScreen() {
                 </span>
               </div>
 
-              <div className="p-3 bg-[#13110F] border border-[#2C2520] rounded-xl space-y-1.5">
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-1.5">
                 <div className="flex justify-between text-stone-300">
                   <span>Gross Food Subtotal:</span>
                   <span className="font-mono font-bold text-amber-400">₹{selectedMasterBill.subtotal.toFixed(2)}</span>
@@ -1183,7 +1184,7 @@ export default function ManagerKitchenMonitorScreen() {
       {/* ────────────────────────────────────────────────────────────────── */}
       {show86Drawer && (
         <div className="fixed inset-0 bg-black/80 z-50 flex justify-end">
-          <div className="bg-[#181513] border-l border-[#2C2520] w-full max-w-md h-full flex flex-col p-6 shadow-2xl">
+          <div className="bg-white border-l border-stone-200 w-full max-w-md h-full flex flex-col p-6 shadow-2xl">
             <div className="flex justify-between items-center pb-3 border-b border-[#2C2520] mb-4">
               <div>
                 <h3 className="font-black text-sm text-white uppercase tracking-wider">
@@ -1203,7 +1204,7 @@ export default function ManagerKitchenMonitorScreen() {
               {menuItems.map((item) => (
                 <div
                   key={item.id}
-                  className="p-3 bg-[#221D1A] border border-[#2C2520] rounded-xl flex justify-between items-center"
+                  className="p-3 bg-stone-50 border border-stone-200 rounded-xl flex justify-between items-center"
                 >
                   <div>
                     <span className="font-bold text-xs text-white block">{item.name}</span>
@@ -1236,6 +1237,7 @@ export default function ManagerKitchenMonitorScreen() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
