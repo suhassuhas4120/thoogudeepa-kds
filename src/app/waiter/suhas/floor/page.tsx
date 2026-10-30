@@ -184,23 +184,23 @@ export default function WaiterSuhasFloorScreen() {
   }, [socket]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col p-4 max-w-md mx-auto select-none">
+    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col p-4 max-w-md mx-auto select-none font-sans">
       {/* Top Header */}
-      <header className="flex items-center justify-between pb-4 border-b border-slate-800">
+      <header className="flex items-center justify-between pb-4 border-b border-stone-200">
         <div>
-          <h1 className="text-base font-black text-white">Suhas (S1 - S8)</h1>
-          <span className="text-[11px] font-semibold text-blue-400">Zone A Floor Terminal</span>
+          <h1 className="text-base font-black text-stone-900">Suhas (S1 - S8)</h1>
+          <span className="text-[11px] font-semibold text-[#8A4228]">Zone A Floor Terminal</span>
         </div>
 
         <div className="flex items-center gap-2">
           {/* Notification Bell with Badge */}
-          <div className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-xs font-bold text-amber-400">
+          <div className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-stone-200 text-xs font-bold text-[#8A4228] shadow-xs">
             <Bell className="w-3.5 h-3.5" />
             <span>({unreadAlerts})</span>
           </div>
           <Link
             href="/waiter/suhas"
-            className="text-xs text-slate-500 hover:text-slate-300 font-medium ml-1"
+            className="text-xs text-stone-500 hover:text-stone-800 font-medium ml-1"
           >
             Logout
           </Link>
@@ -224,25 +224,25 @@ export default function WaiterSuhasFloorScreen() {
               key={seat.id}
               className={`rounded-2xl border p-3 flex flex-col justify-between shadow-md transition ${
                 !isOccupied
-                  ? 'bg-slate-900/60 border-slate-800'
+                  ? 'bg-white border-stone-200 shadow-xs'
                   : hasFoodReady
-                  ? 'bg-emerald-950/40 border-emerald-500 shadow-emerald-500/10 animate-pulse'
+                  ? 'bg-emerald-50 border-emerald-400 shadow-xs animate-pulse'
                   : hasWater || hasGeneralHelp
-                  ? 'bg-amber-950/40 border-amber-500 animate-pulse'
+                  ? 'bg-amber-50 border-amber-400 shadow-xs animate-pulse'
                   : isBillReq
-                  ? 'bg-yellow-950/40 border-yellow-500'
-                  : 'bg-slate-900 border-slate-700/80'
+                  ? 'bg-amber-100 border-amber-400 shadow-xs'
+                  : 'bg-stone-50/80 border-stone-200/90 shadow-xs'
               }`}
             >
               <div>
                 {/* Seat Title & Badge */}
                 <div className="flex justify-between items-center mb-1.5">
-                  <span className="font-black text-sm text-white">Seat {seat.seatNumber}</span>
+                  <span className="font-black text-sm text-stone-900">Seat {seat.seatNumber}</span>
                   <span
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
                       !isOccupied
-                        ? 'bg-slate-800 text-slate-400 border border-slate-700'
-                        : 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
+                        ? 'bg-stone-100 text-stone-600 border border-stone-200'
+                        : 'bg-[#8A4228]/10 text-[#8A4228] border border-[#8A4228]/30 font-bold'
                     }`}
                   >
                     {!isOccupied ? 'vacant' : 'occupied'}
@@ -251,36 +251,36 @@ export default function WaiterSuhasFloorScreen() {
 
                 {/* Subtext Status */}
                 {!isOccupied ? (
-                  <p className="text-xs text-slate-500 font-medium py-3">Available</p>
+                  <p className="text-xs text-stone-400 font-medium py-3">Available</p>
                 ) : (
                   <div className="py-1 space-y-1">
                     {hasFoodReady && (
-                      <span className="text-[11px] font-black text-emerald-400 block animate-bounce">
+                      <span className="text-[11px] font-black text-emerald-700 block animate-bounce font-black">
                         🟢 Food Ready
                       </span>
                     )}
                     {hasWater && (
-                      <span className="text-[11px] font-black text-cyan-400 block">
+                      <span className="text-[11px] font-black text-sky-700 block font-black">
                         💧 Water Request
                       </span>
                     )}
                     {hasGeneralHelp && (
-                      <span className="text-[11px] font-black text-amber-400 block">
+                      <span className="text-[11px] font-black text-amber-700 block font-black">
                         ⚠️ Assistance Called
                       </span>
                     )}
                     {isBillReq && (
-                      <span className="text-[11px] font-black text-yellow-400 block">
+                      <span className="text-[11px] font-black text-amber-800 block font-black">
                         🧾 Bill request
                       </span>
                     )}
                     {!hasFoodReady && !hasWater && !hasGeneralHelp && !isBillReq && (
-                      <span className="text-[11px] font-semibold text-slate-400 block">
+                      <span className="text-[11px] font-semibold text-stone-500 block font-semibold">
                         🍳 Cooking...
                       </span>
                     )}
 
-                    <div className="text-xs font-bold text-white pt-1">
+                    <div className="text-xs font-bold text-stone-900 pt-1">
                       Total: ₹{session?.grandTotal?.toFixed(0) || '0'}
                     </div>
                   </div>
@@ -292,14 +292,14 @@ export default function WaiterSuhasFloorScreen() {
                 {!isOccupied ? (
                   <Link
                     href={`/waiter/suhas/seat/${seat.seatNumber}/order`}
-                    className="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center justify-center border border-slate-700 transition"
+                    className="w-full py-2 rounded-xl bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs flex items-center justify-center border border-stone-300 shadow-xs transition"
                   >
                     + Take order
                   </Link>
                 ) : (
                   <Link
                     href={`/waiter/suhas/seat/${seat.seatNumber}`}
-                    className="w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs flex items-center justify-center transition shadow-md shadow-blue-600/20"
+                    className="w-full py-2 rounded-xl bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs flex items-center justify-center transition shadow-xs"
                   >
                     View order
                   </Link>
@@ -311,7 +311,7 @@ export default function WaiterSuhasFloorScreen() {
       </div>
 
       {/* Footer Info */}
-      <div className="text-center text-[11px] text-slate-500 border-t border-slate-800 pt-3">
+      <div className="text-center text-[11px] text-stone-500 border-t border-stone-200 pt-3">
         Waiter Suhas • Zone A (Seats 1 to 8 Active)
       </div>
 

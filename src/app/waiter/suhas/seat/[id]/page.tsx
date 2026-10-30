@@ -112,50 +112,50 @@ export default function WaiterSuhasSeatDetailScreen({ params }: { params: { id: 
   const latestTicketNumber = session?.orderTickets?.[0]?.ticketNumber || '101';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between p-4 max-w-md mx-auto select-none">
+    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col justify-between p-4 max-w-md mx-auto select-none font-sans">
       {/* Top Bar */}
       <div>
-        <header className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <header className="flex items-center justify-between pb-3 border-b border-stone-200">
           <Link
             href="/waiter/suhas/floor"
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white"
+            className="flex items-center gap-1.5 text-xs font-bold text-stone-600 hover:text-stone-900"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Floor</span>
           </Link>
-          <span className="text-xs font-bold text-slate-400">Suhas</span>
-          <span className="text-sm font-black text-amber-400">Seat {seatId}</span>
+          <span className="text-xs font-bold text-stone-600">Suhas</span>
+          <span className="text-sm font-black text-[#8A4228]">Seat {seatId}</span>
         </header>
 
         {/* Order Banner */}
-        <div className="my-3 p-3 bg-slate-900 border border-slate-800 rounded-2xl flex justify-between items-center text-xs">
-          <span className="font-bold text-slate-300">
+        <div className="my-3 p-3 bg-white border border-stone-200 rounded-2xl flex justify-between items-center text-xs shadow-xs">
+          <span className="font-bold text-stone-700 font-bold">
             Order #{latestTicketNumber} • {allItems.length} items
           </span>
-          <span className="font-black text-amber-400 text-sm">
+          <span className="font-black text-[#8A4228] text-sm font-black">
             Total: ₹{session?.grandTotal?.toFixed(0) || '0'}
           </span>
         </div>
 
         {/* SERVICE REQUEST SECTION */}
         <div className="mb-4">
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">
+          <span className="text-[11px] font-black text-stone-500 uppercase tracking-wider block mb-1.5">
             SERVICE REQUEST :
           </span>
 
           {pendingRequests.length === 0 ? (
-            <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl text-center text-xs text-slate-500">
+            <div className="p-3 bg-white border border-stone-200 rounded-xl text-center text-xs text-stone-400 shadow-xs">
               No active assistance requests
             </div>
           ) : (
             pendingRequests.map((req) => (
               <div
                 key={req.id}
-                className="flex items-center justify-between p-3 rounded-2xl bg-amber-950/40 border border-amber-500/50 shadow-md animate-pulse"
+                className="flex items-center justify-between p-3 rounded-2xl bg-amber-50 border border-amber-300 shadow-xs animate-pulse text-stone-900"
               >
                 <div className="flex items-center gap-2">
-                  <Droplet className="w-4 h-4 text-cyan-400" />
-                  <span className="font-bold text-xs text-white">
+                  <Droplet className="w-4 h-4 text-sky-700" />
+                  <span className="font-bold text-xs text-stone-900">
                     {req.requestType} (
                     {new Date(req.requestedAt).toLocaleTimeString('en-US', {
                       hour: '2-digit',
@@ -169,7 +169,7 @@ export default function WaiterSuhasSeatDetailScreen({ params }: { params: { id: 
                 <button
                   type="button"
                   onClick={() => handleResolveService(req.id)}
-                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition active:scale-95"
+                  className="px-3 py-1.5 rounded-xl bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95"
                 >
                   Resolved ∨
                 </button>
@@ -180,21 +180,21 @@ export default function WaiterSuhasSeatDetailScreen({ params }: { params: { id: 
 
         {/* ORDER DETAILS SECTION */}
         <div>
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">
+          <span className="text-[11px] font-black text-stone-500 uppercase tracking-wider block mb-1.5">
             Order details :
           </span>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 space-y-2.5 max-h-[46vh] overflow-y-auto">
+          <div className="bg-white border border-stone-200 rounded-2xl p-3.5 space-y-2.5 max-h-[46vh] overflow-y-auto shadow-xs">
             {allItems.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-4">No dishes placed yet.</p>
+              <p className="text-xs text-stone-400 text-center py-4">No dishes placed yet.</p>
             ) : (
               allItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 border border-stone-200/80"
                 >
                   <div>
-                    <span className="font-bold text-xs text-white">
+                    <span className="font-bold text-xs text-stone-900">
                       {item.quantity}x {item.itemName}
                     </span>
                   </div>
@@ -204,7 +204,7 @@ export default function WaiterSuhasSeatDetailScreen({ params }: { params: { id: 
                     <button
                       type="button"
                       onClick={() => handleMarkServed(item.id)}
-                      className="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[11px] transition shadow-md shadow-emerald-500/20 active:scale-95 flex items-center gap-1"
+                      className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] rounded-lg transition shadow-xs active:scale-95 flex items-center gap-1"
                     >
                       <Check className="w-3.5 h-3.5" />
                       <span>Ready ➔ Tap Served</span>
@@ -213,10 +213,10 @@ export default function WaiterSuhasSeatDetailScreen({ params }: { params: { id: 
                     <span
                       className={`text-[11px] font-bold px-2.5 py-0.5 rounded-md capitalize ${
                         item.status === 'served'
-                          ? 'bg-slate-700 text-slate-300'
+                          ? 'bg-stone-100 text-stone-600 border border-stone-200'
                           : item.status === 'preparing'
-                          ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          ? 'bg-sky-50 text-sky-800 border border-sky-200'
+                          : 'bg-amber-50 text-amber-800 border border-amber-200'
                       }`}
                     >
                       {item.status}
@@ -233,9 +233,9 @@ export default function WaiterSuhasSeatDetailScreen({ params }: { params: { id: 
       <div className="pt-4 grid grid-cols-2 gap-3">
         <Link
           href={`/waiter/suhas/seat/${seatId}/order`}
-          className="py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-black text-xs flex items-center justify-center gap-1.5 transition active:scale-98"
+          className="py-3.5 rounded-2xl bg-white hover:bg-stone-50 border border-stone-300 text-stone-800 font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-98 shadow-xs"
         >
-          <Plus className="w-4 h-4 text-amber-400" />
+          <Plus className="w-4 h-4 text-[#8A4228]" />
           <span>+ Add Items</span>
         </Link>
 
@@ -250,8 +250,8 @@ export default function WaiterSuhasSeatDetailScreen({ params }: { params: { id: 
               href={`/waiter/suhas/seat/${seatId}/settle`}
               className={`py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-1.5 transition active:scale-98 ${
                 isPayViaWaiter
-                  ? 'bg-blue-600 hover:bg-blue-500 text-white ring-2 ring-blue-400 shadow-lg shadow-blue-500/40 animate-pulse'
-                  : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
+                  ? 'bg-[#8A4228] hover:bg-[#71351F] text-white ring-2 ring-[#8A4228] shadow-md animate-pulse font-bold'
+                  : 'bg-[#8A4228] hover:bg-[#71351F] text-white shadow-xs font-bold'
               }`}
             >
               <CreditCard className="w-4 h-4" />

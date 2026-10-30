@@ -31,24 +31,25 @@ export default function WaiterShivaLoginScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-center items-center p-6">
+    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col justify-center items-center p-6 select-none font-sans">
       <div className="text-center mb-8">
-        <span className="text-xs font-black tracking-widest text-cyan-400 uppercase">
+        <span className="text-xs font-black tracking-widest text-[#8A4228] uppercase font-bold">
           ZONE B (SEATS 9 – 16)
         </span>
-        <div className="w-24 h-24 rounded-full border-4 border-cyan-500 bg-cyan-500/10 flex items-center justify-center mx-auto my-3 shadow-xl shadow-cyan-500/20">
-          <Tablet className="w-10 h-10 text-cyan-400" />
+        <div className="w-24 h-24 rounded-full border-4 border-[#8A4228] bg-[#8A4228]/10 flex items-center justify-center mx-auto my-3 shadow-xs">
+          <Tablet className="w-10 h-10 text-[#8A4228]" />
         </div>
-        <h1 className="text-xl font-extrabold text-white">
+        <h1 className="text-xl font-black text-stone-900">
           THOOGUDEEPA DONNE BIRYANI
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          📟 Waiter Tablet Terminal: <strong className="text-white">Shiva</strong>
+        <p className="text-xs text-stone-500 mt-1">
+          📟 Waiter Tablet Terminal: <strong className="text-stone-900">Shiva</strong>
         </p>
       </div>
 
-      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
+      <div className="w-full max-w-sm bg-white border border-stone-200 rounded-3xl p-6 shadow-xs">
         <PinPad
+          variant="light"
           title="SHIVA TABLET ACCESS PIN"
           subtitle="Enter 4-digit PIN to access Seats 9 to 16"
           onSuccess={handlePinSubmit}
@@ -57,8 +58,8 @@ export default function WaiterShivaLoginScreen() {
         />
       </div>
 
-      <div className="mt-8 text-xs text-slate-500">
-        Default Shiva PIN: <strong className="text-slate-400">2222</strong>
+      <div className="mt-8 text-xs text-stone-500">
+        Default Shiva PIN: <strong className="text-stone-700">2222</strong>
       </div>
     </div>
   );

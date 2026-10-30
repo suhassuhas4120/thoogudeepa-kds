@@ -31,26 +31,27 @@ export default function WaiterSuhasLoginScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-center items-center p-6 max-w-md mx-auto">
+    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col justify-center items-center p-6 max-w-md mx-auto select-none font-sans">
       {/* Header */}
       <div className="text-center mb-8">
-        <span className="text-xs font-black tracking-widest text-blue-400 uppercase">
+        <span className="text-xs font-black tracking-widest text-[#8A4228] uppercase font-bold">
           ZONE A (SEATS 1 – 8)
         </span>
-        <div className="w-24 h-24 rounded-full border-4 border-blue-500 bg-blue-500/10 flex items-center justify-center mx-auto my-3 shadow-xl shadow-blue-500/20">
-          <Smartphone className="w-10 h-10 text-blue-400" />
+        <div className="w-24 h-24 rounded-full border-4 border-[#8A4228] bg-[#8A4228]/10 flex items-center justify-center mx-auto my-3 shadow-xs">
+          <Smartphone className="w-10 h-10 text-[#8A4228]" />
         </div>
-        <h1 className="text-xl font-extrabold text-white">
+        <h1 className="text-xl font-black text-stone-900">
           THOOGUDEEPA DONNE BIRYANI
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          🤵 Waiter Mobile Terminal: <strong className="text-white">Suhas</strong>
+        <p className="text-xs text-stone-500 mt-1">
+          🤵 Waiter Mobile Terminal: <strong className="text-stone-900">Suhas</strong>
         </p>
       </div>
 
       {/* PIN Pad */}
-      <div className="w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
+      <div className="w-full bg-white border border-stone-200 rounded-3xl p-6 shadow-xs">
         <PinPad
+          variant="light"
           title="SUHAS ACCESS PIN"
           subtitle="Enter 4-digit PIN to access Seats 1 to 8"
           onSuccess={handlePinSubmit}
@@ -59,8 +60,8 @@ export default function WaiterSuhasLoginScreen() {
         />
       </div>
 
-      <div className="mt-8 text-xs text-slate-500">
-        Default Suhas PIN: <strong className="text-slate-400">1111</strong>
+      <div className="mt-8 text-xs text-stone-500">
+        Default Suhas PIN: <strong className="text-stone-700">1111</strong>
       </div>
     </div>
   );
