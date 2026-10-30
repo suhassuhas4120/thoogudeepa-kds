@@ -320,14 +320,14 @@ export default function ManagerPromosScreen() {
           <div className="flex items-center gap-2">
             <button
               onClick={openNewCodeModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#8A4228] hover:bg-[#71351F] text-stone-900 font-bold text-xs rounded-xl shadow-md transition active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>+ Promo Code</span>
             </button>
             <button
               onClick={openNewCardModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#D08A52] hover:bg-[#B8733D] text-stone-950 font-black text-xs rounded-xl shadow-md transition active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#D08A52] hover:bg-[#B8733D] text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>+ Promo Card</span>
@@ -343,7 +343,7 @@ export default function ManagerPromosScreen() {
             onClick={() => setActiveTab('CARDS')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition ${
               activeTab === 'CARDS'
-                ? 'bg-[#8A4228] text-stone-900 shadow-md'
+                ? 'bg-[#8A4228] text-white shadow-xs font-bold'
                 : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'
             }`}
           >
@@ -355,7 +355,7 @@ export default function ManagerPromosScreen() {
             onClick={() => setActiveTab('CODES')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition ${
               activeTab === 'CODES'
-                ? 'bg-[#8A4228] text-stone-900 shadow-md'
+                ? 'bg-[#8A4228] text-white shadow-xs font-bold'
                 : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'
             }`}
           >
@@ -726,7 +726,7 @@ export default function ManagerPromosScreen() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#8A4228] hover:bg-[#71351F] text-stone-900 font-black rounded-xl text-xs shadow-md transition"
+                  className="px-5 py-2 bg-[#8A4228] hover:bg-[#71351F] text-white font-bold rounded-xl text-xs shadow-xs transition"
                 >
                   {editingCard ? 'Update Promo Card' : 'Save Promo Card'}
                 </button>
@@ -899,7 +899,7 @@ export default function ManagerPromosScreen() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#8A4228] hover:bg-[#71351F] text-stone-900 font-black rounded-xl text-xs shadow-md transition"
+                  className="px-5 py-2 bg-[#8A4228] hover:bg-[#71351F] text-white font-bold rounded-xl text-xs shadow-xs transition"
                 >
                   {editingCode ? 'Update Promo Code' : 'Save Promo Code'}
                 </button>

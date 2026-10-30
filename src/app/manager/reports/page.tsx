@@ -472,7 +472,7 @@ export default function MasterSalesReportPage() {
           <button
             type="button"
             onClick={handleExportExcel}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-stone-900 rounded-xl font-bold text-xs transition shadow active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs transition shadow active:scale-95"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
             <span>Excel (.xlsx)</span>
@@ -616,7 +616,7 @@ export default function MasterSalesReportPage() {
         {/* 3. MASTER DETAILED TRANSACTION AUDIT (MAXIMUM COLUMNS) */}
         <section className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs">
           <div className="bg-stone-50 px-4 py-2.5 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3">
-            <span className="font-bold text-emerald-700 uppercase tracking-wider text-xs">
+            <span className="font-black text-stone-900 uppercase tracking-wider text-xs">
               3. MASTER DETAILED TRANSACTION AUDIT ({filtered.length} Invoices)
             </span>
             <div className="relative w-72">
@@ -652,7 +652,7 @@ export default function MasterSalesReportPage() {
                   <th className="p-2.5 text-center">STATUS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#26201B]">
+              <tbody className="divide-y divide-stone-100">
                 {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={15} className="p-8 text-center text-stone-500 font-sans">
@@ -672,8 +672,8 @@ export default function MasterSalesReportPage() {
                         <span
                           className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                             t.orderType.toLowerCase().includes('take') || t.orderType.toLowerCase().includes('parcel')
-                              ? 'bg-amber-950/80 text-amber-300 border border-amber-500/30'
-                              : 'bg-stone-800 text-stone-700'
+                              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                              : 'bg-stone-100 text-stone-800 border border-stone-200'
                           }`}
                         >
                           {t.orderType}
@@ -713,17 +713,17 @@ export default function MasterSalesReportPage() {
                         <span
                           className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                             t.paymentMode.toUpperCase().includes('UPI')
-                              ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/30'
+                              ? 'bg-cyan-50 text-cyan-800 border border-cyan-200'
                               : t.paymentMode.toUpperCase().includes('CASH')
-                              ? 'bg-amber-950/80 text-amber-300 border border-amber-500/30'
-                              : 'bg-purple-950/80 text-purple-300 border border-purple-500/30'
+                              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                              : 'bg-purple-50 text-purple-800 border border-purple-200'
                           }`}
                         >
                           {t.paymentMode}
                         </span>
                       </td>
                       <td className="p-2.5 text-center">
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-950/80 text-emerald-300 border border-emerald-500/30">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-50 text-emerald-800 border border-emerald-200">
                           {t.paymentStatus}
                         </span>
                       </td>

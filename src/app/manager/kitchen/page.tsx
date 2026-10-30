@@ -379,7 +379,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setViewMode('KOT_TICKETS')}
               className={`px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
                 viewMode === 'KOT_TICKETS'
-                  ? 'bg-[#8A4228] text-stone-900 shadow-sm'
+                  ? 'bg-[#8A4228] text-white shadow-xs font-bold'
                   : 'text-stone-600 hover:text-stone-900'
               }`}
             >
@@ -391,7 +391,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setViewMode('MASTER_BILLS')}
               className={`px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
                 viewMode === 'MASTER_BILLS'
-                  ? 'bg-emerald-700 text-stone-900 shadow-sm'
+                  ? 'bg-emerald-700 text-white shadow-xs font-bold'
                   : 'text-stone-600 hover:text-stone-900'
               }`}
             >
@@ -425,7 +425,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setActiveFilter('ALL')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'ALL'
-                  ? 'bg-[#8A4228] text-stone-900 shadow-sm'
+                  ? 'bg-[#8A4228] text-white shadow-xs font-bold'
                   : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
@@ -437,7 +437,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setActiveFilter('ACTIVE')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'ACTIVE'
-                  ? 'bg-[#8A4228] text-stone-900 shadow-sm'
+                  ? 'bg-[#8A4228] text-white shadow-xs font-bold'
                   : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
@@ -449,7 +449,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setActiveFilter('PARCELS')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'PARCELS'
-                  ? 'bg-amber-600 text-stone-900 shadow-sm'
+                  ? 'bg-[#8A4228] text-white shadow-xs font-bold'
                   : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
@@ -461,7 +461,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setActiveFilter('COOKING')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'COOKING'
-                  ? 'bg-sky-600 text-stone-900 shadow-sm'
+                  ? 'bg-sky-700 text-white shadow-xs font-bold'
                   : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
@@ -473,7 +473,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setActiveFilter('READY')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'READY'
-                  ? 'bg-emerald-600 text-stone-900 shadow-sm'
+                  ? 'bg-emerald-700 text-white shadow-xs font-bold'
                   : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
@@ -485,7 +485,7 @@ export default function ManagerKitchenMonitorScreen() {
               onClick={() => setActiveFilter('COMPLETED')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                 activeFilter === 'COMPLETED'
-                  ? 'bg-stone-700 text-stone-900 shadow-sm'
+                  ? 'bg-stone-700 text-white shadow-xs font-bold'
                   : 'bg-white text-stone-600 hover:text-stone-900 border border-stone-200'
               }`}
             >
@@ -624,7 +624,7 @@ export default function ManagerKitchenMonitorScreen() {
                                 type="button"
                                 disabled={updatingTicketId === ticket.id}
                                 onClick={() => handleMarkParcelDone(ticket)}
-                                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-stone-900 font-bold text-xs transition active:scale-95 shadow-md flex items-center gap-1.5 disabled:opacity-50"
+                                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition active:scale-95 shadow-md flex items-center gap-1.5 disabled:opacity-50"
                               >
                                 <Check className="w-3.5 h-3.5" />
                                 <span>{updatingTicketId === ticket.id ? 'Done...' : 'Mark Done'}</span>
@@ -857,7 +857,7 @@ export default function ManagerKitchenMonitorScreen() {
                       {isParcel ? '📦 TAKEAWAY' : `DINE-IN • S${selectedTicket.seatId || '1'}`}
                     </span>
                     {selectedTicket.totalRounds && selectedTicket.totalRounds > 1 && (
-                      <span className="px-2 py-0.5 bg-amber-950/80 text-amber-300 border border-amber-600/40 text-[10px] font-bold rounded-full">
+                      <span className="px-2 py-0.5 bg-[#8A4228]/10 text-[#8A4228] border border-[#8A4228]/30 text-[10px] font-bold rounded-full">
                         Round {selectedTicket.roundNumber} of {selectedTicket.totalRounds}
                       </span>
                     )}
@@ -882,13 +882,13 @@ export default function ManagerKitchenMonitorScreen() {
 
               {/* Linked Final Bill Banner (Direct Link to Sales Report) */}
               {selectedTicket.invoiceNumber && (
-                <div className="mb-4 p-3.5 bg-emerald-950/30 border border-emerald-500/40 rounded-2xl flex items-center justify-between text-xs">
+                <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-xs">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-black text-emerald-300 text-sm">
+                      <span className="font-mono font-black text-emerald-900 text-sm">
                         Master Invoice: #{selectedTicket.invoiceNumber}
                       </span>
-                      <span className="px-2 py-0.5 rounded bg-emerald-900/60 text-emerald-200 text-[10px] font-bold">
+                      <span className="px-2 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-bold">
                         {selectedTicket.billPaymentStatus || 'PAID'}
                       </span>
                     </div>
@@ -990,7 +990,7 @@ export default function ManagerKitchenMonitorScreen() {
               {/* Multi-Round Session & Sales Report Reconciliation */}
               {selectedTicket.sessionRounds && selectedTicket.sessionRounds.length > 1 && (
                 <div className="mb-6 p-3.5 bg-stone-50 border border-stone-200 rounded-2xl space-y-2 text-xs">
-                  <div className="flex items-center justify-between font-bold text-amber-300 pb-1.5 border-b border-[#2C2520]">
+                  <div className="flex items-center justify-between font-bold text-stone-900 pb-1.5 border-b border-stone-200">
                     <span className="flex items-center gap-1.5">
                       <Layers className="w-3.5 h-3.5 text-[#8A4228]" />
                       Table S{selectedTicket.seatId} Full Dining Session ({selectedTicket.totalRounds} Rounds)
@@ -1006,8 +1006,8 @@ export default function ManagerKitchenMonitorScreen() {
                         key={sr.ticketNumber}
                         className={`p-2 rounded-lg flex justify-between items-center text-xs ${
                           sr.ticketNumber === selectedTicket.ticketNumber
-                            ? 'bg-amber-950/50 border border-amber-500/30 text-stone-900 font-bold'
-                            : 'bg-[#181513] text-stone-700'
+                            ? 'bg-[#8A4228]/10 border border-[#8A4228]/40 text-stone-900 font-bold'
+                            : 'bg-white border border-stone-200 text-stone-700'
                         }`}
                       >
                         <div>
@@ -1015,7 +1015,7 @@ export default function ManagerKitchenMonitorScreen() {
                             <span className="font-mono text-[#8A4228] font-bold">Round {sr.roundNumber} (#{sr.ticketNumber})</span>
                             <span className="text-[10px] text-stone-500 font-normal">at {sr.placedAt}</span>
                             {sr.ticketNumber === selectedTicket.ticketNumber && (
-                              <span className="px-1.5 py-0.2 rounded bg-amber-600 text-stone-900 text-[9px] font-black uppercase">Viewing</span>
+                              <span className="px-1.5 py-0.5 rounded bg-[#8A4228] text-white text-[9px] font-black uppercase">Viewing</span>
                             )}
                           </div>
                           <span className="text-[10px] text-stone-500 block font-normal mt-0.5">{sr.itemsSummary}</span>
@@ -1025,7 +1025,7 @@ export default function ManagerKitchenMonitorScreen() {
                     ))}
                   </div>
 
-                  <div className="pt-2 border-t border-[#2C2520] space-y-1">
+                  <div className="pt-2 border-t border-stone-200 space-y-1">
                     <div className="flex justify-between text-stone-700">
                       <span>Total Food Subtotal (All Rounds):</span>
                       <span className="font-mono font-bold text-[#8A4228]">
@@ -1038,7 +1038,7 @@ export default function ManagerKitchenMonitorScreen() {
                         ₹{selectedTicket.billGst?.toFixed(2)}
                       </span>
                     </div>
-                    <div className="flex justify-between text-emerald-700 font-black text-sm pt-1 border-t border-dashed border-[#2C2520]">
+                    <div className="flex justify-between text-emerald-700 font-black text-sm pt-1 border-t border-dashed border-stone-300">
                       <span>Final Master Invoice #{selectedTicket.invoiceNumber || '—'}:</span>
                       <span className="font-mono">
                         ₹{selectedTicket.billGrandTotal?.toFixed(2)} ({selectedTicket.billPaymentMode || 'Paid'})
@@ -1056,7 +1056,7 @@ export default function ManagerKitchenMonitorScreen() {
                     type="button"
                     disabled={updatingTicketId === selectedTicket.id}
                     onClick={() => handleMarkParcelDone(selectedTicket)}
-                    className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-stone-900 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 active:scale-95"
+                    className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 active:scale-95"
                   >
                     <Check className="w-4 h-4" />
                     <span>{updatingTicketId === selectedTicket.id ? 'Marking Done...' : '✓ Mark Done'}</span>
@@ -1064,7 +1064,7 @@ export default function ManagerKitchenMonitorScreen() {
                 )}
 
                 {isParcel && isDone && (
-                  <div className="flex-1 py-3 px-4 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold text-xs rounded-xl flex items-center justify-center gap-2">
+                  <div className="flex-1 py-3 px-4 bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs rounded-xl flex items-center justify-center gap-2">
                     <Check className="w-4 h-4 text-emerald-700" />
                     <span>Parcel Completed</span>
                   </div>
@@ -1074,7 +1074,7 @@ export default function ManagerKitchenMonitorScreen() {
                 <button
                   type="button"
                   onClick={handlePrintKot}
-                  className="flex-1 py-3 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg active:scale-95"
+                  className="flex-1 py-3 px-4 bg-[#1E293B] hover:bg-[#0F172A] text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-xs active:scale-95"
                 >
                   <Printer className="w-4 h-4" />
                   <span>🖨️ PRINT KOT</span>
@@ -1083,7 +1083,7 @@ export default function ManagerKitchenMonitorScreen() {
                 <button
                   type="button"
                   onClick={() => setSelectedTicket(null)}
-                  className="py-3 px-5 bg-[#221D1A] hover:bg-[#2C2520] text-stone-700 hover:text-stone-900 font-bold text-xs rounded-xl border border-[#2C2520] transition active:scale-95"
+                  className="py-3 px-5 bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs rounded-xl border border-stone-200 transition active:scale-95 shadow-xs"
                 >
                   Close
                 </button>
@@ -1171,7 +1171,7 @@ export default function ManagerKitchenMonitorScreen() {
             <button
               type="button"
               onClick={() => setSelectedMasterBill(null)}
-              className="w-full py-3 bg-[#221D1A] hover:bg-[#2C2520] text-stone-700 hover:text-stone-900 font-bold text-xs rounded-xl border border-[#2C2520] transition active:scale-95"
+              className="w-full py-3 bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs rounded-xl border border-stone-200 transition active:scale-95 shadow-xs"
             >
               Close
             </button>
@@ -1229,7 +1229,7 @@ export default function ManagerKitchenMonitorScreen() {
               <button
                 type="button"
                 onClick={() => setShow86Drawer(false)}
-                className="w-full py-3 bg-[#8A4228] hover:bg-[#71351F] text-stone-900 font-bold text-xs rounded-xl transition"
+                className="w-full py-3 bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs rounded-xl transition shadow-xs"
               >
                 Done
               </button>

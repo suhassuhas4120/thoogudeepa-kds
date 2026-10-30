@@ -218,7 +218,7 @@ export default function ManagerMenuScreen() {
         extraRightActions={
           <button
             onClick={openAddModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#8A4228] hover:bg-[#71351F] text-stone-900 font-bold text-xs rounded-xl shadow-md transition active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Dish</span>
@@ -233,7 +233,7 @@ export default function ManagerMenuScreen() {
             onClick={() => setSelectedCategory('ALL')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
               selectedCategory === 'ALL'
-                ? 'bg-[#8A4228] text-stone-900 shadow-sm'
+                ? 'bg-[#8A4228] text-white shadow-xs font-bold'
                 : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'
             }`}
           >
@@ -245,7 +245,7 @@ export default function ManagerMenuScreen() {
               onClick={() => setSelectedCategory(c.id)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
                 selectedCategory === c.id
-                  ? 'bg-[#8A4228] text-stone-900 shadow-sm'
+                  ? 'bg-[#8A4228] text-white shadow-xs font-bold'
                   : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'
               }`}
             >
@@ -458,7 +458,7 @@ export default function ManagerMenuScreen() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#8A4228] hover:bg-[#71351F] text-stone-900 rounded-xl text-xs font-black shadow-md transition"
+                  className="px-5 py-2 bg-[#8A4228] hover:bg-[#71351F] text-white rounded-xl text-xs font-bold shadow-xs transition"
                 >
                   {editingItem ? 'Save Changes' : 'Create Dish'}
                 </button>

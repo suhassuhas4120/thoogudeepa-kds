@@ -659,7 +659,7 @@ export default function ManagerShiftAuditScreen() {
           <button
             type="button"
             onClick={() => alert(`Shift reconciled successfully! Total cash verified in drawer: ₹${totalCashInDrawer.toFixed(2)}`)}
-            className="py-4 rounded-xl bg-[#8A4228] hover:bg-[#71351F] text-stone-900 font-black text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-[#8A4228]/20 active:scale-98 transition-all"
+            className="py-4 rounded-xl bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs md:text-sm flex items-center justify-center gap-2 shadow-xs active:scale-98 transition-all"
           >
             <Lock className="w-4 h-4" />
             <span>🔒 CLOSE SHIFT & VERIFY CASH IN DRAWER</span>
