@@ -31,7 +31,7 @@ export default function WaiterSuhasLoginScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col justify-center items-center p-6 max-w-md mx-auto select-none font-sans">
+    <div className="w-full max-w-md mx-auto min-h-screen min-h-[100dvh] bg-[#FBF9F6] text-stone-900 flex flex-col justify-center items-center p-6 select-none font-sans">
       {/* Header */}
       <div className="text-center mb-8">
         <span className="text-xs font-black tracking-widest text-[#8A4228] uppercase font-bold">

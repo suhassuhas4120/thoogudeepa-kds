@@ -112,7 +112,7 @@ export default function WaiterSuhasSeatDetailScreen({ params }: { params: { id: 
   const latestTicketNumber = session?.orderTickets?.[0]?.ticketNumber || '101';
 
   return (
-    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col justify-between p-4 max-w-md mx-auto select-none font-sans">
+    <div className="w-full max-w-md mx-auto min-h-screen min-h-[100dvh] bg-[#FBF9F6] text-stone-900 flex flex-col justify-between p-4 select-none font-sans">
       {/* Top Bar */}
       <div>
         <header className="flex items-center justify-between pb-3 border-b border-stone-200">
@@ -184,7 +184,7 @@ export default function WaiterSuhasSeatDetailScreen({ params }: { params: { id: 
             Order details :
           </span>
 
-          <div className="bg-white border border-stone-200 rounded-2xl p-3.5 space-y-2.5 max-h-[46vh] overflow-y-auto shadow-xs">
+          <div className="bg-white border border-stone-200 rounded-2xl p-3.5 space-y-2.5 max-h-[56vh] overflow-y-auto shadow-xs pb-3">
             {allItems.length === 0 ? (
               <p className="text-xs text-stone-400 text-center py-4">No dishes placed yet.</p>
             ) : (

@@ -110,7 +110,7 @@ export default function WaiterSuhasSettleScreen({ params }: { params: { id: stri
   };
 
   return (
-    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col justify-between p-4 max-w-md mx-auto select-none font-sans">
+    <div className="w-full max-w-md mx-auto min-h-screen min-h-[100dvh] bg-[#FBF9F6] text-stone-900 flex flex-col justify-between p-4 select-none font-sans">
       {/* Top Header */}
       <div>
         <header className="flex items-center justify-between pb-3 border-b border-stone-200">

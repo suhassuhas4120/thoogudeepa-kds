@@ -31,7 +31,7 @@ export default function WaiterShivaLoginScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col justify-center items-center p-6 select-none font-sans">
+    <div className="w-full min-h-screen min-h-[100dvh] bg-[#FBF9F6] text-stone-900 flex flex-col justify-center items-center p-6 select-none font-sans">
       <div className="text-center mb-8">
         <span className="text-xs font-black tracking-widest text-[#8A4228] uppercase font-bold">
           ZONE B (SEATS 9 – 16)

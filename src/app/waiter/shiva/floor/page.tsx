@@ -185,7 +185,7 @@ export default function WaiterShivaFloorScreen() {
   }, [socket, viewAllSeats]);
 
   return (
-    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col p-6 select-none font-sans">
+    <div className="w-full min-h-screen min-h-[100dvh] bg-[#FBF9F6] text-stone-900 flex flex-col p-4 sm:p-6 select-none font-sans">
       {/* Top Tablet Header */}
       <header className="flex items-center justify-between pb-5 border-b border-stone-200">
         <div className="flex items-center gap-3">

@@ -266,7 +266,7 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
   );
 
   return (
-    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col p-6 select-none font-sans">
+    <div className="w-full min-h-screen min-h-[100dvh] bg-[#FBF9F6] text-stone-900 flex flex-col p-4 sm:p-6 select-none font-sans">
       {/* Top Tablet Header */}
       <header className="flex items-center justify-between pb-4 border-b border-stone-200">
         <Link
@@ -349,7 +349,7 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
               <span className="text-[11px] font-black text-stone-500 uppercase tracking-wider block mb-1.5">
                 🍽️ ORDERED DISHES :
               </span>
-              <div className="space-y-2 max-h-[38vh] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-[54vh] overflow-y-auto pr-1 pb-3">
                 {allItems.length === 0 ? (
                   <p className="text-xs text-stone-400 text-center py-4">No dishes placed yet.</p>
                 ) : (
@@ -471,7 +471,7 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
                 </div>
 
                 {/* SINGLE-COLUMN VERTICAL DISH LIST */}
-                <div className="space-y-2.5 max-h-[46vh] overflow-y-auto pr-1">
+                <div className="space-y-2.5 max-h-[64vh] overflow-y-auto pr-1.5 pb-4">
                   {filteredMenuItems.map((item) => {
                     const qty = quantities[item.id] || 0;
                     return (
