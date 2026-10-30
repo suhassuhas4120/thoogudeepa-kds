@@ -195,7 +195,7 @@ export default function ManagerFloorScreen() {
 
   const selectedSeat = seats.find((s) => s.id === selectedSeatId) || seats[0];
   const session = selectedSeat?.activeSession;
-  const isOccupied = selectedSeat?.status !== 'VACANT';
+  const isOccupied = selectedSeat?.status !== 'VACANT' && selectedSeat?.activeSession !== null;
 
   // Sync default payment mode with customer's preference if set
   useEffect(() => {
@@ -307,7 +307,7 @@ export default function ManagerFloorScreen() {
   // Determine status display label and color for seat cards
   const getSeatCardStatus = (seat: SeatData, isSelected: boolean) => {
     if (isSelected) return { label: '🟢 Selected', color: 'text-emerald-700' };
-    if (seat.status === 'VACANT') return { label: '⚪ Vacant', color: 'text-stone-500' };
+    if (seat.status === 'VACANT' || !seat.activeSession) return { label: '⚪ Vacant', color: 'text-stone-500' };
     if (seat.status === 'BILL_REQUESTED') return { label: '🧾 Bill Req', color: 'text-amber-700 font-bold' };
     
     // Check ticket cooking/ready status
@@ -343,7 +343,7 @@ export default function ManagerFloorScreen() {
                   📋 FLOOR MAP (16 SEATS)
                 </h2>
                 <span className="text-xs font-semibold text-stone-500">
-                  Active: {seats.filter((s) => s.status !== 'VACANT').length} / 16
+                  Active: {seats.filter((s) => s.status !== 'VACANT' && s.activeSession !== null).length} / 16
                 </span>
               </div>
 
@@ -356,7 +356,7 @@ export default function ManagerFloorScreen() {
                   {seats.slice(0, 8).map((seat) => {
                     const isSelected = selectedSeat?.id === seat.id;
                     const statusInfo = getSeatCardStatus(seat, isSelected);
-                    const isVacant = seat.status === 'VACANT';
+                    const isVacant = seat.status === 'VACANT' || !seat.activeSession;
                     const dinerName = seat.currentGuestName && seat.currentGuestName !== '-' ? `(${seat.currentGuestName})` : '';
 
                     return (
@@ -396,7 +396,7 @@ export default function ManagerFloorScreen() {
                   {seats.slice(8, 16).map((seat) => {
                     const isSelected = selectedSeat?.id === seat.id;
                     const statusInfo = getSeatCardStatus(seat, isSelected);
-                    const isVacant = seat.status === 'VACANT';
+                    const isVacant = seat.status === 'VACANT' || !seat.activeSession;
                     const dinerName = seat.currentGuestName && seat.currentGuestName !== '-' ? `(${seat.currentGuestName})` : '';
 
                     return (

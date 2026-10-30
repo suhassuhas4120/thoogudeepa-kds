@@ -129,8 +129,8 @@ export default function WaiterSuhasSeatDetailScreen({ params }: { params: { id: 
 
         {/* Order Banner */}
         <div className="my-3 p-3 bg-white border border-stone-200 rounded-2xl flex justify-between items-center text-xs shadow-xs">
-          <span className="font-bold text-stone-700 font-bold">
-            Order #{latestTicketNumber} • {allItems.length} items
+          <span className="font-bold text-stone-700">
+            {allItems.length > 0 ? `Order #${latestTicketNumber} • ${allItems.length} items` : 'No active order'}
           </span>
           <span className="font-black text-[#8A4228] text-sm font-black">
             Total: ₹{session?.grandTotal?.toFixed(0) || '0'}

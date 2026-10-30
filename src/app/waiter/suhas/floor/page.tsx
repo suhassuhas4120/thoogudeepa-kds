@@ -210,14 +210,18 @@ export default function WaiterSuhasFloorScreen() {
       {/* 2-Column Seats Grid (Seats 1 to 8) */}
       <div className="py-4 grid grid-cols-2 gap-3 flex-1">
         {seats.map((seat) => {
-          const isOccupied = seat.status === 'OCCUPIED' || seat.status === 'BILL_REQUESTED';
           const session = seat.activeSession;
+          const hasOrders = Boolean(
+            (session?.orderTickets && session.orderTickets.length > 0) ||
+            (session?.grandTotal && session.grandTotal > 0)
+          );
+          const isOccupied = (seat.status === 'OCCUPIED' || seat.status === 'BILL_REQUESTED') && hasOrders;
+          const isBillReq = seat.status === 'BILL_REQUESTED' && hasOrders;
 
           // Check alerts
           const hasWater = session?.serviceRequests?.some((sr) => sr.status === 'PENDING' && sr.requestType.includes('WATER'));
           const hasGeneralHelp = session?.serviceRequests?.some((sr) => sr.status === 'PENDING' && !sr.requestType.includes('WATER'));
           const hasFoodReady = session?.orderTickets?.some((t) => t.items.some((i) => i.status === 'ready'));
-          const isBillReq = seat.status === 'BILL_REQUESTED';
 
           return (
             <div

@@ -47,10 +47,20 @@ export async function GET(
 
     let activeSession: any = access.activeSession || null;
 
-    // If vacant but looking for bill history (e.g. immediately post-payment)
+    // Auto-heal orphaned seat status if no active session exists
+    if (!activeSession && seat.status !== 'VACANT') {
+      await prisma.diningSeat.update({
+        where: { id: seat.id },
+        data: { status: 'VACANT', currentGuestName: '-' },
+      }).catch(() => {});
+      seat.status = 'VACANT';
+      seat.currentGuestName = '-';
+    }
+
+    // Only load completed historical session if explicitly requested (e.g. for receipts post-payment)
     if (!activeSession) {
       const includeCompleted = req.nextUrl.searchParams.get('includeCompleted') === 'true';
-      if (includeCompleted || isStaff) {
+      if (includeCompleted) {
         activeSession = await prisma.diningSession.findFirst({
           where: { seatId: seat.id },
           orderBy: { startedAt: 'desc' },

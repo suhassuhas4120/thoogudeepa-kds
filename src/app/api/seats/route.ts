@@ -42,15 +42,33 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const data = seats.map((seat) => ({
-      id: seat.id,
-      seatNumber: seat.seatNumber,
-      zone: seat.zone,
-      assignedWaiter: seat.assignedWaiter,
-      status: seat.status,
-      currentGuestName: seat.currentGuestName,
-      activeSession: seat.sessions[0] || null,
-    }));
+    const data = seats.map((seat) => {
+      const activeSession = seat.sessions[0] || null;
+      let status = seat.status;
+      let currentGuestName = seat.currentGuestName;
+
+      // Auto-heal orphaned occupied seats with no active session
+      if (status !== 'VACANT' && !activeSession) {
+        status = 'VACANT';
+        currentGuestName = '-';
+        prisma.diningSeat
+          .update({
+            where: { id: seat.id },
+            data: { status: 'VACANT', currentGuestName: '-' },
+          })
+          .catch(() => {});
+      }
+
+      return {
+        id: seat.id,
+        seatNumber: seat.seatNumber,
+        zone: seat.zone,
+        assignedWaiter: seat.assignedWaiter,
+        status,
+        currentGuestName,
+        activeSession,
+      };
+    });
 
     return NextResponse.json(
       { success: true, data },

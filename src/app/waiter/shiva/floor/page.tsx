@@ -241,13 +241,17 @@ export default function WaiterShivaFloorScreen() {
       {/* Landscape Grid (4 Columns x 2 Rows) */}
       <div className="py-6 grid grid-cols-1 md:grid-cols-4 gap-4 flex-1">
         {seats.map((seat) => {
-          const isOccupied = seat.status === 'OCCUPIED' || seat.status === 'BILL_REQUESTED';
           const session = seat.activeSession;
+          const hasOrders = Boolean(
+            (session?.orderTickets && session.orderTickets.length > 0) ||
+            (session?.grandTotal && session.grandTotal > 0)
+          );
+          const isOccupied = (seat.status === 'OCCUPIED' || seat.status === 'BILL_REQUESTED') && hasOrders;
+          const isBillReq = seat.status === 'BILL_REQUESTED' && hasOrders;
 
           const hasWater = session?.serviceRequests?.some((sr) => sr.status === 'PENDING' && sr.requestType.includes('WATER'));
           const hasGeneralHelp = session?.serviceRequests?.some((sr) => sr.status === 'PENDING' && !sr.requestType.includes('WATER'));
           const hasFoodReady = session?.orderTickets?.some((t) => t.items?.some((i) => i.status === 'ready'));
-          const isBillReq = seat.status === 'BILL_REQUESTED';
 
           return (
             <div

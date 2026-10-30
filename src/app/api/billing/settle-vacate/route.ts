@@ -38,7 +38,35 @@ export async function POST(req: NextRequest) {
         : seat.sessions[0];
 
       if (!session) {
-        return { status: 400, payload: { success: false, error: 'No active session found for seat' } };
+        // Reset seat directly to VACANT and broadcast
+        await prisma.diningSeat.update({
+          where: { id: seat.id },
+          data: {
+            status: 'VACANT',
+            currentGuestName: '-',
+          },
+        });
+
+        const isZoneA = seat.zone === 'ZONE_A';
+        const targetWaiterRoom: SocketRoom = isZoneA ? 'room:waiter:zoneA' : 'room:waiter:zoneB';
+        await emitToMultipleRooms(
+          [targetWaiterRoom, 'room:manager', 'room:kitchen', `room:seat:${seat.id}`],
+          'seat:vacated',
+          {
+            seatId: seat.id,
+            status: 'VACANT',
+            guestName: '-',
+          }
+        );
+
+        return {
+          status: 200,
+          payload: {
+            success: true,
+            message: 'Seat vacated successfully',
+            seatId: seat.id,
+          },
+        };
       }
 
       const sessionGrandTotal = Number(session.grandTotal) || 0;

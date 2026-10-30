@@ -297,7 +297,7 @@ export default function WaiterShivaUnifiedWorkspace({ params }: { params: { id: 
                   📋 SEAT {seatId} DETAILS
                 </h2>
                 <span className="text-xs text-stone-500">
-                  Order #{latestTicketNumber} • {allItems.length} items
+                  {allItems.length > 0 ? `Order #${latestTicketNumber} • ${allItems.length} items` : 'No active order'}
                 </span>
               </div>
               <span className="text-base font-black text-[#8A4228]">
