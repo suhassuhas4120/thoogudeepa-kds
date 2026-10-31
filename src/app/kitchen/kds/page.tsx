@@ -325,18 +325,18 @@ export default function KitchenKdsBoard() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans select-none">
+    <div className="min-h-screen bg-[#FBF9F6] text-stone-900 flex flex-col font-sans select-none">
       {/* Top Navigation Bar */}
-      <header className="h-16 bg-slate-900 border-b border-slate-800 px-6 flex items-center justify-between">
+      <header className="h-16 bg-white border-b border-stone-200 px-6 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
-            <ChefHat className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-xl bg-[#8A4228]/10 text-[#8A4228] flex items-center justify-center font-bold">
+            <ChefHat className="w-6 h-6 text-[#8A4228]" />
           </div>
           <div>
-            <h1 className="text-base font-black tracking-wider text-emerald-400 uppercase">
+            <h1 className="text-base font-black tracking-wider text-[#8A4228] uppercase">
               Thoogudeepa KDS
             </h1>
-            <p className="text-[11px] text-slate-400 font-medium">
+            <p className="text-[11px] text-stone-500 font-medium">
               Live Kitchen Display System • 3-Column Ticket Board
             </p>
           </div>
@@ -346,9 +346,9 @@ export default function KitchenKdsBoard() {
           <button
             type="button"
             onClick={playKitchenBell}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-xs font-bold text-stone-700 transition shadow-xs"
           >
-            <Volume2 className="w-4 h-4 text-emerald-400" />
+            <Volume2 className="w-4 h-4 text-[#8A4228]" />
             <span>Test Chime</span>
           </button>
 
@@ -356,15 +356,15 @@ export default function KitchenKdsBoard() {
           <button
             type="button"
             onClick={() => setShow86Drawer(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-xs transition"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-bold text-xs transition shadow-xs"
           >
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
+            <AlertTriangle className="w-4 h-4 text-amber-700" />
             <span>86 / Stock Manager</span>
           </button>
 
           <Link
             href="/kitchen"
-            className="text-xs text-slate-500 hover:text-slate-300 font-medium ml-2"
+            className="text-xs text-stone-500 hover:text-stone-800 font-medium ml-2"
           >
             Switch Staff
           </Link>
@@ -376,17 +376,17 @@ export default function KitchenKdsBoard() {
         {/* ======================================================== */}
         {/* COLUMN 1: RECEIVED ORDERS */}
         {/* ======================================================== */}
-        <div className="flex flex-col bg-slate-900/60 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-          <div className="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
-            <h2 className="font-black text-sm tracking-widest text-amber-400 uppercase flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+        <div className="flex flex-col bg-stone-50/70 border border-stone-200 rounded-3xl overflow-hidden shadow-xs">
+          <div className="p-4 bg-white border-b border-stone-200 flex items-center justify-between">
+            <h2 className="font-black text-sm tracking-widest text-amber-800 uppercase flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
               RECEIVED ORDERS ({receivedTickets.length})
             </h2>
           </div>
 
           <div className="flex-1 p-4 space-y-4 overflow-y-auto">
             {receivedTickets.length === 0 ? (
-              <div className="h-48 flex items-center justify-center text-xs text-slate-500 font-medium">
+              <div className="h-48 flex items-center justify-center text-xs text-stone-400 font-medium">
                 No new received orders
               </div>
             ) : (
@@ -399,36 +399,36 @@ export default function KitchenKdsBoard() {
                 return (
                   <div
                     key={ticket.id}
-                    className={`rounded-2xl border p-4 shadow-lg flex flex-col justify-between transition ${
+                    className={`rounded-2xl border p-4 shadow-xs flex flex-col justify-between transition ${
                       isParcel
-                        ? 'bg-amber-950/30 border-amber-500/50'
-                        : 'bg-slate-850 bg-slate-900 border-slate-700/80'
+                        ? 'bg-amber-50/70 border-amber-300'
+                        : 'bg-white border-stone-200'
                     }`}
                   >
                     <div>
                       {/* Ticket Header with Exact Placed Time */}
-                      <div className="flex justify-between items-start border-b border-slate-800 pb-2 mb-3">
+                      <div className="flex justify-between items-start border-b border-stone-200 pb-2 mb-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-black text-base text-white">
+                            <span className="font-black text-base text-stone-900">
                               {isParcel ? `📦 ${ticket.ticketNumber}` : `Seat ${ticket.seatId}`}
                             </span>
-                            <span className="text-xs font-bold text-slate-400">
+                            <span className="text-xs font-bold text-stone-500">
                               #{ticket.ticketNumber}
                             </span>
                           </div>
-                          <span className="text-[11px] text-slate-400 block font-medium">
+                          <span className="text-[11px] text-stone-600 block font-medium">
                             {ticket.customerName !== '-' ? ticket.customerName : 'Diner'} • Waiter: {ticket.waiterName}
                           </span>
                         </div>
 
                         {/* Order Placed Time */}
                         <div className="text-right">
-                          <span className="text-xs font-black text-amber-400 flex items-center justify-end gap-1 font-mono">
-                            <Clock className="w-3.5 h-3.5 text-amber-400" />
+                          <span className="text-xs font-black text-amber-800 flex items-center justify-end gap-1 font-mono">
+                            <Clock className="w-3.5 h-3.5 text-amber-700" />
                             <span>{formatOrderTime(ticket.placedAt, ticket.placedAtTime)}</span>
                           </span>
-                          <span className="text-[10px] uppercase font-bold text-slate-500">
+                          <span className="text-[10px] uppercase font-bold text-stone-400">
                             Placed Time
                           </span>
                         </div>
@@ -439,14 +439,14 @@ export default function KitchenKdsBoard() {
                         {placedItems.map((item) => (
                           <div
                             key={item.id}
-                            className="flex items-center justify-between p-2 rounded-xl bg-slate-800/80 border border-slate-700/50"
+                            className="flex items-center justify-between p-2 rounded-xl bg-stone-50 border border-stone-200/80"
                           >
                             <div>
-                              <span className="font-bold text-sm text-white">
+                              <span className="font-bold text-sm text-stone-900">
                                 {item.quantity}x {item.itemName}
                               </span>
                               {item.specialNotes && (
-                                <p className="text-[10px] text-amber-400 font-medium">
+                                <p className="text-[10px] text-amber-800 font-medium">
                                   Note: {item.specialNotes}
                                 </p>
                               )}
@@ -456,7 +456,7 @@ export default function KitchenKdsBoard() {
                             <button
                               type="button"
                               onClick={() => handleItemStatus(item.id, 'preparing')}
-                              className="w-8 h-8 rounded-lg bg-slate-700 hover:bg-blue-600 text-white flex items-center justify-center font-bold text-xs transition active:scale-95"
+                              className="w-8 h-8 rounded-lg bg-sky-100 hover:bg-sky-600 text-sky-800 hover:text-white border border-sky-300 flex items-center justify-center font-bold text-xs transition active:scale-95 shadow-xs"
                               title="Start Cooking this item"
                             >
                               <Check className="w-4 h-4" />
@@ -470,7 +470,7 @@ export default function KitchenKdsBoard() {
                     <button
                       type="button"
                       onClick={() => handleBatchStatus(ticket, 'preparing')}
-                      className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs tracking-wider transition flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/20 active:scale-98"
+                      className="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-black text-xs tracking-wider transition flex items-center justify-center gap-1.5 shadow-xs active:scale-98 font-bold"
                     >
                       <span>Mark all cooking</span>
                       <ArrowRight className="w-4 h-4" />
@@ -485,17 +485,17 @@ export default function KitchenKdsBoard() {
         {/* ======================================================== */}
         {/* COLUMN 2: ITEMS COOKING */}
         {/* ======================================================== */}
-        <div className="flex flex-col bg-slate-900/60 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-          <div className="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
-            <h2 className="font-black text-sm tracking-widest text-blue-400 uppercase flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse" />
+        <div className="flex flex-col bg-stone-50/70 border border-stone-200 rounded-3xl overflow-hidden shadow-xs">
+          <div className="p-4 bg-white border-b border-stone-200 flex items-center justify-between">
+            <h2 className="font-black text-sm tracking-widest text-sky-800 uppercase flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-sky-500 animate-pulse" />
               ITEMS COOKING ({cookingTickets.length})
             </h2>
           </div>
 
           <div className="flex-1 p-4 space-y-4 overflow-y-auto">
             {cookingTickets.length === 0 ? (
-              <div className="h-48 flex items-center justify-center text-xs text-slate-500 font-medium">
+              <div className="h-48 flex items-center justify-center text-xs text-stone-400 font-medium">
                 No items currently cooking
               </div>
             ) : (
@@ -508,35 +508,35 @@ export default function KitchenKdsBoard() {
                 return (
                   <div
                     key={ticket.id}
-                    className={`rounded-2xl border p-4 shadow-lg flex flex-col justify-between transition ${
+                    className={`rounded-2xl border p-4 shadow-xs flex flex-col justify-between transition ${
                       isParcel
-                        ? 'bg-amber-950/20 border-amber-600/40'
-                        : 'bg-slate-900 border-blue-900/50'
+                        ? 'bg-amber-50/70 border-amber-300'
+                        : 'bg-white border-sky-200'
                     }`}
                   >
                     <div>
                       {/* Ticket Header with Placed Time */}
-                      <div className="flex justify-between items-start border-b border-slate-800 pb-2 mb-3">
+                      <div className="flex justify-between items-start border-b border-stone-200 pb-2 mb-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-black text-base text-white">
+                            <span className="font-black text-base text-stone-900">
                               {isParcel ? `📦 ${ticket.ticketNumber}` : `Seat ${ticket.seatId}`}
                             </span>
-                            <span className="text-xs font-bold text-slate-400">
+                            <span className="text-xs font-bold text-stone-500">
                               #{ticket.ticketNumber}
                             </span>
                           </div>
-                          <span className="text-[11px] text-slate-400 block font-medium">
+                          <span className="text-[11px] text-stone-600 block font-medium">
                             {ticket.customerName !== '-' ? ticket.customerName : 'Diner'} • Waiter: {ticket.waiterName}
                           </span>
                         </div>
 
                         <div className="text-right">
-                          <span className="text-xs font-black text-blue-400 flex items-center justify-end gap-1 font-mono">
-                            <Clock className="w-3.5 h-3.5 text-blue-400" />
+                          <span className="text-xs font-black text-sky-800 flex items-center justify-end gap-1 font-mono">
+                            <Clock className="w-3.5 h-3.5 text-sky-700" />
                             <span>{formatOrderTime(ticket.placedAt, ticket.placedAtTime)}</span>
                           </span>
-                          <span className="text-[10px] uppercase font-bold text-slate-500">
+                          <span className="text-[10px] uppercase font-bold text-stone-400">
                             Placed Time
                           </span>
                         </div>
@@ -547,14 +547,14 @@ export default function KitchenKdsBoard() {
                         {cookingItems.map((item) => (
                           <div
                             key={item.id}
-                            className="flex items-center justify-between p-2 rounded-xl bg-slate-800/80 border border-blue-900/40"
+                            className="flex items-center justify-between p-2 rounded-xl bg-stone-50 border border-sky-200/60"
                           >
                             <div>
-                              <span className="font-bold text-sm text-white">
+                              <span className="font-bold text-sm text-stone-900">
                                 {item.quantity}x {item.itemName}
                               </span>
                               {item.specialNotes && (
-                                <p className="text-[10px] text-amber-400 font-medium">
+                                <p className="text-[10px] text-amber-800 font-medium">
                                   {item.specialNotes}
                                 </p>
                               )}
@@ -566,7 +566,7 @@ export default function KitchenKdsBoard() {
                                 type="button"
                                 onClick={() => handleItemStatus(item.id, 'cancelled')}
                                 title="Cancel item if unavailable"
-                                className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-900/60 text-slate-500 hover:text-rose-300 flex items-center justify-center text-xs"
+                                className="w-7 h-7 rounded-lg bg-stone-100 hover:bg-rose-100 text-stone-500 hover:text-rose-700 border border-stone-300 flex items-center justify-center text-xs transition"
                               >
                                 <X className="w-3.5 h-3.5" />
                               </button>
@@ -575,7 +575,7 @@ export default function KitchenKdsBoard() {
                               <button
                                 type="button"
                                 onClick={() => handleItemStatus(item.id, 'ready')}
-                                className="w-8 h-8 rounded-lg bg-blue-600 hover:bg-emerald-600 text-white flex items-center justify-center font-bold text-xs transition active:scale-95"
+                                className="w-8 h-8 rounded-lg bg-emerald-100 hover:bg-emerald-600 text-emerald-800 hover:text-white border border-emerald-300 flex items-center justify-center font-bold text-xs transition active:scale-95 shadow-xs"
                                 title="Mark Ready"
                               >
                                 <Check className="w-4 h-4" />
@@ -590,7 +590,7 @@ export default function KitchenKdsBoard() {
                     <button
                       type="button"
                       onClick={() => handleBatchStatus(ticket, 'ready')}
-                      className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs tracking-wider transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-98"
+                      className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs tracking-wider transition flex items-center justify-center gap-1.5 shadow-xs active:scale-98 font-bold"
                     >
                       <span>Mark all Ready</span>
                       <ArrowRight className="w-4 h-4" />
@@ -605,17 +605,17 @@ export default function KitchenKdsBoard() {
         {/* ======================================================== */}
         {/* COLUMN 3: ITEMS READY */}
         {/* ======================================================== */}
-        <div className="flex flex-col bg-slate-900/60 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-          <div className="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
-            <h2 className="font-black text-sm tracking-widest text-emerald-400 uppercase flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+        <div className="flex flex-col bg-stone-50/70 border border-stone-200 rounded-3xl overflow-hidden shadow-xs">
+          <div className="p-4 bg-white border-b border-stone-200 flex items-center justify-between">
+            <h2 className="font-black text-sm tracking-widest text-emerald-800 uppercase flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               ITEMS READY ({readyTickets.length})
             </h2>
           </div>
 
           <div className="flex-1 p-4 space-y-4 overflow-y-auto">
             {readyTickets.length === 0 ? (
-              <div className="h-48 flex items-center justify-center text-xs text-slate-500 font-medium">
+              <div className="h-48 flex items-center justify-center text-xs text-stone-400 font-medium">
                 No items waiting for pickup
               </div>
             ) : (
@@ -628,33 +628,33 @@ export default function KitchenKdsBoard() {
                 return (
                   <div
                     key={ticket.id}
-                    className={`rounded-2xl border p-4 shadow-lg transition ${
+                    className={`rounded-2xl border p-4 shadow-xs transition ${
                       isParcel
-                        ? 'bg-amber-950/30 border-emerald-500/50'
-                        : 'bg-slate-900 border-emerald-500/50'
+                        ? 'bg-amber-50/70 border-emerald-300'
+                        : 'bg-white border-emerald-300'
                     }`}
                   >
-                    <div className="flex justify-between items-start border-b border-slate-800 pb-2 mb-3">
+                    <div className="flex justify-between items-start border-b border-stone-200 pb-2 mb-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-black text-base text-white">
+                          <span className="font-black text-base text-stone-900">
                             {isParcel ? `📦 ${ticket.ticketNumber}` : `Seat ${ticket.seatId}`}
                           </span>
-                          <span className="text-xs font-bold text-slate-400">
+                          <span className="text-xs font-bold text-stone-500">
                             #{ticket.ticketNumber}
                           </span>
                         </div>
-                        <span className="text-[11px] text-emerald-400 block font-semibold">
+                        <span className="text-[11px] text-emerald-700 block font-semibold">
                           Alert Sent to: {ticket.waiterName}
                         </span>
                       </div>
 
                       <div className="text-right">
-                        <span className="text-xs font-black text-emerald-400 flex items-center justify-end gap-1 font-mono">
-                          <Clock className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-xs font-black text-emerald-700 flex items-center justify-end gap-1 font-mono">
+                          <Clock className="w-3.5 h-3.5 text-emerald-700" />
                           <span>{formatOrderTime(ticket.placedAt, ticket.placedAtTime)}</span>
                         </span>
-                        <span className="text-[10px] uppercase font-bold text-slate-500">
+                        <span className="text-[10px] uppercase font-bold text-stone-400">
                           Placed Time
                         </span>
                       </div>
@@ -664,12 +664,12 @@ export default function KitchenKdsBoard() {
                       {readyItems.map((item) => (
                         <div
                           key={item.id}
-                          className="flex items-center justify-between p-2 rounded-xl bg-emerald-950/20 border border-emerald-500/30"
+                          className="flex items-center justify-between p-2 rounded-xl bg-emerald-50/50 border border-emerald-200"
                         >
-                          <span className="font-bold text-sm text-white">
+                          <span className="font-bold text-sm text-stone-900">
                             {item.quantity}x {item.itemName}
                           </span>
-                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300">
+                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">
                             Ready for Pickup
                           </span>
                         </div>
@@ -685,18 +685,18 @@ export default function KitchenKdsBoard() {
 
       {/* 86 Out of Stock Slide-in Drawer */}
       {show86Drawer && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex justify-end">
-          <div className="w-full max-w-md bg-slate-900 h-full border-l border-slate-800 p-6 flex flex-col justify-between shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end">
+          <div className="w-full max-w-md bg-white h-full border-l border-stone-200 p-6 flex flex-col justify-between shadow-2xl">
             <div>
-              <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+              <div className="flex items-center justify-between pb-4 border-b border-stone-200 mb-4">
                 <div>
-                  <h3 className="font-black text-base text-white uppercase">86 / Stock Manager</h3>
-                  <p className="text-xs text-slate-400">Toggle dish availability across all customer menus</p>
+                  <h3 className="font-black text-base text-stone-900 uppercase">86 / Stock Manager</h3>
+                  <p className="text-xs text-stone-500">Toggle dish availability across all customer menus</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShow86Drawer(false)}
-                  className="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold"
+                  className="w-8 h-8 rounded-full bg-stone-100 text-stone-500 hover:text-stone-900 hover:bg-stone-200 flex items-center justify-center font-bold transition"
                 >
                   ✕
                 </button>
@@ -706,11 +706,11 @@ export default function KitchenKdsBoard() {
                 {menuItems.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between p-3 rounded-xl bg-slate-800/80 border border-slate-700/70"
+                    className="flex items-center justify-between p-3 rounded-xl bg-stone-50 border border-stone-200"
                   >
                     <div>
-                      <h5 className="font-bold text-xs text-white">{item.name}</h5>
-                      <span className="text-[11px] font-semibold text-amber-400">₹{item.price.toFixed(0)}</span>
+                      <h5 className="font-bold text-xs text-stone-900">{item.name}</h5>
+                      <span className="text-[11px] font-semibold text-[#8A4228]">₹{item.price.toFixed(0)}</span>
                     </div>
 
                     <button
@@ -718,8 +718,8 @@ export default function KitchenKdsBoard() {
                       onClick={() => handleToggle86(item)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-black transition ${
                         item.isAvailable
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-rose-950/40 hover:text-rose-400 hover:border-rose-500'
-                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-emerald-950/40 hover:text-emerald-400 hover:border-emerald-500'
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300'
+                          : 'bg-rose-50 text-rose-800 border border-rose-300 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300'
                       }`}
                     >
                       {item.isAvailable ? '🟢 In Stock' : '🔴 SOLD OUT'}
@@ -732,7 +732,7 @@ export default function KitchenKdsBoard() {
             <button
               type="button"
               onClick={() => setShow86Drawer(false)}
-              className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition"
+              className="w-full py-3 rounded-xl bg-[#8A4228] hover:bg-[#71351F] text-white font-bold text-xs transition shadow-xs"
             >
               Close Drawer
             </button>
